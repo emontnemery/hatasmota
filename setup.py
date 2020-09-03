@@ -5,9 +5,9 @@ long_description = open("README.md").read()
 
 setup(
     name="HATasmota",
-    version="0.0.1",
+    version="0.0.2",
     license="MIT",
-    url="https://github.com/emontnemery/ha-tasmota",
+    url="https://github.com/emontnemery/hatasmota",
     author="",
     author_email="",
     description="Python module to help parse and construct Tasmota MQTT messages.",
