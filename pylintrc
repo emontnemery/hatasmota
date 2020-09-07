@@ -1,0 +1,20 @@
+[MASTER]
+
+[BASIC]
+good-names=id,i,j,k,ex,Run,_,fp,T,ev
+
+[MESSAGES CONTROL]
+# Reasons disabled:
+# format - handled by black
+disable=
+  too-few-public-methods,
+
+[REPORTS]
+score=no
+
+[TYPECHECK]
+
+[FORMAT]
+expected-line-ending-format=LF
+
+[EXCEPTIONS]
