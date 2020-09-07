@@ -90,7 +90,7 @@ def get_state_power(status, idx):
         status = json.loads(status)
     except json.decoder.JSONDecodeError:
         _LOGGER.info("Invalid JSON '%s'", status)
-        return
+        return None
     if idx == 0 and RSLT_POWER in status:
         return status[RSLT_POWER]
     powerdevice = f"{RSLT_POWER}{idx+1}"

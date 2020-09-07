@@ -1,6 +1,7 @@
 """Tasmota discovery."""
-import attr
 import logging
+
+import attr
 import voluptuous as vol
 
 import hatasmota.config_validation as cv
