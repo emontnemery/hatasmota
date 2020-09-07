@@ -2,6 +2,7 @@
 
 import json
 import logging
+import re
 
 from hatasmota.const import (
     CONF_FRIENDLYNAME,
@@ -50,7 +51,7 @@ def _get_topic_tele(config):
 
 def get_topic_command_power(config, idx):
     """Get topic for command power."""
-    return _get_topic_cmnd(config) + f"POWER{idx}"
+    return _get_topic_cmnd(config) + f"POWER{idx+1}"
 
 
 def get_topic_tele_state(config):
@@ -65,12 +66,12 @@ def get_topic_tele_will(config):
 
 def get_state_power_on(config):
     """Get command/result on."""
-    return config[CONF_STATE][STATE_OFF]
+    return config[CONF_STATE][STATE_ON]
 
 
 def get_state_power_off(config):
     """Get command/result off."""
-    return config[CONF_STATE][STATE_ON]
+    return config[CONF_STATE][STATE_OFF]
 
 
 def get_state_offline(config):
@@ -85,11 +86,15 @@ def get_state_online(config):
 
 def get_state_power(status, idx):
     """Get state power."""
-    status = json.loads(status)
+    try:
+        status = json.loads(status)
+    except json.decoder.JSONDecodeError:
+        _LOGGER.info("Invalid JSON '%s'", status)
+        return
     if idx == 0 and RSLT_POWER in status:
         return status[RSLT_POWER]
     powerdevice = f"{RSLT_POWER}{idx+1}"
-    return status[powerdevice]
+    return status[powerdevice] if powerdevice in status else None
 
 
 def get_config_friendlyname(config, idx):
@@ -117,3 +122,18 @@ def get_device_name(config):
 def get_device_sw(config):
     """Get device SW version."""
     return config[CONF_SW_VERSION]
+
+
+TOPIC_MATCHER = re.compile(r"^(?P<serial_number>[A-Z0-9_-]+)\/config$")
+
+
+def get_serial_number_from_discovery_topic(topic, discovery_topic):
+    """Get serial number from discovery topic."""
+    topic_trimmed = topic.replace(f"{discovery_topic}/", "", 1)
+    match = TOPIC_MATCHER.match(topic_trimmed)
+
+    if not match:
+        return None
+
+    (serial_number,) = match.groups()
+    return serial_number
