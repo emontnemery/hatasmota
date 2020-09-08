@@ -1,7 +1,7 @@
 """Tasmota discovery."""
+import json
 import logging
 
-import attr
 import voluptuous as vol
 
 import hatasmota.config_validation as cv
@@ -25,20 +25,13 @@ from hatasmota.const import (
     CONF_MODEL,
     CONF_SW_VERSION,
 )
+from hatasmota.switch import TasmotaRelay, TasmotaRelayConfig
 from hatasmota.utils import (
-    get_config_friendlyname,
     get_device_id,
     get_device_model,
     get_device_name,
     get_device_sw,
-    get_state_power,
-    get_topic_command_power,
-    get_topic_tele_state,
-    get_topic_tele_will,
-    get_state_offline,
-    get_state_online,
-    get_state_power_off,
-    get_state_power_on,
+    get_serial_number_from_discovery_topic,
 )
 
 TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
@@ -76,173 +69,52 @@ class TasmotaDiscoveryMsg(dict):
         super().__init__(config)
 
 
-@attr.s(slots=True, frozen=True)
-class TasmotaEntityConfig:
-    """Base class for Tasmota configuation."""
-
-    id: str = attr.ib()
-    idx: int = attr.ib()
-    friendly_name: str = attr.ib()
-
-
-@attr.s(slots=True, frozen=True)
-class TasmotaAvailabilityConfig(TasmotaEntityConfig):
-    """Tasmota availability configuation."""
-
-    availability_topic: str = attr.ib()
-    availability_offline: str = attr.ib()
-    availability_online: str = attr.ib()
+def clear_discovery_topic(serial_number, discovery_prefix, publish_callback):
+    """Clear retained discovery topic."""
+    discovery_topic = f"{discovery_prefix}/{serial_number}/config"
+    publish_callback(
+        discovery_topic,
+        "",
+        retain=True,
+    )
 
 
-@attr.s(slots=True, frozen=True)
-class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
-    """Tasmota relay configuation."""
+async def subscribe_discovery_topic(discovery_topic, discovery_callback, subscribe_callback):
+    """Subscribe to discovery messages."""
 
-    command_topic: str = attr.ib()
-    state_power_off: str = attr.ib()
-    state_power_on: str = attr.ib()
-    state_topic: str = attr.ib()
-    unique_id: str = attr.ib()
+    async def discovery_message_received(msg):
+        """Validate a received discovery message."""
+        payload = msg.payload
+        topic = msg.topic
 
-    @classmethod
-    def from_discovery_message(cls, config, idx):
-        """Instantiate from discovery message."""
-        return cls(
-            id=config[CONF_ID],
-            idx=idx,
-            friendly_name=get_config_friendlyname(config, idx),
-            availability_topic=get_topic_tele_will(config),
-            availability_offline=get_state_offline(config),
-            availability_online=get_state_online(config),
-            command_topic=get_topic_command_power(config, idx),
-            state_power_off=get_state_power_off(config),
-            state_power_on=get_state_power_on(config),
-            state_topic=get_topic_tele_state(config),
-            unique_id=f"{config[CONF_ID]}_switch_{idx}",
-        )
+        serial_number = get_serial_number_from_discovery_topic(topic, discovery_topic)
+        if not serial_number:
+            _LOGGER.warning(
+                "Invalid discovery topic %s:", topic
+            )
+            return
 
+        if payload:
+            try:
+                payload = TasmotaDiscoveryMsg(json.loads(payload))
+            except ValueError:
+                _LOGGER.warning(
+                    "Invalid discovery message %s: '%s'", serial_number, payload
+                )
+                return
+            if serial_number != payload[CONF_ID]:
+                _LOGGER.warning(
+                    "Serial number mismatch between topic and payload, '%s' != '%s'",
+                    serial_number,
+                    payload[CONF_ID],
+                )
+                return
+        else:
+            payload = {}
 
-class TasmotaEntity:
-    """Base class for Tasmota entities."""
+        await discovery_callback(payload, serial_number)
 
-    def __init__(self, config):
-        """Initialize."""
-        self._cfg = config
-        super().__init__()
-
-    def config_same(self, new_config):
-        """Return if updated config is same as current config."""
-        return self._cfg == new_config
-
-    def config_update(self, new_config):
-        """Update config."""
-        self._cfg = new_config
-
-    @property
-    def device_id(self):
-        """Return friendly name."""
-        return self._cfg.id
-
-    @property
-    def name(self):
-        """Return friendly name."""
-        return self._cfg.friendly_name
-
-
-class TasmotaAvailability(TasmotaEntity):
-    """Availability mixin for Tasmota entities."""
-
-    def __init__(self, config):
-        """Initialize."""
-        self._on_availability_callback = None
-        super().__init__(config)
-
-    def get_availability_topics(self):
-        """Return MQTT topics to subscribe to for availability state."""
-
-        def availability_message_received(msg):
-            """Handle a new received MQTT availability message."""
-            if msg.payload == self._cfg.availability_online:
-                self._on_availability_callback(True)
-            if msg.payload == self._cfg.availability_offline:
-                self._on_availability_callback(False)
-
-        topics = {
-            "availability_topic": {
-                "topic": self._cfg.availability_topic,
-                "msg_callback": availability_message_received,
-            }
-        }
-        return topics
-
-    def set_on_availability_callback(self, on_availability_callback):
-        """Set callback for availability state change."""
-        self._on_availability_callback = on_availability_callback
-
-
-class TasmotaRelay(TasmotaAvailability, TasmotaEntity):
-    """Representation of a Tasmota relay."""
-
-    def __init__(self, config):
-        """Initialize."""
-        self._on_state_callback = None
-        self._publish_message = None
-        self._sub_state = None
-        self._subscribe_topics = None
-        self._unsubscribe_topics = None
-        super().__init__(config)
-
-    def set_mqtt_callbacks(self, publish_message, subscribe_topics, unsubscribe_topics):
-        """Set callbacks to publish MQTT messages and subscribe to MQTT topics."""
-        self._publish_message = publish_message
-        self._subscribe_topics = subscribe_topics
-        self._unsubscribe_topics = unsubscribe_topics
-
-    def set_on_state_callback(self, on_state_callback):
-        """Set callback for state change."""
-        self._on_state_callback = on_state_callback
-
-    async def subscribe_topics(self):
-        """Subscribe to topics."""
-
-        def state_message_received(msg):
-            """Handle new MQTT state messages."""
-            state = get_state_power(msg.payload, self._cfg.idx)
-            if state == self._cfg.state_power_on:
-                self._on_state_callback(True)
-            elif state == self._cfg.state_power_off:
-                self._on_state_callback(False)
-
-        availability_topics = self.get_availability_topics()
-        topics = {
-            "state_topic": {
-                "topic": self._cfg.state_topic,
-                "msg_callback": state_message_received,
-            }
-        }
-        topics = {**topics, **availability_topics}
-
-        self._sub_state = await self._subscribe_topics(
-            self._sub_state,
-            topics,
-        )
-
-    async def unsubscribe_topics(self):
-        """Unsubscribe to all MQTT topics."""
-        self._sub_state = await self._unsubscribe_topics(self._sub_state)
-
-    @property
-    def unique_id(self):
-        """Return unique_id."""
-        return f"{self._cfg.id}_switch_{self._cfg.idx}"
-
-    def set_state(self, state):
-        """Turn the relay on or off."""
-        payload = self._cfg.state_power_on if state else self._cfg.state_power_off
-        self._publish_message(
-            self._cfg.command_topic,
-            payload,
-        )
+    await subscribe_callback(f"{discovery_topic}/#", discovery_message_received, 0)
 
 
 def get_device_config_helper(discovery_msg):
