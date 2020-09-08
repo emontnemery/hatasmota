@@ -79,7 +79,9 @@ def clear_discovery_topic(serial_number, discovery_prefix, publish_callback):
     )
 
 
-async def subscribe_discovery_topic(discovery_topic, discovery_callback, subscribe_callback):
+async def subscribe_discovery_topic(
+    discovery_topic, discovery_callback, subscribe_callback
+):
     """Subscribe to discovery messages."""
 
     async def discovery_message_received(msg):
@@ -89,9 +91,7 @@ async def subscribe_discovery_topic(discovery_topic, discovery_callback, subscri
 
         serial_number = get_serial_number_from_discovery_topic(topic, discovery_topic)
         if not serial_number:
-            _LOGGER.warning(
-                "Invalid discovery topic %s:", topic
-            )
+            _LOGGER.warning("Invalid discovery topic %s:", topic)
             return
 
         if payload:

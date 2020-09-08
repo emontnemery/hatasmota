@@ -61,6 +61,7 @@ class TasmotaAvailability(TasmotaEntity):
 
     def get_availability_topics(self):
         """Return MQTT topics to subscribe to for availability state."""
+
         def availability_message_received(msg):
             """Handle a new received MQTT availability message."""
             if msg.payload == self._cfg.availability_online:

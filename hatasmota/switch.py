@@ -4,7 +4,12 @@ import logging
 import attr
 
 from hatasmota.const import CONF_ID
-from hatasmota.entity import TasmotaAvailability, TasmotaAvailabilityConfig, TasmotaEntity, TasmotaEntityConfig
+from hatasmota.entity import (
+    TasmotaAvailability,
+    TasmotaAvailabilityConfig,
+    TasmotaEntity,
+    TasmotaEntityConfig,
+)
 from hatasmota.utils import (
     get_config_friendlyname,
     get_state_power,
