@@ -7,7 +7,8 @@ good-names=id,i,j,k,ex,Run,_,fp,T,ev
 # Reasons disabled:
 # format - handled by black
 disable=
-  too-few-public-methods,
+  format,
+  too-few-public-methods
 
 [REPORTS]
 score=no
