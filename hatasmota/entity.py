@@ -27,9 +27,10 @@ class TasmotaAvailabilityConfig(TasmotaEntityConfig):
 class TasmotaEntity:
     """Base class for Tasmota entities."""
 
-    def __init__(self, config):
+    def __init__(self, config, mqtt_client):
         """Initialize."""
         self._cfg = config
+        self._mqtt_client = mqtt_client
         super().__init__()
 
     def config_same(self, new_config):
@@ -54,10 +55,10 @@ class TasmotaEntity:
 class TasmotaAvailability(TasmotaEntity):
     """Availability mixin for Tasmota entities."""
 
-    def __init__(self, config):
+    def __init__(self, **kwds):
         """Initialize."""
         self._on_availability_callback = None
-        super().__init__(config)
+        super().__init__(**kwds)
 
     def get_availability_topics(self):
         """Return MQTT topics to subscribe to for availability state."""

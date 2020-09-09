@@ -31,7 +31,7 @@ from hatasmota.utils import (
     get_device_model,
     get_device_name,
     get_device_sw,
-    get_serial_number_from_discovery_topic,
+    get_serial_number_from_topic,
 )
 
 TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
@@ -69,52 +69,69 @@ class TasmotaDiscoveryMsg(dict):
         super().__init__(config)
 
 
-def clear_discovery_topic(serial_number, discovery_prefix, publish_callback):
+class TasmotaDiscovery:
+    """Help class to store discovery status."""
+
+    def __init__(self, discovery_topic, mqtt_client):
+        """Initialize."""
+        self._discovery_topic = discovery_topic
+        self._mqtt_client = mqtt_client
+        self._sub_state = None
+
+    async def start_discovery(self, discovery_callback):
+        """Start receiving discovery messages."""
+        await self._subscribe_discovery_topic(discovery_callback)
+
+    async def _subscribe_discovery_topic(self, discovery_callback):
+        """Subscribe to discovery messages."""
+
+        async def discovery_message_received(msg):
+            """Validate a received discovery message."""
+            payload = msg.payload
+            topic = msg.topic
+
+            serial_number = get_serial_number_from_topic(topic, self._discovery_topic)
+            if not serial_number:
+                _LOGGER.warning("Invalid discovery topic %s:", topic)
+                return
+
+            if payload:
+                try:
+                    payload = TasmotaDiscoveryMsg(json.loads(payload))
+                except ValueError:
+                    _LOGGER.warning(
+                        "Invalid discovery message %s: '%s'", serial_number, payload
+                    )
+                    return
+                if serial_number != payload[CONF_ID]:
+                    _LOGGER.warning(
+                        "Serial number mismatch between topic and payload, '%s' != '%s'",
+                        serial_number,
+                        payload[CONF_ID],
+                    )
+                    return
+            else:
+                payload = {}
+
+            await discovery_callback(payload, serial_number)
+
+        topics = {
+            "state_topic": {
+                "topic": f"{self._discovery_topic}/#",
+                "msg_callback": discovery_message_received,
+            }
+        }
+        self._sub_state = await self._mqtt_client.subscribe(self._sub_state, topics)
+
+
+def clear_discovery_topic(serial_number, discovery_prefix, mqtt_client):
     """Clear retained discovery topic."""
     discovery_topic = f"{discovery_prefix}/{serial_number}/config"
-    publish_callback(
+    mqtt_client.publish(
         discovery_topic,
         "",
         retain=True,
     )
-
-
-async def subscribe_discovery_topic(
-    discovery_topic, discovery_callback, subscribe_callback
-):
-    """Subscribe to discovery messages."""
-
-    async def discovery_message_received(msg):
-        """Validate a received discovery message."""
-        payload = msg.payload
-        topic = msg.topic
-
-        serial_number = get_serial_number_from_discovery_topic(topic, discovery_topic)
-        if not serial_number:
-            _LOGGER.warning("Invalid discovery topic %s:", topic)
-            return
-
-        if payload:
-            try:
-                payload = TasmotaDiscoveryMsg(json.loads(payload))
-            except ValueError:
-                _LOGGER.warning(
-                    "Invalid discovery message %s: '%s'", serial_number, payload
-                )
-                return
-            if serial_number != payload[CONF_ID]:
-                _LOGGER.warning(
-                    "Serial number mismatch between topic and payload, '%s' != '%s'",
-                    serial_number,
-                    payload[CONF_ID],
-                )
-                return
-        else:
-            payload = {}
-
-        await discovery_callback(payload, serial_number)
-
-    await subscribe_callback(f"{discovery_topic}/#", discovery_message_received, 0)
 
 
 def get_device_config_helper(discovery_msg):
@@ -161,8 +178,8 @@ def get_entities_for_platform(discovery_msg, platform):
     return []
 
 
-def get_entity(config, platform):
+def get_entity(config, platform, mqtt_client):
     """Create entity for the given platform."""
     if platform == CONF_RELAY:
-        return TasmotaRelay(config)
+        return TasmotaRelay(config=config, mqtt_client=mqtt_client)
     return None

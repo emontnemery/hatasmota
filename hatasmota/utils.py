@@ -127,7 +127,7 @@ def get_device_sw(config):
 TOPIC_MATCHER = re.compile(r"^(?P<serial_number>[A-Z0-9_-]+)\/config$")
 
 
-def get_serial_number_from_discovery_topic(topic, discovery_topic):
+def get_serial_number_from_topic(topic, discovery_topic):
     """Get serial number from discovery topic."""
     topic_trimmed = topic.replace(f"{discovery_topic}/", "", 1)
     match = TOPIC_MATCHER.match(topic_trimmed)

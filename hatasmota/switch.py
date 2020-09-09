@@ -56,20 +56,11 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 class TasmotaRelay(TasmotaAvailability, TasmotaEntity):
     """Representation of a Tasmota relay."""
 
-    def __init__(self, config):
+    def __init__(self, **kwds):
         """Initialize."""
         self._on_state_callback = None
-        self._publish_message = None
         self._sub_state = None
-        self._subscribe_topics = None
-        self._unsubscribe_topics = None
-        super().__init__(config)
-
-    def set_mqtt_callbacks(self, publish_message, subscribe_topics, unsubscribe_topics):
-        """Set callbacks to publish MQTT messages and subscribe to MQTT topics."""
-        self._publish_message = publish_message
-        self._subscribe_topics = subscribe_topics
-        self._unsubscribe_topics = unsubscribe_topics
+        super().__init__(**kwds)
 
     def set_on_state_callback(self, on_state_callback):
         """Set callback for state change."""
@@ -89,20 +80,21 @@ class TasmotaRelay(TasmotaAvailability, TasmotaEntity):
         availability_topics = self.get_availability_topics()
         topics = {
             "state_topic": {
+                "event_loop_safe": True,
                 "topic": self._cfg.state_topic,
                 "msg_callback": state_message_received,
             }
         }
         topics = {**topics, **availability_topics}
 
-        self._sub_state = await self._subscribe_topics(
+        self._sub_state = await self._mqtt_client.subscribe(
             self._sub_state,
             topics,
         )
 
     async def unsubscribe_topics(self):
         """Unsubscribe to all MQTT topics."""
-        self._sub_state = await self._unsubscribe_topics(self._sub_state)
+        self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
     @property
     def unique_id(self):
@@ -112,7 +104,7 @@ class TasmotaRelay(TasmotaAvailability, TasmotaEntity):
     def set_state(self, state):
         """Turn the relay on or off."""
         payload = self._cfg.state_power_on if state else self._cfg.state_power_off
-        self._publish_message(
+        self._mqtt_client.publish(
             self._cfg.command_topic,
             payload,
         )
