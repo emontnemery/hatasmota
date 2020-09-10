@@ -10,9 +10,9 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaEntityConfig:
     """Base class for Tasmota configuation."""
 
-    id: str = attr.ib()
     idx: int = attr.ib()
     friendly_name: str = attr.ib()
+    mac: str = attr.ib()
 
 
 @attr.s(slots=True, frozen=True)
@@ -42,9 +42,9 @@ class TasmotaEntity:
         self._cfg = new_config
 
     @property
-    def device_id(self):
-        """Return friendly name."""
-        return self._cfg.id
+    def mac(self):
+        """Return MAC."""
+        return self._cfg.mac
 
     @property
     def name(self):
@@ -72,8 +72,9 @@ class TasmotaAvailability(TasmotaEntity):
 
         topics = {
             "availability_topic": {
-                "topic": self._cfg.availability_topic,
+                "event_loop_safe": True,
                 "msg_callback": availability_message_received,
+                "topic": self._cfg.availability_topic,
             }
         }
         return topics

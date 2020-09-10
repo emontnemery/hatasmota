@@ -9,7 +9,7 @@ from hatasmota.const import (
     CONF_DEVICENAME,
     CONF_FULLTOPIC,
     CONF_HOSTNAME,
-    CONF_ID,
+    CONF_MAC,
     CONF_LIGHT,
     CONF_FRIENDLYNAME,
     CONF_MANUFACTURER,
@@ -27,11 +27,11 @@ from hatasmota.const import (
 )
 from hatasmota.switch import TasmotaRelay, TasmotaRelayConfig
 from hatasmota.utils import (
-    get_device_id,
+    get_device_mac,
     get_device_model,
     get_device_name,
     get_device_sw,
-    get_serial_number_from_topic,
+    get_mac_from_discovery_topic,
 )
 
 TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
@@ -40,8 +40,8 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         CONF_FRIENDLYNAME: vol.All(cv.ensure_list, [cv.string]),
         CONF_FULLTOPIC: cv.string,
         CONF_HOSTNAME: cv.string,
-        CONF_ID: cv.string,
         CONF_LIGHT: vol.All(cv.ensure_list, [cv.positive_int]),
+        CONF_MAC: cv.string,
         CONF_MODEL: cv.string,
         CONF_OFFLINE: cv.string,
         CONF_ONLINE: cv.string,
@@ -90,8 +90,8 @@ class TasmotaDiscovery:
             payload = msg.payload
             topic = msg.topic
 
-            serial_number = get_serial_number_from_topic(topic, self._discovery_topic)
-            if not serial_number:
+            mac = get_mac_from_discovery_topic(topic, self._discovery_topic)
+            if not mac:
                 _LOGGER.warning("Invalid discovery topic %s:", topic)
                 return
 
@@ -99,21 +99,19 @@ class TasmotaDiscovery:
                 try:
                     payload = TasmotaDiscoveryMsg(json.loads(payload))
                 except ValueError:
-                    _LOGGER.warning(
-                        "Invalid discovery message %s: '%s'", serial_number, payload
-                    )
+                    _LOGGER.warning("Invalid discovery message %s: '%s'", mac, payload)
                     return
-                if serial_number != payload[CONF_ID]:
+                if mac != payload[CONF_MAC]:
                     _LOGGER.warning(
-                        "Serial number mismatch between topic and payload, '%s' != '%s'",
-                        serial_number,
-                        payload[CONF_ID],
+                        "MAC mismatch between topic and payload, '%s' != '%s'",
+                        mac,
+                        payload[CONF_MAC],
                     )
                     return
             else:
                 payload = {}
 
-            await discovery_callback(payload, serial_number)
+            await discovery_callback(payload, mac)
 
         topics = {
             "state_topic": {
@@ -124,9 +122,9 @@ class TasmotaDiscovery:
         self._sub_state = await self._mqtt_client.subscribe(self._sub_state, topics)
 
 
-def clear_discovery_topic(serial_number, discovery_prefix, mqtt_client):
+def clear_discovery_topic(mac, discovery_prefix, mqtt_client):
     """Clear retained discovery topic."""
-    discovery_topic = f"{discovery_prefix}/{serial_number}/config"
+    discovery_topic = f"{discovery_prefix}/{mac}/config"
     mqtt_client.publish(
         discovery_topic,
         "",
@@ -140,7 +138,7 @@ def get_device_config_helper(discovery_msg):
         return {}
 
     device_config = {
-        CONF_ID: get_device_id(discovery_msg),
+        CONF_MAC: get_device_mac(discovery_msg),
         CONF_MANUFACTURER: "Tasmota",
         CONF_MODEL: get_device_model(discovery_msg),
         CONF_NAME: get_device_name(discovery_msg),

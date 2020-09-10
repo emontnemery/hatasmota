@@ -8,7 +8,7 @@ from hatasmota.const import (
     CONF_FRIENDLYNAME,
     CONF_FULLTOPIC,
     CONF_HOSTNAME,
-    CONF_ID,
+    CONF_MAC,
     CONF_PREFIX,
     CONF_STATE,
     CONF_TOPIC,
@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 def _get_topic(config, prefix):
     topic = config[CONF_FULLTOPIC]
     topic = topic.replace("%hostname%", config[CONF_HOSTNAME])
-    topic = topic.replace("%id%", config[CONF_ID])
+    topic = topic.replace("%id%", config[CONF_MAC][-6:])
     topic = topic.replace("%prefix%", prefix)
     topic = topic.replace("%topic%", config[CONF_TOPIC])
     return topic
@@ -104,9 +104,9 @@ def get_config_friendlyname(config, idx):
     return config[CONF_FRIENDLYNAME][idx]
 
 
-def get_device_id(config):
-    """Get device ID."""
-    return config[CONF_ID]
+def get_device_mac(config):
+    """Get device MAC."""
+    return config[CONF_MAC]
 
 
 def get_device_model(config):
@@ -124,16 +124,16 @@ def get_device_sw(config):
     return config[CONF_SW_VERSION]
 
 
-TOPIC_MATCHER = re.compile(r"^(?P<serial_number>[A-Z0-9_-]+)\/config$")
+TOPIC_MATCHER = re.compile(r"^(?P<mac>[A-Z0-9_-]+)\/config$")
 
 
-def get_serial_number_from_topic(topic, discovery_topic):
-    """Get serial number from discovery topic."""
+def get_mac_from_discovery_topic(topic, discovery_topic):
+    """Get MAC from discovery topic."""
     topic_trimmed = topic.replace(f"{discovery_topic}/", "", 1)
     match = TOPIC_MATCHER.match(topic_trimmed)
 
     if not match:
         return None
 
-    (serial_number,) = match.groups()
-    return serial_number
+    (mac,) = match.groups()
+    return mac

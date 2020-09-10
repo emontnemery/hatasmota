@@ -3,7 +3,7 @@ import logging
 
 import attr
 
-from hatasmota.const import CONF_ID
+from hatasmota.const import CONF_MAC
 from hatasmota.entity import (
     TasmotaAvailability,
     TasmotaAvailabilityConfig,
@@ -39,7 +39,7 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     def from_discovery_message(cls, config, idx):
         """Instantiate from discovery message."""
         return cls(
-            id=config[CONF_ID],
+            mac=config[CONF_MAC],
             idx=idx,
             friendly_name=get_config_friendlyname(config, idx),
             availability_topic=get_topic_tele_will(config),
@@ -49,7 +49,7 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             state_power_off=get_state_power_off(config),
             state_power_on=get_state_power_on(config),
             state_topic=get_topic_tele_state(config),
-            unique_id=f"{config[CONF_ID]}_switch_{idx}",
+            unique_id=f"{config[CONF_MAC]}_switch_{idx}",
         )
 
 
@@ -99,7 +99,7 @@ class TasmotaRelay(TasmotaAvailability, TasmotaEntity):
     @property
     def unique_id(self):
         """Return unique_id."""
-        return f"{self._cfg.id}_switch_{self._cfg.idx}"
+        return f"{self._cfg.mac}_switch_{self._cfg.idx}"
 
     def set_state(self, state):
         """Turn the relay on or off."""
