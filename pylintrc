@@ -1,14 +1,18 @@
 [MASTER]
 
 [BASIC]
-good-names=id,i,j,k,ex,Run,_,fp,T,ev
+good-names=id,i,j,k,x,ex,Run,_,fp,T,ev
 
 [MESSAGES CONTROL]
 # Reasons disabled:
 # format - handled by black
 disable=
+  duplicate-code,
   format,
-  too-few-public-methods
+  too-few-public-methods,
+  too-many-arguments,
+  too-many-branches,
+  too-many-instance-attributes
 
 [REPORTS]
 score=no

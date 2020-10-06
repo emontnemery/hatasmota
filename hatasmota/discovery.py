@@ -5,50 +5,66 @@ import logging
 import voluptuous as vol
 
 import hatasmota.config_validation as cv
+from hatasmota.binary_sensor import (
+    TasmotaBinarySensor,
+    TasmotaBinarySensorConfig,
+    TasmotaSwitchTriggerConfig,
+    TasmotaSwitchTrigger,
+)
+from hatasmota.button import TasmotaButtonTriggerConfig, TasmotaButtonTrigger
 from hatasmota.const import (
+    CONF_BUTTON,
     CONF_DEVICENAME,
     CONF_FULLTOPIC,
     CONF_HOSTNAME,
+    CONF_IP,
     CONF_MAC,
-    CONF_LIGHT,
+    CONF_LIGHT_SUBTYPE,
+    CONF_LINK_RGB_CT,
     CONF_FRIENDLYNAME,
     CONF_MANUFACTURER,
     CONF_NAME,
     CONF_OFFLINE,
     CONF_ONLINE,
+    CONF_OPTIONS,
     CONF_PREFIX,
-    CONF_SENSOR,
     CONF_STATE,
     CONF_RELAY,
     CONF_TOPIC,
     CONF_VERSION,
     CONF_MODEL,
     CONF_SW_VERSION,
+    CONF_SWITCH,
 )
+from hatasmota.light import TasmotaLight, TasmotaLightConfig
+from hatasmota.sensor import TasmotaSensor, get_sensor_entities
 from hatasmota.switch import TasmotaRelay, TasmotaRelayConfig
 from hatasmota.utils import (
-    get_device_mac,
-    get_device_model,
-    get_device_name,
-    get_device_sw,
-    get_mac_from_discovery_topic,
+    discovery_topic_is_device_config,
+    discovery_topic_get_mac,
+    get_light_index,
+    get_number_of_lights,
 )
 
 TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
     {
+        CONF_BUTTON: vol.All(cv.ensure_list, [cv.positive_int]),
         CONF_DEVICENAME: cv.string,
-        CONF_FRIENDLYNAME: vol.All(cv.ensure_list, [cv.string]),
+        CONF_FRIENDLYNAME: vol.All(cv.ensure_list, [cv.optional_string]),
         CONF_FULLTOPIC: cv.string,
         CONF_HOSTNAME: cv.string,
-        CONF_LIGHT: vol.All(cv.ensure_list, [cv.positive_int]),
+        CONF_IP: cv.string,
+        CONF_LIGHT_SUBTYPE: cv.positive_int,
+        CONF_LINK_RGB_CT: cv.positive_int,
         CONF_MAC: cv.string,
         CONF_MODEL: cv.string,
         CONF_OFFLINE: cv.string,
         CONF_ONLINE: cv.string,
+        CONF_OPTIONS: dict,
         CONF_PREFIX: vol.All(cv.ensure_list, [cv.string]),
-        CONF_SENSOR: vol.All(cv.ensure_list, [cv.positive_int]),
         CONF_STATE: vol.All(cv.ensure_list, [cv.string]),
         CONF_SW_VERSION: cv.string,
+        CONF_SWITCH: vol.All(cv.ensure_list, [int]),
         CONF_RELAY: vol.All(cv.ensure_list, [cv.positive_int]),
         CONF_TOPIC: cv.string,
         CONF_VERSION: cv.positive_int,
@@ -74,15 +90,18 @@ class TasmotaDiscovery:
 
     def __init__(self, discovery_topic, mqtt_client):
         """Initialize."""
+        self._devices = {}
+        self._pending_sensors = {}
+        self._sensors = {}
         self._discovery_topic = discovery_topic
         self._mqtt_client = mqtt_client
         self._sub_state = None
 
-    async def start_discovery(self, discovery_callback):
+    async def start_discovery(self, device_discovered, sensors_discovered):
         """Start receiving discovery messages."""
-        await self._subscribe_discovery_topic(discovery_callback)
+        await self._subscribe_discovery_topic(device_discovered, sensors_discovered)
 
-    async def _subscribe_discovery_topic(self, discovery_callback):
+    async def _subscribe_discovery_topic(self, device_discovered, sensors_discovered):
         """Subscribe to discovery messages."""
 
         async def discovery_message_received(msg):
@@ -90,31 +109,64 @@ class TasmotaDiscovery:
             payload = msg.payload
             topic = msg.topic
 
-            mac = get_mac_from_discovery_topic(topic, self._discovery_topic)
+            mac = discovery_topic_get_mac(topic, self._discovery_topic)
             if not mac:
                 _LOGGER.warning("Invalid discovery topic %s:", topic)
                 return
 
-            if payload:
-                try:
-                    payload = TasmotaDiscoveryMsg(json.loads(payload))
-                except ValueError:
-                    _LOGGER.warning("Invalid discovery message %s: '%s'", mac, payload)
-                    return
-                if mac != payload[CONF_MAC]:
-                    _LOGGER.warning(
-                        "MAC mismatch between topic and payload, '%s' != '%s'",
-                        mac,
-                        payload[CONF_MAC],
-                    )
-                    return
-            else:
-                payload = {}
+            device_discovery = discovery_topic_is_device_config(topic)
 
-            await discovery_callback(payload, mac)
+            if device_discovery:
+                if payload:
+                    try:
+                        payload = TasmotaDiscoveryMsg(json.loads(payload))
+                    except ValueError:
+                        _LOGGER.warning(
+                            "Invalid discovery message %s: '%s'", mac, payload
+                        )
+                        return
+                    if mac != payload[CONF_MAC]:
+                        _LOGGER.warning(
+                            "MAC mismatch between topic and payload, '%s' != '%s'",
+                            mac,
+                            payload[CONF_MAC],
+                        )
+                        return
+                    self._devices[mac] = payload
+                else:
+                    self._devices.pop(mac, None)
+                    payload = {}
+
+                await device_discovered(payload, mac)
+                if mac in self._devices and mac in self._sensors:
+                    sensors = get_sensor_entities(
+                        self._sensors[mac], self._devices[mac]
+                    )
+                    await sensors_discovered(sensors, mac)
+            else:
+                if payload:
+                    try:
+                        payload = json.loads(payload)
+                    except ValueError:
+                        _LOGGER.warning(
+                            "Invalid discovery message %s: '%s'", mac, payload
+                        )
+                        return
+                    self._sensors[mac] = payload
+                else:
+                    self._sensors.pop(mac)
+                    payload = {}
+
+                if mac not in self._devices:
+                    self._pending_sensors = payload
+                    return
+
+                sensors = get_sensor_entities(payload, self._devices[mac])
+                if sensors_discovered:
+                    await sensors_discovered(sensors, mac)
 
         topics = {
-            "state_topic": {
+            "discovery_topic": {
                 "topic": f"{self._discovery_topic}/#",
                 "msg_callback": discovery_message_received,
             }
@@ -138,11 +190,11 @@ def get_device_config_helper(discovery_msg):
         return {}
 
     device_config = {
-        CONF_MAC: get_device_mac(discovery_msg),
+        CONF_MAC: discovery_msg[CONF_MAC],
         CONF_MANUFACTURER: "Tasmota",
-        CONF_MODEL: get_device_model(discovery_msg),
-        CONF_NAME: get_device_name(discovery_msg),
-        CONF_SW_VERSION: get_device_sw(discovery_msg),
+        CONF_MODEL: discovery_msg[CONF_MODEL],
+        CONF_NAME: discovery_msg[CONF_DEVICENAME],
+        CONF_SW_VERSION: discovery_msg[CONF_SW_VERSION],
     }
     return device_config
 
@@ -152,32 +204,138 @@ def get_device_config(discovery_msg):
     return get_device_config_helper(discovery_msg)
 
 
-def has_entities_with_platform(discovery_msg, platform):
-    """Return True if any entity for given platform is enabled."""
-    return platform in discovery_msg and any(x != 0 for x in discovery_msg[platform])
+def get_binary_sensor_entities(discovery_msg):
+    """Generate binary sensor configuration."""
+    entities = []
+    for (idx, value) in enumerate(discovery_msg[CONF_SWITCH]):
+        entity = None
+        discovery_hash = (discovery_msg[CONF_MAC], "binary_sensor", "switch", idx)
+        if value:
+            entity = TasmotaBinarySensorConfig.from_discovery_message(
+                discovery_msg, idx, "binary_sensor"
+            )
+        entities.append((entity, discovery_hash))
+
+    return entities
 
 
 def get_switch_entities(discovery_msg):
     """Generate switch configuration."""
     switch_entities = []
+    light_index = get_light_index(discovery_msg)
     for (idx, value) in enumerate(discovery_msg[CONF_RELAY]):
         entity = None
-        if value:
-            entity = TasmotaRelayConfig.from_discovery_message(discovery_msg, idx)
-        switch_entities.append(entity)
+        discovery_hash = (discovery_msg[CONF_MAC], "switch", "relay", idx)
+        if value and idx < light_index:
+            entity = TasmotaRelayConfig.from_discovery_message(
+                discovery_msg, idx, "switch"
+            )
+            if entity.is_light:
+                entity = None
+        switch_entities.append((entity, discovery_hash))
 
     return switch_entities
 
 
+def get_light_entities(discovery_msg):
+    """Generate light configuration."""
+    light_entities = []
+    light_index = get_light_index(discovery_msg)
+    number_of_lights = get_number_of_lights(discovery_msg)
+
+    for (idx, value) in enumerate(discovery_msg[CONF_RELAY]):
+        entity = None
+        discovery_hash = (discovery_msg[CONF_MAC], "light", "relay", idx)
+        if value and idx < light_index:
+            entity = TasmotaRelayConfig.from_discovery_message(
+                discovery_msg, idx, "light"
+            )
+            if not entity.is_light:
+                entity = None
+        light_entities.append((entity, discovery_hash))
+
+    for idx in range(8):
+        entity = None
+        discovery_hash = (discovery_msg[CONF_MAC], "light", "light", idx)
+        if idx < number_of_lights:
+            entity = TasmotaLightConfig.from_discovery_message(
+                discovery_msg, idx, light_index, "light"
+            )
+        light_entities.append((entity, discovery_hash))
+
+    return light_entities
+
+
 def get_entities_for_platform(discovery_msg, platform):
     """Generate configuration for the given platform."""
-    if platform in discovery_msg and platform == CONF_RELAY:
+    if platform == "binary_sensor":
+        return get_binary_sensor_entities(discovery_msg)
+    if platform == "light":
+        return get_light_entities(discovery_msg)
+    if platform == "switch":
         return get_switch_entities(discovery_msg)
     return []
 
 
-def get_entity(config, platform, mqtt_client):
+def has_entities_with_platform(discovery_msg, platform):
+    """Return True if any entity for given platform is enabled."""
+    entities = get_entities_for_platform(discovery_msg, platform)
+    return any(x is not None for (x, _) in entities)
+
+
+def get_entity(config, mqtt_client):
     """Create entity for the given platform."""
-    if platform == CONF_RELAY:
+    platform = config.platform
+    if platform == "binary_sensor":
+        return TasmotaBinarySensor(config=config, mqtt_client=mqtt_client)
+    if platform == "light":
+        return TasmotaLight(config=config, mqtt_client=mqtt_client)
+    if platform == "sensor":
+        return TasmotaSensor(config=config, mqtt_client=mqtt_client)
+    if platform == "switch":
         return TasmotaRelay(config=config, mqtt_client=mqtt_client)
     return None
+
+
+def get_button_triggers(discovery_msg):
+    """Generate binary sensor configuration."""
+    triggers = []
+    for (idx, _) in enumerate(discovery_msg[CONF_BUTTON]):
+        trigger = TasmotaButtonTriggerConfig.from_discovery_message(discovery_msg, idx)
+        triggers.extend(trigger)
+
+    return triggers
+
+
+def get_switch_triggers(discovery_msg):
+    """Generate binary sensor configuration."""
+    triggers = []
+    for (idx, _) in enumerate(discovery_msg[CONF_SWITCH]):
+        trigger = TasmotaSwitchTriggerConfig.from_discovery_message(discovery_msg, idx)
+        triggers.extend(trigger)
+
+    return triggers
+
+
+def get_triggers(discovery_msg):
+    """Generate trigger configurations."""
+    triggers = []
+    if CONF_BUTTON in discovery_msg:
+        triggers.extend(get_button_triggers(discovery_msg))
+    if CONF_SWITCH in discovery_msg:
+        triggers.extend(get_switch_triggers(discovery_msg))
+    return triggers
+
+
+def get_trigger(config, mqtt_client):
+    """Create entity for the given platform."""
+    if config.source == "button":
+        return TasmotaButtonTrigger(config=config, mqtt_client=mqtt_client)
+    if config.source == "switch":
+        return TasmotaSwitchTrigger(config=config, mqtt_client=mqtt_client)
+    return None
+
+
+def unique_id_from_hash(discovery_hash):
+    """Generate unique_id from discovery_hash."""
+    return "_".join(discovery_hash[0:3] + (str(discovery_hash[3]),))

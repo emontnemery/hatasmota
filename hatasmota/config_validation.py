@@ -23,6 +23,16 @@ def ensure_list(value: Union[T, List[T], None]) -> List[T]:
     return value if isinstance(value, list) else [value]
 
 
+def optional_string(value: Any) -> str:
+    """Coerce value to string, except for None."""
+    if value is None:
+        return None
+    if isinstance(value, (list, dict)):
+        raise vol.Invalid("value should be a string")
+
+    return str(value)
+
+
 def string(value: Any) -> str:
     """Coerce value to string, except for None."""
     if value is None:

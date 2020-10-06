@@ -10,9 +10,16 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaEntityConfig:
     """Base class for Tasmota configuation."""
 
+    endpoint: str = attr.ib()
     idx: int = attr.ib()
     friendly_name: str = attr.ib()
     mac: str = attr.ib()
+    platform: str = attr.ib()
+
+    @property
+    def unique_id(self):
+        """Return unique_id."""
+        return f"{self.mac}_{self.platform}_{self.endpoint}_{self.idx}"
 
 
 @attr.s(slots=True, frozen=True)
@@ -41,6 +48,9 @@ class TasmotaEntity:
         """Update config."""
         self._cfg = new_config
 
+    def poll_status(self):
+        """Poll for status."""
+
     @property
     def mac(self):
         """Return MAC."""
@@ -50,6 +60,11 @@ class TasmotaEntity:
     def name(self):
         """Return friendly name."""
         return self._cfg.friendly_name
+
+    @property
+    def unique_id(self):
+        """Return unique_id."""
+        return self._cfg.unique_id
 
 
 class TasmotaAvailability(TasmotaEntity):
