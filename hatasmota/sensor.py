@@ -56,6 +56,7 @@ from .entity import (
     TasmotaEntityConfig,
 )
 from .utils import (
+    get_topic_command_status,
     get_topic_stat_status,
     get_topic_tele_sensor,
     get_topic_tele_will,
@@ -160,6 +161,7 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota switch configuation."""
 
+    poll_topic: str = attr.ib()
     quantity: str = attr.ib()
     unit: str = attr.ib()
     state_topic1: str = attr.ib()
@@ -185,6 +187,7 @@ class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_topic=get_topic_tele_will(device_config),
             availability_offline=config_get_state_offline(device_config),
             availability_online=config_get_state_online(device_config),
+            poll_topic=get_topic_command_status(device_config),
             quantity=quantity,
             state_topic1=get_topic_tele_sensor(device_config),
             state_topic2=get_topic_stat_status(device_config, 8),
@@ -207,6 +210,11 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
         self._on_state_callback = None
         self._sub_state = None
         super().__init__(**kwds)
+
+    def poll_status(self):
+        """Poll for status."""
+        payload = "8"
+        self._mqtt_client.publish_debounced(self._cfg.poll_topic, payload)
 
     def set_on_state_callback(self, on_state_callback):
         """Set callback for state change."""
