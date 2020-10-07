@@ -239,11 +239,6 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             return self._cfg.light_type
         return LIGHT_TYPE_NONE
 
-    @property
-    def unique_id(self):
-        """Return unique_id."""
-        return self._cfg.unique_id
-
     def set_state(self, state, attributes):
         """Turn the relay on or off."""
         argument = self._cfg.state_power_on if state else self._cfg.state_power_off

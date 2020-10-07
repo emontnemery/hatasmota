@@ -339,8 +339,3 @@ class TasmotaBinarySensor(TasmotaAvailability, TasmotaEntity):
     def off_delay(self):
         """Return off delay."""
         return self._cfg.off_delay
-
-    # @property
-    # def unique_id(self):
-    #    """Return unique_id."""
-    #    return f"{self._cfg.mac}_binary_sensor_switch_{self._cfg.idx}"

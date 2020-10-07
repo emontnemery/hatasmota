@@ -91,7 +91,6 @@ class TasmotaDiscovery:
     def __init__(self, discovery_topic, mqtt_client):
         """Initialize."""
         self._devices = {}
-        self._pending_sensors = {}
         self._sensors = {}
         self._discovery_topic = discovery_topic
         self._mqtt_client = mqtt_client
@@ -158,7 +157,6 @@ class TasmotaDiscovery:
                     payload = {}
 
                 if mac not in self._devices:
-                    self._pending_sensors = payload
                     return
 
                 sensors = get_sensor_entities(payload, self._devices[mac])
