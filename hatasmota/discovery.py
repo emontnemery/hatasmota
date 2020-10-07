@@ -159,9 +159,10 @@ class TasmotaDiscovery:
                 if mac not in self._devices:
                     return
 
-                sensors = get_sensor_entities(payload, self._devices[mac])
-                if sensors_discovered:
-                    await sensors_discovered(sensors, mac)
+                sensors = []
+                if payload:
+                    sensors = get_sensor_entities(payload, self._devices[mac])
+                await sensors_discovered(sensors, mac)
 
         topics = {
             "discovery_topic": {
