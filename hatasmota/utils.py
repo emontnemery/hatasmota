@@ -10,17 +10,10 @@ from .const import (
     CONF_FRIENDLYNAME,
     CONF_FULLTOPIC,
     CONF_HOSTNAME,
-    CONF_LIGHT_SUBTYPE,
     CONF_MAC,
-    CONF_OPTIONS,
     CONF_PREFIX,
-    CONF_RELAY,
     CONF_STATE,
     CONF_TOPIC,
-    LST_NONE,
-    LST_RGBW,
-    CONF_LINK_RGB_CT,
-    OPTION_PWM_MULTI_CHANNELS,
     PREFIX_CMND,
     PREFIX_STAT,
     PREFIX_TELE,
@@ -73,29 +66,9 @@ def _get_topic_tele(config):
     return _get_topic(config, config[CONF_PREFIX][PREFIX_TELE])
 
 
-def get_topic_command_channel(config, idx):
-    """Get topic for command channel."""
-    return _get_topic_cmnd(config) + f"Channel{idx+1}"
-
-
-def get_topic_command_color(config, x=2):
-    """Get topic for command channel."""
-    return _get_topic_cmnd(config) + f"Color{x}"
-
-
-def get_topic_command_color_temp(config):
-    """Get topic for command channel."""
-    return _get_topic_cmnd(config) + "CT"
-
-
-def get_topic_command_dimmer(config, idx):
-    """Get topic for command dimmer."""
-    return _get_topic_cmnd(config) + f"Dimmer{idx}"
-
-
-def get_topic_command_effect(config):
-    """Get topic for command dimmer."""
-    return _get_topic_cmnd(config) + "Scheme"
+def get_topic_command(config):
+    """Get command topic."""
+    return _get_topic_cmnd(config)
 
 
 def get_topic_command_power(config, idx):
@@ -106,11 +79,6 @@ def get_topic_command_power(config, idx):
 def get_topic_command_state(config):
     """Get topic for command power."""
     return _get_topic_cmnd(config) + "STATE"
-
-
-def get_topic_command_white_value(config):
-    """Get topic for command power."""
-    return _get_topic_cmnd(config) + "White"
 
 
 def get_topic_command_status(config):
@@ -244,31 +212,3 @@ def discovery_topic_get_mac(topic, discovery_topic):
 def discovery_topic_is_device_config(topic):
     """Return True if the discovery topic is device configuration."""
     return topic.endswith("config")
-
-
-def get_number_of_lights(config):
-    """Return number of Tasmota power device representing light(s)."""
-    light_sub_type = config[CONF_LIGHT_SUBTYPE]
-    number_of_lights = 0
-
-    if light_sub_type != LST_NONE:
-        number_of_lights = 1
-        if config[CONF_OPTIONS][OPTION_PWM_MULTI_CHANNELS]:
-            # Light split to one dimmer per channel
-            number_of_lights = light_sub_type
-        elif not config[CONF_LINK_RGB_CT] and light_sub_type >= LST_RGBW:
-            # Light split in RGB + White or RGB + CT
-            number_of_lights = 2
-
-    return number_of_lights
-
-
-def get_light_index(config):
-    """Return index of the first Tasmota power device representing a light."""
-
-    number_of_devices = sum(x > 0 for x in config[CONF_RELAY])
-    number_of_lights = get_number_of_lights(config)
-
-    light_index = number_of_devices - number_of_lights
-
-    return light_index

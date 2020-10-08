@@ -1,9 +1,15 @@
 """Tasmota constants."""
 AUTOMATION_TYPE_TRIGGER = "trigger"
 
+COMMAND_BACKLOG = "Backlog"
+COMMAND_CHANNEL = "Channel"
 COMMAND_COLOR = "Color"
 COMMAND_CT = "CT"
+COMMAND_DIMMER = "Dimmer"
+COMMAND_FADE = "Fade"
+COMMAND_POWER = "Power"
 COMMAND_SCHEME = "Scheme"
+COMMAND_SPEED = "Speed"
 COMMAND_WHITE = "White"
 
 CONF_BUTTON = "btn"
@@ -26,6 +32,7 @@ CONF_RELAY = "rl"
 CONF_SW_VERSION = "sw"
 CONF_SWITCH = "swc"
 CONF_TOPIC = "t"
+CONF_TUYA = "ty"
 CONF_VERSION = "ver"
 
 CONF_MANUFACTURER = "manufacturer"
@@ -47,11 +54,17 @@ OPTION_HASS_LIGHT = "30"          # Enforce Home Assistant auto-discovery as lig
 OPTION_PWM_MULTI_CHANNELS = "68"  # Multi-channel PWM instead of a single light
 OPTION_MQTT_BUTTONS = "73"        # Enable Buttons decoupling and send multi-press and hold MQTT messages
 OPTION_SHUTTER_MODE = "80"        # Blinds and shutters support
+OPTION_REDUCED_CT_RANGE = "82"    # Reduce the CT range from 153..500 to 200.380
 # fmt: on
 
 PREFIX_CMND = 0
 PREFIX_STAT = 1
 PREFIX_TELE = 2
+
+RL_NONE = 0
+RL_RELAY = 1
+RL_LIGHT = 2
+RL_SHUTTER = 3
 
 RSLT_ACTION = "ACTION"
 RSLT_POWER = "POWER"

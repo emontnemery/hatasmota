@@ -7,7 +7,9 @@ from hatasmota.const import (
     CONF_MAC,
     CONF_LIGHT_SUBTYPE,
     CONF_OPTIONS,
+    CONF_RELAY,
     OPTION_PWM_MULTI_CHANNELS,
+    OPTION_REDUCED_CT_RANGE,
     CONF_LINK_RGB_CT,
     LST_COLDWARM,
     LST_NONE,
@@ -15,10 +17,16 @@ from hatasmota.const import (
     LST_RGBCW,
     LST_RGBW,
     LST_SINGLE,
+    COMMAND_CHANNEL,
     COMMAND_COLOR,
     COMMAND_CT,
+    COMMAND_DIMMER,
+    COMMAND_FADE,
+    COMMAND_POWER,
     COMMAND_SCHEME,
+    COMMAND_SPEED,
     COMMAND_WHITE,
+    RL_LIGHT,
 )
 from hatasmota.entity import (
     TasmotaAvailability,
@@ -26,17 +34,12 @@ from hatasmota.entity import (
     TasmotaEntity,
     TasmotaEntityConfig,
 )
+from hatasmota.mqtt import send_commands
 from hatasmota.utils import (
     config_get_friendlyname,
     get_state_power,
-    get_topic_command_channel,
-    get_topic_command_color,
-    get_topic_command_color_temp,
-    get_topic_command_dimmer,
-    get_topic_command_effect,
-    get_topic_command_power,
+    get_topic_command,
     get_topic_command_state,
-    get_topic_command_white_value,
     get_topic_tele_state,
     get_topic_tele_will,
     get_value_by_path,
@@ -62,6 +65,11 @@ LIGHT_TYPE_MAP = {
     LIGHT_TYPE_RGBCW: LST_RGBCW,
 }
 
+DEFAULT_MIN_MIREDS = 153
+DEFAULT_MAX_MIREDS = 500
+REDUCED_MIN_MIREDS = 200
+REDUCED_MAX_MIREDS = 380
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -69,27 +77,22 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota relay configuation."""
 
-    brightness_path: str = attr.ib()
-    command_channel_topic: str = attr.ib()
-    command_color_topic: str = attr.ib()
-    command_color_temp_topic: str = attr.ib()
-    command_dimmer_topic: str = attr.ib()
-    command_effect_topic: str = attr.ib()
-    command_power_topic: str = attr.ib()
-    command_white_value_topic: str = attr.ib()
+    dimmer: str = attr.ib()
+    command_topic: str = attr.ib()
     control_by_channel: bool = attr.ib()
     dimmer_idx: int = attr.ib()
     light_type: int = attr.ib()
+    max_mireds: int = attr.ib()
+    min_mireds: int = attr.ib()
     poll_topic: str = attr.ib()
-    power_offset: int = attr.ib()
     state_power_off: str = attr.ib()
     state_power_on: str = attr.ib()
     state_topic: str = attr.ib()
 
     @classmethod
-    def from_discovery_message(cls, config, idx, power_offset, platform):
+    def from_discovery_message(cls, config, idx, platform):
         """Instantiate from discovery message."""
-        brightness_path = ["Dimmer"]
+        dimmer = COMMAND_DIMMER
         control_by_channel = False  # Use Channel<n> command to control the light
         dimmer_idx = 0  # Use Dimmer<n> to control brightness
         tasmota_light_sub_type = config[CONF_LIGHT_SUBTYPE]
@@ -97,44 +100,46 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
         if config[CONF_OPTIONS][OPTION_PWM_MULTI_CHANNELS]:
             # Multi-channel PWM instead of a single light, each light controlled by CHANNEL<n>
-            brightness_path = [f"Channel{idx+power_offset+1}"]
+            dimmer = f"{COMMAND_CHANNEL}{idx+1}"
             control_by_channel = True
             light_type = LIGHT_TYPE_DIMMER
         elif not config[CONF_LINK_RGB_CT] and tasmota_light_sub_type >= LST_RGBW:
             # Split light in RGB (idx==0) + White/CT (idx==1)
-            if idx == 0:
-                dimmer_idx = 1  # Brightness controlled by DIMMER2
+            first_light = config[CONF_RELAY].index(RL_LIGHT)
+            if idx - first_light == 0:
+                dimmer_idx = 1  # Brightness controlled by DIMMER1
                 light_type = LIGHT_TYPE_RGB
-            if idx == 1:
+            if idx - first_light == 1:
                 dimmer_idx = 2  # Brightness controlled by DIMMER2
                 if tasmota_light_sub_type == LST_RGBW:
                     light_type = LIGHT_TYPE_DIMMER
                 else:
                     light_type = LIGHT_TYPE_COLDWARM
-            brightness_path = [f"Dimmer{dimmer_idx}"]
+            dimmer = f"{COMMAND_DIMMER}{dimmer_idx}"
+
+        min_mireds = DEFAULT_MIN_MIREDS
+        max_mireds = DEFAULT_MAX_MIREDS
+        if config[CONF_OPTIONS][OPTION_REDUCED_CT_RANGE]:
+            min_mireds = REDUCED_MIN_MIREDS
+            max_mireds = REDUCED_MAX_MIREDS
 
         return cls(
             endpoint="light",
             idx=idx,
-            friendly_name=config_get_friendlyname(config, platform, idx + power_offset),
+            friendly_name=config_get_friendlyname(config, platform, idx),
             mac=config[CONF_MAC],
             platform=platform,
             availability_topic=get_topic_tele_will(config),
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
-            brightness_path=brightness_path,
-            command_channel_topic=get_topic_command_channel(config, idx + power_offset),
-            command_color_topic=get_topic_command_color(config),
-            command_color_temp_topic=get_topic_command_color_temp(config),
-            command_dimmer_topic=get_topic_command_dimmer(config, dimmer_idx),
-            command_effect_topic=get_topic_command_effect(config),
-            command_power_topic=get_topic_command_power(config, idx + power_offset),
-            command_white_value_topic=get_topic_command_white_value(config),
+            dimmer=dimmer,
+            command_topic=get_topic_command(config),
             control_by_channel=control_by_channel,
             dimmer_idx=dimmer_idx,
             light_type=light_type,
+            max_mireds=max_mireds,
+            min_mireds=min_mireds,
             poll_topic=get_topic_command_state(config),
-            power_offset=power_offset,
             state_power_off=config_get_state_power_off(config),
             state_power_on=config_get_state_power_on(config),
             state_topic=get_topic_tele_state(config),
@@ -146,6 +151,8 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
 
     def __init__(self, **kwds):
         """Initialize."""
+        self._brightness = None
+        self._state = None
         self._on_state_callback = None
         self._sub_state = None
         super().__init__(**kwds)
@@ -168,13 +175,11 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             idx = self._cfg.idx
 
             if self._cfg.endpoint == "light":
-                idx = idx + self._cfg.power_offset
                 if self._cfg.light_type != LIGHT_TYPE_NONE:
 
-                    brightness = get_value_by_path(
-                        msg.payload, self._cfg.brightness_path
-                    )
+                    brightness = get_value_by_path(msg.payload, [self._cfg.dimmer])
                     if brightness is not None:
+                        self._brightness = brightness
                         attributes["brightness"] = brightness
 
                     color = get_value_by_path(msg.payload, [COMMAND_COLOR])
@@ -202,8 +207,10 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             state = get_state_power(msg.payload, idx)
 
             if state == self._cfg.state_power_on:
+                self._state = True
                 self._on_state_callback(True, attributes=attributes)
             elif state == self._cfg.state_power_off:
+                self._state = False
                 self._on_state_callback(False, attributes=attributes)
 
         availability_topics = self.get_availability_topics()
@@ -239,50 +246,77 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             return self._cfg.light_type
         return LIGHT_TYPE_NONE
 
+    @property
+    def min_mireds(self):
+        """Return the coldest color_temp that this light supports."""
+        return self._cfg.min_mireds
+
+    @property
+    def max_mireds(self):
+        """Return the warmest color_temp that this light supports."""
+        return self._cfg.max_mireds
+
     def set_state(self, state, attributes):
-        """Turn the relay on or off."""
+        """Turn the light on or off."""
+        idx = self._cfg.idx
+
+        commands = []
+        transition = attributes.get("transition", 0)
+        do_transition = transition > 0
+
+        # Set fade
+        command = COMMAND_FADE
+        argument = 1 if do_transition else 0
+        commands.append((command, argument))
+
+        # Calculate speed
+        if do_transition:
+            old_brightness = self._brightness if self._brightness is not None else 100
+            now_brightness = old_brightness if self._state else 0
+
+            new_brightness = attributes.get(
+                "brightness", old_brightness if state else 0
+            )
+
+            # Scale transition to percentage of brightness change
+            delta_ratio = abs(now_brightness - new_brightness) / 100
+            speed = round(transition * 2 * delta_ratio)
+            # Clamp speed to the range 1..40
+            speed = min(max(speed, 1), 40)
+            command = COMMAND_SPEED
+            commands.append((command, speed))
+
         argument = self._cfg.state_power_on if state else self._cfg.state_power_off
-        command = self._cfg.command_power_topic
+        command = f"{COMMAND_POWER}{idx+1}"
         if "brightness" in attributes:
             argument = attributes["brightness"]
             if self._cfg.control_by_channel:
-                command = self._cfg.command_channel_topic
+                command = f"{COMMAND_CHANNEL}{idx+1}"
             else:
-                command = self._cfg.command_dimmer_topic
-        self._mqtt_client.publish(
-            command,
-            argument,
-        )
+                command = self._cfg.dimmer
+
+        commands.append((command, argument))
+
         if "color" in attributes:
             color = attributes["color"]
             argument = f"{color[0]},{color[1]},{color[2]}"
-            command = self._cfg.command_color_topic
-            self._mqtt_client.publish(
-                command,
-                argument,
-            )
+            command = f"{COMMAND_COLOR}2"
+            commands.append((command, argument))
         if "color_temp" in attributes:
             argument = attributes["color_temp"]
-            command = self._cfg.command_color_temp_topic
-            self._mqtt_client.publish(
-                command,
-                argument,
-            )
+            command = COMMAND_CT
+            commands.append((command, argument))
         if "effect" in attributes:
             try:
                 effect = attributes["effect"]
                 argument = self.effect_list.index(effect)
-                command = self._cfg.command_effect_topic
-                self._mqtt_client.publish(
-                    command,
-                    argument,
-                )
+                command = COMMAND_SCHEME
+                commands.append((command, argument))
             except ValueError:
                 _LOGGER.debug("Unknown effect %s", effect)
         if "white_value" in attributes:
             argument = attributes["white_value"]
-            command = self._cfg.command_white_value_topic
-            self._mqtt_client.publish(
-                command,
-                argument,
-            )
+            command = COMMAND_WHITE
+            commands.append((command, argument))
+
+        send_commands(self._mqtt_client, self._cfg.command_topic, commands)

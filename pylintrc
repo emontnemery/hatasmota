@@ -1,7 +1,7 @@
 [MASTER]
 
 [BASIC]
-good-names=id,i,j,k,x,ex,Run,_,fp,T,ev
+good-names=id,i,j,k,x,ex,Run,_,fp,T,ev,bit
 
 [MESSAGES CONTROL]
 # Reasons disabled:
@@ -12,7 +12,8 @@ disable=
   too-few-public-methods,
   too-many-arguments,
   too-many-branches,
-  too-many-instance-attributes
+  too-many-instance-attributes,
+  too-many-locals
 
 [REPORTS]
 score=no

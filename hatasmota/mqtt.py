@@ -5,6 +5,8 @@ from typing import Union
 
 import attr
 
+from .const import COMMAND_BACKLOG
+
 DEBOUNCE_TIMEOUT = 1
 
 _LOGGER = logging.getLogger(__name__)
@@ -76,3 +78,10 @@ class TasmotaMQTTClient:
     async def unsubscribe(self, sub_state):
         """Unsubscribe from topics."""
         return await self._unsubscribe(sub_state)
+
+
+def send_commands(mqtt_client, command_topic, commands):
+    """Send a sequence of commands."""
+    backlog_topic = command_topic + COMMAND_BACKLOG
+    backlog = ";".join(["%s %s" % command for command in commands])
+    mqtt_client.publish(backlog_topic, backlog)

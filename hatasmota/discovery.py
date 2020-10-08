@@ -28,13 +28,26 @@ from hatasmota.const import (
     CONF_ONLINE,
     CONF_OPTIONS,
     CONF_PREFIX,
+    CONF_SENSOR,
     CONF_STATE,
     CONF_RELAY,
     CONF_TOPIC,
+    CONF_TUYA,
     CONF_VERSION,
     CONF_MODEL,
     CONF_SW_VERSION,
     CONF_SWITCH,
+    OPTION_BUTTON_SWAP,
+    OPTION_BUTTON_SINGLE,
+    OPTION_DECIMAL_TEXT,
+    OPTION_NOT_POWER_LINKED,
+    OPTION_HASS_LIGHT,
+    OPTION_PWM_MULTI_CHANNELS,
+    OPTION_MQTT_BUTTONS,
+    OPTION_REDUCED_CT_RANGE,
+    OPTION_SHUTTER_MODE,
+    RL_LIGHT,
+    RL_RELAY,
 )
 from hatasmota.light import TasmotaLight, TasmotaLightConfig
 from hatasmota.sensor import TasmotaSensor, get_sensor_entities
@@ -42,8 +55,21 @@ from hatasmota.switch import TasmotaRelay, TasmotaRelayConfig
 from hatasmota.utils import (
     discovery_topic_is_device_config,
     discovery_topic_get_mac,
-    get_light_index,
-    get_number_of_lights,
+)
+
+TASMOTA_OPTIONS_SCHEMA = vol.Schema(
+    {
+        OPTION_BUTTON_SWAP: cv.bit,
+        OPTION_BUTTON_SINGLE: cv.bit,
+        OPTION_DECIMAL_TEXT: cv.bit,
+        OPTION_NOT_POWER_LINKED: cv.bit,
+        OPTION_HASS_LIGHT: cv.bit,
+        OPTION_PWM_MULTI_CHANNELS: cv.bit,
+        OPTION_MQTT_BUTTONS: cv.bit,
+        OPTION_SHUTTER_MODE: cv.bit,
+        OPTION_REDUCED_CT_RANGE: cv.bit,
+    },
+    required=True,
 )
 
 TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
@@ -55,19 +81,28 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         CONF_HOSTNAME: cv.string,
         CONF_IP: cv.string,
         CONF_LIGHT_SUBTYPE: cv.positive_int,
-        CONF_LINK_RGB_CT: cv.positive_int,
+        CONF_LINK_RGB_CT: cv.bit,
         CONF_MAC: cv.string,
         CONF_MODEL: cv.string,
         CONF_OFFLINE: cv.string,
         CONF_ONLINE: cv.string,
-        CONF_OPTIONS: dict,
+        CONF_OPTIONS: TASMOTA_OPTIONS_SCHEMA,
         CONF_PREFIX: vol.All(cv.ensure_list, [cv.string]),
         CONF_STATE: vol.All(cv.ensure_list, [cv.string]),
         CONF_SW_VERSION: cv.string,
         CONF_SWITCH: vol.All(cv.ensure_list, [int]),
         CONF_RELAY: vol.All(cv.ensure_list, [cv.positive_int]),
         CONF_TOPIC: cv.string,
-        CONF_VERSION: cv.positive_int,
+        CONF_TUYA: cv.bit,
+        CONF_VERSION: 1,
+    },
+    required=True,
+)
+
+TASMOTA_SENSOR_DISCOVERY_SCHEMA = vol.Schema(
+    {
+        CONF_SENSOR: dict,
+        CONF_VERSION: 1,
     },
     required=True,
 )
@@ -141,7 +176,8 @@ class TasmotaDiscovery:
                     sensors = get_sensor_entities(
                         self._sensors[mac], self._devices[mac]
                     )
-                    await sensors_discovered(sensors, mac)
+                    if sensors_discovered:
+                        await sensors_discovered(sensors, mac)
             else:
                 if payload:
                     try:
@@ -162,7 +198,8 @@ class TasmotaDiscovery:
                 sensors = []
                 if payload:
                     sensors = get_sensor_entities(payload, self._devices[mac])
-                await sensors_discovered(sensors, mac)
+                if sensors_discovered:
+                    await sensors_discovered(sensors, mac)
 
         topics = {
             "discovery_topic": {
@@ -221,11 +258,10 @@ def get_binary_sensor_entities(discovery_msg):
 def get_switch_entities(discovery_msg):
     """Generate switch configuration."""
     switch_entities = []
-    light_index = get_light_index(discovery_msg)
     for (idx, value) in enumerate(discovery_msg[CONF_RELAY]):
         entity = None
         discovery_hash = (discovery_msg[CONF_MAC], "switch", "relay", idx)
-        if value and idx < light_index:
+        if value == RL_RELAY:
             entity = TasmotaRelayConfig.from_discovery_message(
                 discovery_msg, idx, "switch"
             )
@@ -239,26 +275,20 @@ def get_switch_entities(discovery_msg):
 def get_light_entities(discovery_msg):
     """Generate light configuration."""
     light_entities = []
-    light_index = get_light_index(discovery_msg)
-    number_of_lights = get_number_of_lights(discovery_msg)
 
     for (idx, value) in enumerate(discovery_msg[CONF_RELAY]):
         entity = None
-        discovery_hash = (discovery_msg[CONF_MAC], "light", "relay", idx)
-        if value and idx < light_index:
+        discovery_hash = (discovery_msg[CONF_MAC], "light", "light", idx)
+        if value == RL_RELAY:
+            discovery_hash = (discovery_msg[CONF_MAC], "light", "relay", idx)
             entity = TasmotaRelayConfig.from_discovery_message(
                 discovery_msg, idx, "light"
             )
             if not entity.is_light:
                 entity = None
-        light_entities.append((entity, discovery_hash))
-
-    for idx in range(8):
-        entity = None
-        discovery_hash = (discovery_msg[CONF_MAC], "light", "light", idx)
-        if idx < number_of_lights:
+        elif value == RL_LIGHT:
             entity = TasmotaLightConfig.from_discovery_message(
-                discovery_msg, idx, light_index, "light"
+                discovery_msg, idx, "light"
             )
         light_entities.append((entity, discovery_hash))
 

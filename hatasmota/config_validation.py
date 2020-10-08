@@ -11,6 +11,9 @@ import voluptuous as vol
 # typing typevar
 T = TypeVar("T")  # pylint: disable=invalid-name
 
+bit = vol.All(vol.Coerce(int), vol.Range(min=0, max=1))
+
+
 positive_int = vol.All(  # pylint: disable=invalid-name
     vol.Coerce(int), vol.Range(min=0)
 )
