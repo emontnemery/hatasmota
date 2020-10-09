@@ -12,15 +12,15 @@ from hatasmota.entity import (
 )
 from hatasmota.utils import (
     config_get_friendlyname,
+    config_get_state_offline,
+    config_get_state_online,
+    config_get_state_power_off,
+    config_get_state_power_on,
     get_state_power,
     get_topic_command_power,
     get_topic_command_state,
     get_topic_tele_state,
     get_topic_tele_will,
-    config_get_state_offline,
-    config_get_state_online,
-    config_get_state_power_off,
-    config_get_state_power_on,
 )
 
 _LOGGER = logging.getLogger(__name__)

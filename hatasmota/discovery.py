@@ -8,42 +8,42 @@ import hatasmota.config_validation as cv
 from hatasmota.binary_sensor import (
     TasmotaBinarySensor,
     TasmotaBinarySensorConfig,
-    TasmotaSwitchTriggerConfig,
     TasmotaSwitchTrigger,
+    TasmotaSwitchTriggerConfig,
 )
-from hatasmota.button import TasmotaButtonTriggerConfig, TasmotaButtonTrigger
+from hatasmota.button import TasmotaButtonTrigger, TasmotaButtonTriggerConfig
 from hatasmota.const import (
     CONF_BUTTON,
     CONF_DEVICENAME,
+    CONF_FRIENDLYNAME,
     CONF_FULLTOPIC,
     CONF_HOSTNAME,
     CONF_IP,
-    CONF_MAC,
     CONF_LIGHT_SUBTYPE,
     CONF_LINK_RGB_CT,
-    CONF_FRIENDLYNAME,
+    CONF_MAC,
     CONF_MANUFACTURER,
+    CONF_MODEL,
     CONF_NAME,
     CONF_OFFLINE,
     CONF_ONLINE,
     CONF_OPTIONS,
     CONF_PREFIX,
+    CONF_RELAY,
     CONF_SENSOR,
     CONF_STATE,
-    CONF_RELAY,
+    CONF_SW_VERSION,
+    CONF_SWITCH,
     CONF_TOPIC,
     CONF_TUYA,
     CONF_VERSION,
-    CONF_MODEL,
-    CONF_SW_VERSION,
-    CONF_SWITCH,
-    OPTION_BUTTON_SWAP,
     OPTION_BUTTON_SINGLE,
+    OPTION_BUTTON_SWAP,
     OPTION_DECIMAL_TEXT,
-    OPTION_NOT_POWER_LINKED,
     OPTION_HASS_LIGHT,
-    OPTION_PWM_MULTI_CHANNELS,
     OPTION_MQTT_BUTTONS,
+    OPTION_NOT_POWER_LINKED,
+    OPTION_PWM_MULTI_CHANNELS,
     OPTION_REDUCED_CT_RANGE,
     OPTION_SHUTTER_MODE,
     RL_LIGHT,
@@ -52,10 +52,7 @@ from hatasmota.const import (
 from hatasmota.light import TasmotaLight, TasmotaLightConfig
 from hatasmota.sensor import TasmotaSensor, get_sensor_entities
 from hatasmota.switch import TasmotaRelay, TasmotaRelayConfig
-from hatasmota.utils import (
-    discovery_topic_is_device_config,
-    discovery_topic_get_mac,
-)
+from hatasmota.utils import discovery_topic_get_mac, discovery_topic_is_device_config
 
 TASMOTA_OPTIONS_SCHEMA = vol.Schema(
     {

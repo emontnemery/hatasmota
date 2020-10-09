@@ -1,10 +1,7 @@
 """Tasmota binary sensor."""
 import logging
 
-from .const import (
-    AUTOMATION_TYPE_TRIGGER,
-)
-
+from .const import AUTOMATION_TYPE_TRIGGER
 
 _LOGGER = logging.getLogger(__name__)
 

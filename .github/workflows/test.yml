@@ -32,3 +32,6 @@ jobs:
       - name: Check formatting with black
         run: |
           black hatasmota --check
+      - name: Check imports with isort
+        run: |
+          isort hatasmota --check --profile black

@@ -1,9 +1,9 @@
 """Tasmota utility functions."""
-from functools import reduce
 import json
 import logging
 import operator
 import re
+from functools import reduce
 
 from .const import (
     CONF_DEVICENAME,
@@ -11,20 +11,20 @@ from .const import (
     CONF_FULLTOPIC,
     CONF_HOSTNAME,
     CONF_MAC,
+    CONF_OFFLINE,
+    CONF_ONLINE,
     CONF_PREFIX,
     CONF_STATE,
     CONF_TOPIC,
     PREFIX_CMND,
     PREFIX_STAT,
     PREFIX_TELE,
-    STATE_OFF,
-    STATE_ON,
-    CONF_ONLINE,
-    CONF_OFFLINE,
     RSLT_ACTION,
     RSLT_POWER,
     RSLT_STATE,
     RSLT_TRIG,
+    STATE_OFF,
+    STATE_ON,
 )
 
 _LOGGER = logging.getLogger(__name__)
