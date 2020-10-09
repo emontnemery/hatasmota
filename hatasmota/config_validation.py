@@ -1,10 +1,5 @@
 """Tasmota config validation."""
-from typing import (
-    Any,
-    List,
-    TypeVar,
-    Union,
-)
+from typing import Any, List, TypeVar, Union
 
 import voluptuous as vol
 

@@ -7,16 +7,12 @@ from .const import (
     CONF_BUTTON,
     CONF_MAC,
     CONF_OPTIONS,
-    OPTION_MQTT_BUTTONS,
     OPTION_BUTTON_SINGLE,
     OPTION_BUTTON_SWAP,
+    OPTION_MQTT_BUTTONS,
 )
-
 from .trigger import TasmotaTrigger
-from .utils import (
-    get_state_button_trigger,
-    get_topic_stat_button_trigger,
-)
+from .utils import get_state_button_trigger, get_topic_stat_button_trigger
 
 _LOGGER = logging.getLogger(__name__)
 

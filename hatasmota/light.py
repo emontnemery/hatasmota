@@ -4,19 +4,6 @@ import logging
 import attr
 
 from hatasmota.const import (
-    CONF_MAC,
-    CONF_LIGHT_SUBTYPE,
-    CONF_OPTIONS,
-    CONF_RELAY,
-    OPTION_PWM_MULTI_CHANNELS,
-    OPTION_REDUCED_CT_RANGE,
-    CONF_LINK_RGB_CT,
-    LST_COLDWARM,
-    LST_NONE,
-    LST_RGB,
-    LST_RGBCW,
-    LST_RGBW,
-    LST_SINGLE,
     COMMAND_CHANNEL,
     COMMAND_COLOR,
     COMMAND_CT,
@@ -26,6 +13,19 @@ from hatasmota.const import (
     COMMAND_SCHEME,
     COMMAND_SPEED,
     COMMAND_WHITE,
+    CONF_LIGHT_SUBTYPE,
+    CONF_LINK_RGB_CT,
+    CONF_MAC,
+    CONF_OPTIONS,
+    CONF_RELAY,
+    LST_COLDWARM,
+    LST_NONE,
+    LST_RGB,
+    LST_RGBCW,
+    LST_RGBW,
+    LST_SINGLE,
+    OPTION_PWM_MULTI_CHANNELS,
+    OPTION_REDUCED_CT_RANGE,
     RL_LIGHT,
 )
 from hatasmota.entity import (
@@ -37,16 +37,16 @@ from hatasmota.entity import (
 from hatasmota.mqtt import send_commands
 from hatasmota.utils import (
     config_get_friendlyname,
+    config_get_state_offline,
+    config_get_state_online,
+    config_get_state_power_off,
+    config_get_state_power_on,
     get_state_power,
     get_topic_command,
     get_topic_command_state,
     get_topic_tele_state,
     get_topic_tele_will,
     get_value_by_path,
-    config_get_state_offline,
-    config_get_state_online,
-    config_get_state_power_off,
-    config_get_state_power_on,
 )
 
 LIGHT_TYPE_NONE = 0
