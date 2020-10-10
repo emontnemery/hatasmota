@@ -5,12 +5,6 @@ import logging
 import voluptuous as vol
 
 import hatasmota.config_validation as cv
-from hatasmota.binary_sensor import (
-    TasmotaBinarySensor,
-    TasmotaBinarySensorConfig,
-    TasmotaSwitchTrigger,
-    TasmotaSwitchTriggerConfig,
-)
 from hatasmota.button import TasmotaButtonTrigger, TasmotaButtonTriggerConfig
 from hatasmota.const import (
     CONF_BUTTON,
@@ -51,7 +45,13 @@ from hatasmota.const import (
 )
 from hatasmota.light import TasmotaLight, TasmotaLightConfig
 from hatasmota.sensor import TasmotaSensor, get_sensor_entities
-from hatasmota.switch import TasmotaRelay, TasmotaRelayConfig
+from hatasmota.switch import (
+    TasmotaSwitch,
+    TasmotaSwitchConfig,
+    TasmotaSwitchTrigger,
+    TasmotaSwitchTriggerConfig,
+)
+from hatasmota.relay import TasmotaRelay, TasmotaRelayConfig
 from hatasmota.utils import discovery_topic_get_mac, discovery_topic_is_device_config
 
 TASMOTA_OPTIONS_SCHEMA = vol.Schema(
@@ -244,7 +244,7 @@ def get_binary_sensor_entities(discovery_msg):
         entity = None
         discovery_hash = (discovery_msg[CONF_MAC], "binary_sensor", "switch", idx)
         if value:
-            entity = TasmotaBinarySensorConfig.from_discovery_message(
+            entity = TasmotaSwitchConfig.from_discovery_message(
                 discovery_msg, idx, "binary_sensor"
             )
         entities.append((entity, discovery_hash))
@@ -313,7 +313,7 @@ def get_entity(config, mqtt_client):
     """Create entity for the given platform."""
     platform = config.platform
     if platform == "binary_sensor":
-        return TasmotaBinarySensor(config=config, mqtt_client=mqtt_client)
+        return TasmotaSwitch(config=config, mqtt_client=mqtt_client)
     if platform == "light":
         return TasmotaLight(config=config, mqtt_client=mqtt_client)
     if platform == "sensor":

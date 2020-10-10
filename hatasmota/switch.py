@@ -220,7 +220,7 @@ class TasmotaSwitchTrigger(TasmotaTrigger):
 
 
 @attr.s(slots=True, frozen=True)
-class TasmotaBinarySensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
+class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota switch configuation."""
 
     off_delay: int = attr.ib()
@@ -262,7 +262,7 @@ class TasmotaBinarySensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
         )
 
 
-class TasmotaBinarySensor(TasmotaAvailability, TasmotaEntity):
+class TasmotaSwitch(TasmotaAvailability, TasmotaEntity):
     """Representation of a Tasmota switch."""
 
     def __init__(self, **kwds):
