@@ -293,12 +293,27 @@ def get_light_entities(discovery_msg):
     return light_entities
 
 
+def get_status_sensor_entities(discovery_msg):
+    """Generate light configuration."""
+    status_sensor_entities = []
+
+    discovery_hash = (discovery_msg[CONF_MAC], "status_sensor", "status_sensor", 0)
+    entity = TasmotaStatusSensorConfig.from_discovery_message(
+        discovery_msg, "status_sensor"
+    )
+    status_sensor_entities.append((entity, discovery_hash))
+
+    return status_sensor_entities
+
+
 def get_entities_for_platform(discovery_msg, platform):
     """Generate configuration for the given platform."""
     if platform == "binary_sensor":
         return get_binary_sensor_entities(discovery_msg)
     if platform == "light":
         return get_light_entities(discovery_msg)
+    if platform == "sensor":
+        return get_status_sensor_entities(discovery_msg)
     if platform == "switch":
         return get_switch_entities(discovery_msg)
     return []
@@ -319,6 +334,8 @@ def get_entity(config, mqtt_client):
         return TasmotaLight(config=config, mqtt_client=mqtt_client)
     if platform == "sensor":
         return TasmotaSensor(config=config, mqtt_client=mqtt_client)
+    if platform == "status_sensor":
+        return TasmotaStatusSensor(config=config, mqtt_client=mqtt_client)
     if platform == "switch":
         return TasmotaRelay(config=config, mqtt_client=mqtt_client)
     return None
