@@ -247,18 +247,18 @@ class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             friendly_name=config_get_friendlyname(config, platform, idx),
             mac=config[CONF_MAC],
             platform=platform,
+            poll_payload="8",
+            poll_topic=get_topic_command_status(config),
             availability_topic=get_topic_tele_will(config),
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
             off_delay=off_delay,
-            poll_topic=get_topic_command_status(config),
             sensor=SENSOR_SWITCH + f"{idx+1}",
             state_power_off=config_get_state_power_off(config),
             state_power_on=config_get_state_power_on(config),
             state_topic1=get_topic_stat_switch(config, idx),
             state_topic2=get_topic_tele_sensor(config),
             state_topic3=get_topic_stat_status(config, 8),
-            # unique_id=f"{config[CONF_MAC]}_switch_{idx}",
         )
 
 
@@ -267,18 +267,8 @@ class TasmotaSwitch(TasmotaAvailability, TasmotaEntity):
 
     def __init__(self, **kwds):
         """Initialize."""
-        self._on_state_callback = None
         self._sub_state = None
         super().__init__(**kwds)
-
-    def poll_status(self):
-        """Poll for status."""
-        payload = "8"
-        self._mqtt_client.publish_debounced(self._cfg.poll_topic, payload)
-
-    def set_on_state_callback(self, on_state_callback):
-        """Set callback for state change."""
-        self._on_state_callback = on_state_callback
 
     async def subscribe_topics(self):
         """Subscribe to topics."""

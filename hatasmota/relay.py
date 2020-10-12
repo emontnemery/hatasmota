@@ -46,12 +46,13 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             friendly_name=config_get_friendlyname(config, platform, idx),
             mac=config[CONF_MAC],
             platform=platform,
+            poll_payload="",
+            poll_topic=get_topic_command_state(config),
             availability_topic=get_topic_tele_will(config),
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
             command_power_topic=get_topic_command_power(config, idx),
             is_light=config[CONF_OPTIONS][OPTION_HASS_LIGHT] == 1,
-            poll_topic=get_topic_command_state(config),
             state_power_off=config_get_state_power_off(config),
             state_power_on=config_get_state_power_on(config),
             state_topic=get_topic_tele_state(config),
@@ -63,19 +64,9 @@ class TasmotaRelay(TasmotaAvailability, TasmotaEntity):
 
     def __init__(self, **kwds):
         """Initialize."""
-        self._on_state_callback = None
         self._sub_state = None
         self.light_type = None
         super().__init__(**kwds)
-
-    def poll_status(self):
-        """Poll for status."""
-        payload = ""
-        self._mqtt_client.publish_debounced(self._cfg.poll_topic, payload)
-
-    def set_on_state_callback(self, on_state_callback):
-        """Set callback for state change."""
-        self._on_state_callback = on_state_callback
 
     async def subscribe_topics(self):
         """Subscribe to topics."""

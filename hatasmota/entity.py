@@ -15,6 +15,8 @@ class TasmotaEntityConfig:
     friendly_name: str = attr.ib()
     mac: str = attr.ib()
     platform: str = attr.ib()
+    poll_payload: str = attr.ib()
+    poll_topic: str = attr.ib()
 
     @property
     def unique_id(self):
@@ -38,6 +40,7 @@ class TasmotaEntity:
         """Initialize."""
         self._cfg = config
         self._mqtt_client = mqtt_client
+        self._on_state_callback = None
         super().__init__()
 
     def config_same(self, new_config):
@@ -50,6 +53,13 @@ class TasmotaEntity:
 
     def poll_status(self):
         """Poll for status."""
+        self._mqtt_client.publish_debounced(
+            self._cfg.poll_topic, self._cfg.poll_payload
+        )
+
+    def set_on_state_callback(self, on_state_callback):
+        """Set callback for state change."""
+        self._on_state_callback = on_state_callback
 
     @property
     def mac(self):
