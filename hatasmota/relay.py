@@ -3,14 +3,14 @@ import logging
 
 import attr
 
-from hatasmota.const import CONF_MAC, CONF_OPTIONS, OPTION_HASS_LIGHT
-from hatasmota.entity import (
+from .const import CONF_MAC, CONF_OPTIONS, OPTION_HASS_LIGHT
+from .entity import (
     TasmotaAvailability,
     TasmotaAvailabilityConfig,
     TasmotaEntity,
     TasmotaEntityConfig,
 )
-from hatasmota.utils import (
+from .utils import (
     config_get_friendlyname,
     config_get_state_offline,
     config_get_state_online,

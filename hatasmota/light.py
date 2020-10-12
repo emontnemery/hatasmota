@@ -3,7 +3,7 @@ import logging
 
 import attr
 
-from hatasmota.const import (
+from .const import (
     COMMAND_CHANNEL,
     COMMAND_COLOR,
     COMMAND_CT,
@@ -28,14 +28,14 @@ from hatasmota.const import (
     OPTION_REDUCED_CT_RANGE,
     RL_LIGHT,
 )
-from hatasmota.entity import (
+from .entity import (
     TasmotaAvailability,
     TasmotaAvailabilityConfig,
     TasmotaEntity,
     TasmotaEntityConfig,
 )
-from hatasmota.mqtt import send_commands
-from hatasmota.utils import (
+from .mqtt import send_commands
+from .utils import (
     config_get_friendlyname,
     config_get_state_offline,
     config_get_state_online,

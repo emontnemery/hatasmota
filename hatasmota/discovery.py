@@ -4,9 +4,9 @@ import logging
 
 import voluptuous as vol
 
-import hatasmota.config_validation as cv
-from hatasmota.button import TasmotaButtonTrigger, TasmotaButtonTriggerConfig
-from hatasmota.const import (
+from . import config_validation as cv
+from .button import TasmotaButtonTrigger, TasmotaButtonTriggerConfig
+from .const import (
     CONF_BUTTON,
     CONF_DEVICENAME,
     CONF_FRIENDLYNAME,
@@ -43,16 +43,17 @@ from hatasmota.const import (
     RL_LIGHT,
     RL_RELAY,
 )
-from hatasmota.light import TasmotaLight, TasmotaLightConfig
-from hatasmota.sensor import TasmotaSensor, get_sensor_entities
-from hatasmota.switch import (
+from .light import TasmotaLight, TasmotaLightConfig
+from .relay import TasmotaRelay, TasmotaRelayConfig
+from .sensor import TasmotaSensor, get_sensor_entities
+from .status_sensor import TasmotaStatusSensor, TasmotaStatusSensorConfig
+from .switch import (
     TasmotaSwitch,
     TasmotaSwitchConfig,
     TasmotaSwitchTrigger,
     TasmotaSwitchTriggerConfig,
 )
-from hatasmota.relay import TasmotaRelay, TasmotaRelayConfig
-from hatasmota.utils import discovery_topic_get_mac, discovery_topic_is_device_config
+from .utils import discovery_topic_get_mac, discovery_topic_is_device_config
 
 TASMOTA_OPTIONS_SCHEMA = vol.Schema(
     {
