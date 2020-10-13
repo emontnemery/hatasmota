@@ -4,7 +4,7 @@ import logging
 
 import attr
 
-from .const import CONF_DEVICENAME, CONF_MAC
+from .const import CONF_DEVICENAME, CONF_MAC, SENSOR_STATUS_SIGNAL
 from .entity import (
     TasmotaAvailability,
     TasmotaAvailabilityConfig,
@@ -43,24 +43,12 @@ STATE_ATTRIBUTES = {
     "Uptime": ["Uptime"],
     "RSSI": ["Wifi", "RSSI"],
     "Signal": ["Wifi", "Signal"],
-    "LinkCount": ["Wifi", "LinkCount"],
-    "Downtime": ["Wifi", "Downtime"],
+    "WiFi LinkCount": ["Wifi", "LinkCount"],
+    "WiFi Downtime": ["Wifi", "Downtime"],
     "MqttCount": ["MqttCount"],
-    "LoadAvg": ["LoadAvg"],
 }
 
 STATUS_ATTRIBUTES = {
-    "STATUS1": {
-        "RestartReason": ["StatusPRM", "RestartReason"],
-    },
-    "STATUS2": {
-        "Version": ["StatusFWR", "Version"],
-        "BuildDateTime": ["StatusFWR", "BuildDateTime"],
-    },
-    "STATUS5": {
-        "Hostname": ["StatusNET", "Hostname"],
-        "IPAddress": ["StatusNET", "IPAddress"],
-    },
     "STATUS11": {
         "Uptime": ["StatusSTS", "Uptime"],
         "RSSI": ["StatusSTS", "Wifi", "RSSI"],
@@ -68,7 +56,6 @@ STATUS_ATTRIBUTES = {
         "WiFi LinkCount": ["StatusSTS", "Wifi", "LinkCount"],
         "WiFi Downtime": ["StatusSTS", "Wifi", "Downtime"],
         "MqttCount": ["StatusSTS", "MqttCount"],
-        "LoadAvg": ["StatusSTS", "LoadAvg"],
     },
 }
 
@@ -79,9 +66,6 @@ class TasmotaStatusSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
     poll_topic: str = attr.ib()
     state_topic: str = attr.ib()
-    status_topic1: str = attr.ib()
-    status_topic2: str = attr.ib()
-    status_topic5: str = attr.ib()
     status_topic11: str = attr.ib()
 
     @classmethod
@@ -99,9 +83,6 @@ class TasmotaStatusSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
             state_topic=get_topic_tele_state(config),
-            status_topic1=get_topic_stat_status(config, 1),
-            status_topic2=get_topic_stat_status(config, 2),
-            status_topic5=get_topic_stat_status(config, 5),
             status_topic11=get_topic_stat_status(config, 11),
         )
 
@@ -153,21 +134,6 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
                 "msg_callback": state_message_received,
             },
             # Polled state update (stat/STATUS#)
-            "status_topic2": {
-                "event_loop_safe": True,
-                "topic": self._cfg.status_topic2,
-                "msg_callback": state_message_received,
-            },
-            "status_topic5": {
-                "event_loop_safe": True,
-                "topic": self._cfg.status_topic5,
-                "msg_callback": state_message_received,
-            },
-            "status_topic1": {
-                "event_loop_safe": True,
-                "topic": self._cfg.status_topic1,
-                "msg_callback": state_message_received,
-            },
             "status_topic11": {
                 "event_loop_safe": True,
                 "topic": self._cfg.status_topic11,
@@ -187,8 +153,8 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
 
     @property
     def quantity(self):
-        """Return the sensors quantity (speed, mass, etc.)."""
-        return None
+        """Return the sensor's quantity (speed, mass, etc.)."""
+        return SENSOR_STATUS_SIGNAL
 
     @property
     def unit(self):

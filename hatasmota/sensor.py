@@ -251,7 +251,7 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
 
     @property
     def quantity(self):
-        """Return the sensors quantity (speed, mass, etc.)."""
+        """Return the sensor's quantity (speed, mass, etc.)."""
         return self._cfg.quantity
 
     @property
