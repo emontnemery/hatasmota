@@ -83,5 +83,5 @@ class TasmotaMQTTClient:
 def send_commands(mqtt_client, command_topic, commands):
     """Send a sequence of commands."""
     backlog_topic = command_topic + COMMAND_BACKLOG
-    backlog = ";".join(["%s %s" % command for command in commands])
+    backlog = ";".join(["NoDelay;%s %s" % command for command in commands])
     mqtt_client.publish(backlog_topic, backlog)
