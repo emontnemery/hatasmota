@@ -4,7 +4,18 @@ import logging
 
 import attr
 
-from .const import CONF_DEVICENAME, CONF_MAC, SENSOR_STATUS_SIGNAL
+from .const import (
+    CONF_DEVICENAME,
+    CONF_MAC,
+    SENSOR_STATUS_SIGNAL,
+    SENSOR_ATTRIBUTE_UPTIME,
+    SENSOR_ATTRIBUTE_RSSI,
+    SENSOR_ATTRIBUTE_SIGNAL,
+    SENSOR_ATTRIBUTE_WIFI_LINKCOUNT,
+    SENSOR_ATTRIBUTE_WIFI_DOWNTIME,
+    SENSOR_ATTRIBUTE_MQTTCOUNT,
+)
+
 from .entity import (
     TasmotaAvailability,
     TasmotaAvailabilityConfig,
@@ -40,22 +51,22 @@ _LOGGER = logging.getLogger(__name__)
 # }
 
 STATE_ATTRIBUTES = {
-    "Uptime": ["Uptime"],
-    "RSSI": ["Wifi", "RSSI"],
-    "Signal": ["Wifi", "Signal"],
-    "WiFi LinkCount": ["Wifi", "LinkCount"],
-    "WiFi Downtime": ["Wifi", "Downtime"],
-    "MqttCount": ["MqttCount"],
+    SENSOR_ATTRIBUTE_UPTIME: ["Uptime"],
+    SENSOR_ATTRIBUTE_RSSI: ["Wifi", "RSSI"],
+    SENSOR_ATTRIBUTE_SIGNAL: ["Wifi", "Signal"],
+    SENSOR_ATTRIBUTE_WIFI_LINKCOUNT: ["Wifi", "LinkCount"],
+    SENSOR_ATTRIBUTE_WIFI_DOWNTIME: ["Wifi", "Downtime"],
+    SENSOR_ATTRIBUTE_MQTTCOUNT: ["MqttCount"],
 }
 
 STATUS_ATTRIBUTES = {
     "STATUS11": {
-        "Uptime": ["StatusSTS", "Uptime"],
-        "RSSI": ["StatusSTS", "Wifi", "RSSI"],
-        "Signal": ["StatusSTS", "Wifi", "Signal"],
-        "WiFi LinkCount": ["StatusSTS", "Wifi", "LinkCount"],
-        "WiFi Downtime": ["StatusSTS", "Wifi", "Downtime"],
-        "MqttCount": ["StatusSTS", "MqttCount"],
+        SENSOR_ATTRIBUTE_UPTIME: ["StatusSTS", "Uptime"],
+        SENSOR_ATTRIBUTE_RSSI: ["StatusSTS", "Wifi", "RSSI"],
+        SENSOR_ATTRIBUTE_SIGNAL: ["StatusSTS", "Wifi", "Signal"],
+        SENSOR_ATTRIBUTE_WIFI_LINKCOUNT: ["StatusSTS", "Wifi", "LinkCount"],
+        SENSOR_ATTRIBUTE_WIFI_DOWNTIME: ["StatusSTS", "Wifi", "Downtime"],
+        SENSOR_ATTRIBUTE_MQTTCOUNT: ["StatusSTS", "MqttCount"],
     },
 }
 
