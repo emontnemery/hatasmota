@@ -5,7 +5,7 @@ long_description = open("README.md").read()
 
 setup(
     name="HATasmota",
-    version="0.0.17",
+    version="0.0.18",
     license="MIT",
     url="https://github.com/emontnemery/hatasmota",
     author="",
