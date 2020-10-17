@@ -313,6 +313,7 @@ def _get_sensor_entity(
     )
     return (sensor_config, discovery_hash)
 
+
 def get_sensor_entities(sensor_discovery_message, device_discovery_msg):
     """Generate sensor configuration."""
     sensor_configs = []
@@ -329,15 +330,36 @@ def get_sensor_entities(sensor_discovery_message, device_discovery_msg):
                 for subsubsensorkey in subsensor.keys():
                     subsubsensorpath = list(subsensorpath)
                     subsubsensorpath.append(subsubsensorkey)
-                    sensor_configs.append(_get_sensor_entity(sensor_discovery_message, device_discovery_msg, subsubsensorpath, quantity))
+                    sensor_configs.append(
+                        _get_sensor_entity(
+                            sensor_discovery_message,
+                            device_discovery_msg,
+                            subsubsensorpath,
+                            quantity,
+                        )
+                    )
             elif isinstance(subsensor, list):
                 # Array sensor
                 for (idx, _) in enumerate(subsensor):
                     subsubsensorpath = list(subsensorpath)
                     subsubsensorpath.append(idx)
-                    sensor_configs.append(_get_sensor_entity(sensor_discovery_message, device_discovery_msg, subsubsensorpath, quantity))
+                    sensor_configs.append(
+                        _get_sensor_entity(
+                            sensor_discovery_message,
+                            device_discovery_msg,
+                            subsubsensorpath,
+                            quantity,
+                        )
+                    )
             else:
                 # Simple sensor
-                sensor_configs.append(_get_sensor_entity(sensor_discovery_message, device_discovery_msg, subsensorpath, quantity))
+                sensor_configs.append(
+                    _get_sensor_entity(
+                        sensor_discovery_message,
+                        device_discovery_msg,
+                        subsensorpath,
+                        quantity,
+                    )
+                )
 
     return sensor_configs
