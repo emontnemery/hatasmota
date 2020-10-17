@@ -169,7 +169,7 @@ class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
     @classmethod
     def from_discovery_message(
-        cls, device_config, sensor_config, platform, sensor_name, value_path
+        cls, device_config, sensor_config, platform, sensor_name, value_path, quantity
     ):
         """Instantiate from discovery message."""
         quantity = value_path[-1]
@@ -198,7 +198,7 @@ class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     @property
     def unique_id(self):
         """Return unique_id."""
-        sensor_id = "_".join(self.value_path)
+        sensor_id = "_".join([str(i) for i in self.value_path])
         return f"{self.mac}_{self.platform}_{self.endpoint}_{sensor_id}"
 
 
@@ -293,6 +293,27 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
 #   },
 #   "SpeedUnit":"km/h"
 # }
+def _get_sensor_entity(
+    sensor_discovery_message, device_discovery_msg, sensorpath, quantity
+):
+    sensorname = " ".join([str(i) for i in sensorpath])
+    discovery_hash = (
+        device_discovery_msg[CONF_MAC],
+        "sensor",
+        "sensor",
+        sensorname,
+    )
+    sensor_config = TasmotaSensorConfig.from_discovery_message(
+        device_discovery_msg,
+        sensor_discovery_message,
+        "sensor",
+        sensorname,
+        sensorpath,
+        quantity,
+    )
+    return (sensor_config, discovery_hash)
+
+
 def get_sensor_entities(sensor_discovery_message, device_discovery_msg):
     """Generate sensor configuration."""
     sensor_configs = []
@@ -303,28 +324,42 @@ def get_sensor_entities(sensor_discovery_message, device_discovery_msg):
         for subsensorkey, subsensor in sensor.items():
             subsensorpath = list(sensorpath)
             subsensorpath.append(subsensorkey)
+            quantity = subsensorkey
             if isinstance(subsensor, dict):
                 # Nested sensor
-                pass
+                for subsubsensorkey in subsensor.keys():
+                    subsubsensorpath = list(subsensorpath)
+                    subsubsensorpath.append(subsubsensorkey)
+                    sensor_configs.append(
+                        _get_sensor_entity(
+                            sensor_discovery_message,
+                            device_discovery_msg,
+                            subsubsensorpath,
+                            quantity,
+                        )
+                    )
             elif isinstance(subsensor, list):
                 # Array sensor
-                pass
+                for (idx, _) in enumerate(subsensor):
+                    subsubsensorpath = list(subsensorpath)
+                    subsubsensorpath.append(idx)
+                    sensor_configs.append(
+                        _get_sensor_entity(
+                            sensor_discovery_message,
+                            device_discovery_msg,
+                            subsubsensorpath,
+                            quantity,
+                        )
+                    )
             else:
-                # Quantity
-                sensorname = " ".join(subsensorpath)
-                discovery_hash = (
-                    device_discovery_msg[CONF_MAC],
-                    "sensor",
-                    "sensor",
-                    sensorname,
+                # Simple sensor
+                sensor_configs.append(
+                    _get_sensor_entity(
+                        sensor_discovery_message,
+                        device_discovery_msg,
+                        subsensorpath,
+                        quantity,
+                    )
                 )
-                sensor_config = TasmotaSensorConfig.from_discovery_message(
-                    device_discovery_msg,
-                    sensor_discovery_message,
-                    "sensor",
-                    sensorname,
-                    subsensorpath,
-                )
-                sensor_configs.append((sensor_config, discovery_hash))
 
     return sensor_configs
