@@ -37,12 +37,14 @@ from .const import (
     SENSOR_PRESSUREATSEALEVEL,
     SENSOR_PROXIMITY,
     SENSOR_REACTIVE_POWERUSAGE,
+    SENSOR_SPEED,
     SENSOR_TEMPERATURE,
     SENSOR_TODAY,
     SENSOR_TOTAL,
     SENSOR_TOTAL_START_TIME,
     SENSOR_TVOC,
     SENSOR_UNIT_PRESSURE,
+    SENSOR_UNIT_SPEED,
     SENSOR_UNIT_TEMPERATURE,
     SENSOR_VOLTAGE,
     SENSOR_WEIGHT,
@@ -147,10 +149,11 @@ SENSOR_UNIT_MAP = {
 }
 
 SENSOR_DYNAMIC_UNIT_MAP = {
-    SENSOR_TEMPERATURE: SENSOR_UNIT_TEMPERATURE,
     SENSOR_DEWPOINT: SENSOR_UNIT_TEMPERATURE,
     SENSOR_PRESSURE: SENSOR_UNIT_PRESSURE,
     SENSOR_PRESSUREATSEALEVEL: SENSOR_UNIT_PRESSURE,
+    SENSOR_SPEED: SENSOR_UNIT_SPEED,
+    SENSOR_TEMPERATURE: SENSOR_UNIT_TEMPERATURE,
 }
 
 _LOGGER = logging.getLogger(__name__)
@@ -173,7 +176,7 @@ class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     ):
         """Instantiate from discovery message."""
         quantity = value_path[-1]
-        unit = SENSOR_UNIT_MAP.get(quantity)
+        unit = SENSOR_UNIT_MAP.get(quantity, " ")
         if quantity in SENSOR_DYNAMIC_UNIT_MAP:
             unit = sensor_config[CONF_SENSOR].get(SENSOR_DYNAMIC_UNIT_MAP[quantity])
 
