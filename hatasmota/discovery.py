@@ -174,6 +174,7 @@ class TasmotaDiscovery:
                     sensors = get_sensor_entities(
                         self._sensors[mac], self._devices[mac]
                     )
+                    sensors.extend(get_status_sensor_entities(self._devices[mac]))
                     if sensors_discovered:
                         await sensors_discovered(sensors, mac)
             else:
@@ -196,6 +197,7 @@ class TasmotaDiscovery:
                 sensors = []
                 if payload:
                     sensors = get_sensor_entities(payload, self._devices[mac])
+                    sensors.extend(get_status_sensor_entities(self._devices[mac]))
                 if sensors_discovered:
                     await sensors_discovered(sensors, mac)
 
