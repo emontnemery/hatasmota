@@ -99,7 +99,7 @@ class TasmotaStatusSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     @property
     def unique_id(self):
         """Return unique_id."""
-        return f"{self.mac}_{self.platform}_{self.endpoint}"
+        return f"{self.mac}_{self.platform}_{self.endpoint}_{SENSOR_STATUS_SIGNAL}"
 
 
 class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
