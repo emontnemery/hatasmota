@@ -133,6 +133,10 @@ class TasmotaDiscovery:
         """Start receiving discovery messages."""
         await self._subscribe_discovery_topic(device_discovered, sensors_discovered)
 
+    async def stop_discovery(self):
+        """Stop receiving discovery messages."""
+        self._sub_state = await self._mqtt_client.subscribe(self._sub_state, {})
+
     async def _subscribe_discovery_topic(self, device_discovered, sensors_discovered):
         """Subscribe to discovery messages."""
 
@@ -299,7 +303,12 @@ def get_status_sensor_entities(discovery_msg):
     """Generate light configuration."""
     status_sensor_entities = []
 
-    discovery_hash = (discovery_msg[CONF_MAC], "status_sensor", "status_sensor", 0)
+    discovery_hash = (
+        discovery_msg[CONF_MAC],
+        "status_sensor",
+        "status_sensor",
+        "status_signal",
+    )
     entity = TasmotaStatusSensorConfig.from_discovery_message(
         discovery_msg, "status_sensor"
     )
