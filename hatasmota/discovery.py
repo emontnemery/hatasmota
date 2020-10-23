@@ -192,7 +192,7 @@ class TasmotaDiscovery:
                         return
                     self._sensors[mac] = payload
                 else:
-                    self._sensors.pop(mac)
+                    self._sensors.pop(mac, None)
                     payload = {}
 
                 if mac not in self._devices:
@@ -216,12 +216,12 @@ class TasmotaDiscovery:
 
 def clear_discovery_topic(mac, discovery_prefix, mqtt_client):
     """Clear retained discovery topic."""
-    discovery_topic = f"{discovery_prefix}/{mac}/config"
-    mqtt_client.publish(
-        discovery_topic,
-        "",
-        retain=True,
-    )
+    mac = mac.replace(':', '')
+    mac = mac.upper()
+    device_discovery_topic = f"{discovery_prefix}/{mac}/config"
+    mqtt_client.publish(device_discovery_topic, "", retain=True)
+    sensor_discovery_topic = f"{discovery_prefix}/{mac}/sensors"
+    mqtt_client.publish(sensor_discovery_topic, "", retain=True)
 
 
 def get_device_config_helper(discovery_msg):
