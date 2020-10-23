@@ -3,7 +3,7 @@ import logging
 
 import attr
 
-from .const import CONF_MAC, CONF_OPTIONS, OPTION_HASS_LIGHT
+from .const import COMMAND_POWER, CONF_MAC, CONF_OPTIONS, OPTION_HASS_LIGHT
 from .entity import (
     TasmotaAvailability,
     TasmotaAvailabilityConfig,
@@ -17,7 +17,7 @@ from .utils import (
     config_get_state_power_off,
     config_get_state_power_on,
     get_state_power,
-    get_topic_command_power,
+    get_topic_command,
     get_topic_command_state,
     get_topic_tele_state,
     get_topic_tele_will,
@@ -30,7 +30,7 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota relay configuation."""
 
-    command_power_topic: str = attr.ib()
+    command_topic: str = attr.ib()
     is_light: bool = attr.ib()
     poll_topic = attr.ib()
     state_power_off: str = attr.ib()
@@ -51,7 +51,7 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_topic=get_topic_tele_will(config),
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
-            command_power_topic=get_topic_command_power(config, idx),
+            command_topic=get_topic_command(config),
             is_light=config[CONF_OPTIONS][OPTION_HASS_LIGHT] == 1,
             state_power_off=config_get_state_power_off(config),
             state_power_on=config_get_state_power_on(config),
@@ -101,7 +101,8 @@ class TasmotaRelay(TasmotaAvailability, TasmotaEntity):
     def set_state(self, state):
         """Turn the relay on or off."""
         payload = self._cfg.state_power_on if state else self._cfg.state_power_off
+        command = f"{COMMAND_POWER}{self._cfg.idx+1}"
         self._mqtt_client.publish(
-            self._cfg.command_power_topic,
+            self._cfg.command_topic + command,
             payload,
         )

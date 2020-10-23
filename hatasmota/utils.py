@@ -72,11 +72,6 @@ def get_topic_command(config):
     return _get_topic_cmnd(config)
 
 
-def get_topic_command_power(config, idx):
-    """Get topic for command power."""
-    return _get_topic_cmnd(config) + f"POWER{idx+1}"
-
-
 def get_topic_command_state(config):
     """Get topic for command power."""
     return _get_topic_cmnd(config) + "STATE"
