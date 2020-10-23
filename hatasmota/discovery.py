@@ -216,7 +216,7 @@ class TasmotaDiscovery:
 
 def clear_discovery_topic(mac, discovery_prefix, mqtt_client):
     """Clear retained discovery topic."""
-    mac = mac.replace(':', '')
+    mac = mac.replace(":", "")
     mac = mac.upper()
     device_discovery_topic = f"{discovery_prefix}/{mac}/config"
     mqtt_client.publish(device_discovery_topic, "", retain=True)
