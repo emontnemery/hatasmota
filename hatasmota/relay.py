@@ -19,6 +19,7 @@ from .utils import (
     get_state_power,
     get_topic_command,
     get_topic_command_state,
+    get_topic_stat_result,
     get_topic_tele_state,
     get_topic_tele_will,
 )
@@ -33,6 +34,7 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     command_topic: str = attr.ib()
     is_light: bool = attr.ib()
     poll_topic = attr.ib()
+    result_topic: str = attr.ib()
     state_power_off: str = attr.ib()
     state_power_on: str = attr.ib()
     state_topic: str = attr.ib()
@@ -53,6 +55,7 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_online=config_get_state_online(config),
             command_topic=get_topic_command(config),
             is_light=config[CONF_OPTIONS][OPTION_HASS_LIGHT] == 1,
+            result_topic=get_topic_stat_result(config),
             state_power_off=config_get_state_power_off(config),
             state_power_on=config_get_state_power_on(config),
             state_topic=get_topic_tele_state(config),
@@ -81,11 +84,16 @@ class TasmotaRelay(TasmotaAvailability, TasmotaEntity):
 
         availability_topics = self.get_availability_topics()
         topics = {
+            "result_topic": {
+                "event_loop_safe": True,
+                "topic": self._cfg.result_topic,
+                "msg_callback": state_message_received,
+            },
             "state_topic": {
                 "event_loop_safe": True,
                 "topic": self._cfg.state_topic,
                 "msg_callback": state_message_received,
-            }
+            },
         }
         topics = {**topics, **availability_topics}
 
