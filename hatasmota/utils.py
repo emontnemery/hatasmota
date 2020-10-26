@@ -15,6 +15,7 @@ from .const import (
     CONF_OFFLINE,
     CONF_ONLINE,
     CONF_PREFIX,
+    CONF_RELAY,
     CONF_STATE,
     CONF_TOPIC,
     PREFIX_CMND,
@@ -186,9 +187,16 @@ def get_state_switch_trigger(status):
 
 def config_get_friendlyname(config, platform, idx):
     """Get config friendly name."""
-    if idx >= len(config[CONF_FRIENDLYNAME]) or config[CONF_FRIENDLYNAME][idx] is None:
+    friendly_names = config[CONF_FRIENDLYNAME]
+
+    # If the Tasmota has a relay or light at the index, don't use friendly_names,
+    # instead, switch will be named "binary_sensor <n>"
+    relay_platforms = ["light", "switch"]
+    has_relay_at_idx = config[CONF_RELAY][idx] != 0 and platform not in relay_platforms
+
+    if has_relay_at_idx or idx >= len(friendly_names) or friendly_names[idx] is None:
         return f"{config[CONF_DEVICENAME]} {platform} {idx}"
-    return config[CONF_FRIENDLYNAME][idx]
+    return friendly_names[idx]
 
 
 TOPIC_MATCHER = re.compile(r"^(?P<mac>[A-Z0-9_-]+)\/(?:config|sensors)$")
