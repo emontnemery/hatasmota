@@ -44,6 +44,7 @@ from .utils import (
     get_state_power,
     get_topic_command,
     get_topic_command_state,
+    get_topic_stat_result,
     get_topic_tele_state,
     get_topic_tele_will,
     get_value_by_path,
@@ -85,6 +86,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     max_mireds: int = attr.ib()
     min_mireds: int = attr.ib()
     poll_topic: str = attr.ib()
+    result_topic: str = attr.ib()
     state_power_off: str = attr.ib()
     state_power_on: str = attr.ib()
     state_topic: str = attr.ib()
@@ -141,6 +143,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             light_type=light_type,
             max_mireds=max_mireds,
             min_mireds=min_mireds,
+            result_topic=get_topic_stat_result(config),
             state_power_off=config_get_state_power_off(config),
             state_power_on=config_get_state_power_on(config),
             state_topic=get_topic_tele_state(config),
@@ -207,11 +210,16 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
 
         availability_topics = self.get_availability_topics()
         topics = {
+            "result_topic": {
+                "event_loop_safe": True,
+                "topic": self._cfg.result_topic,
+                "msg_callback": state_message_received,
+            },
             "state_topic": {
                 "event_loop_safe": True,
                 "topic": self._cfg.state_topic,
                 "msg_callback": state_message_received,
-            }
+            },
         }
         topics = {**topics, **availability_topics}
 

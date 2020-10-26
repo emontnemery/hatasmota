@@ -88,6 +88,11 @@ def get_topic_stat_button_trigger(config, idx):
     return _get_topic_stat(config) + f"BUTTON{idx+1}T"
 
 
+def get_topic_stat_result(config):
+    """Get topic for tele state."""
+    return _get_topic_stat(config) + "RESULT"
+
+
 def get_topic_stat_status(config, idx=None):
     """Get topic for tele state."""
     if idx is None:
