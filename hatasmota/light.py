@@ -24,6 +24,7 @@ from .const import (
     LST_RGBCW,
     LST_RGBW,
     LST_SINGLE,
+    OPTION_NOT_POWER_LINKED,
     OPTION_PWM_MULTI_CHANNELS,
     OPTION_REDUCED_CT_RANGE,
     RL_LIGHT,
@@ -76,7 +77,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @attr.s(slots=True, frozen=True)
 class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
-    """Tasmota relay configuation."""
+    """Tasmota light configuation."""
 
     dimmer: str = attr.ib()
     command_topic: str = attr.ib()
@@ -85,6 +86,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     light_type: int = attr.ib()
     max_mireds: int = attr.ib()
     min_mireds: int = attr.ib()
+    not_power_linked: bool = attr.ib()
     poll_topic: str = attr.ib()
     result_topic: str = attr.ib()
     state_power_off: str = attr.ib()
@@ -143,6 +145,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             light_type=light_type,
             max_mireds=max_mireds,
             min_mireds=min_mireds,
+            not_power_linked=config[CONF_OPTIONS][OPTION_NOT_POWER_LINKED],
             result_topic=get_topic_stat_result(config),
             state_power_off=config_get_state_power_off(config),
             state_power_on=config_get_state_power_on(config),
@@ -258,6 +261,21 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
 
     def set_state(self, state, attributes):
         """Turn the light on or off."""
+        if self._cfg.endpoint == "relay":
+            self._set_state_relay(state)
+        else:
+            self._set_state_light(state, attributes)
+
+    def _set_state_relay(self, state):
+        """Turn the relay on or off."""
+        payload = self._cfg.state_power_on if state else self._cfg.state_power_off
+        command = f"{COMMAND_POWER}{self._cfg.idx+1}"
+        self._mqtt_client.publish(
+            self._cfg.command_topic + command,
+            payload,
+        )
+
+    def _set_state_light(self, state, attributes):
         idx = self._cfg.idx
 
         commands = []
@@ -317,6 +335,12 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
         if "white_value" in attributes:
             argument = attributes["white_value"]
             command = COMMAND_WHITE
+            commands.append((command, argument))
+
+        if self._cfg.not_power_linked and "brightness" in attributes:
+            # Always send power
+            argument = self._cfg.state_power_on if state else self._cfg.state_power_off
+            command = f"{COMMAND_POWER}{idx+1}"
             commands.append((command, argument))
 
         send_commands(self._mqtt_client, self._cfg.command_topic, commands)
