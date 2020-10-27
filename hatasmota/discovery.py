@@ -283,17 +283,20 @@ def get_light_entities(discovery_msg):
     for (idx, value) in enumerate(discovery_msg[CONF_RELAY]):
         entity = None
         discovery_hash = (discovery_msg[CONF_MAC], "light", "light", idx)
+        if value == RL_LIGHT:
+            entity = TasmotaLightConfig.from_discovery_message(
+                discovery_msg, idx, "light"
+            )
+        light_entities.append((entity, discovery_hash))
+    for (idx, value) in enumerate(discovery_msg[CONF_RELAY]):
+        entity = None
+        discovery_hash = (discovery_msg[CONF_MAC], "light", "relay", idx)
         if value == RL_RELAY:
-            discovery_hash = (discovery_msg[CONF_MAC], "light", "relay", idx)
             entity = TasmotaRelayConfig.from_discovery_message(
                 discovery_msg, idx, "light"
             )
             if not entity.is_light:
                 entity = None
-        elif value == RL_LIGHT:
-            entity = TasmotaLightConfig.from_discovery_message(
-                discovery_msg, idx, "light"
-            )
         light_entities.append((entity, discovery_hash))
 
     return light_entities
