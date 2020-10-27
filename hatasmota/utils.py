@@ -200,7 +200,7 @@ def config_get_friendlyname(config, platform, idx):
     has_relay_at_idx = config[CONF_RELAY][idx] != 0 and platform not in relay_platforms
 
     if has_relay_at_idx or idx >= len(friendly_names) or friendly_names[idx] is None:
-        return f"{config[CONF_DEVICENAME]} {platform} {idx}"
+        return f"{config[CONF_DEVICENAME]} {platform} {idx+1}"
     return friendly_names[idx]
 
 
