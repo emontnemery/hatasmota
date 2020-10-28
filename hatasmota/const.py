@@ -120,6 +120,7 @@ SENSOR_PROXIMITY = "Proximity"
 SENSOR_AMBIENT = "Ambient"
 SENSOR_SWITCH = "Switch"
 SENSOR_STATUS_SIGNAL = "status_signal"
+SENSOR_STATUS_IP = "status_ip"
 
 SENSOR_UNIT_PRESSURE = "PressureUnit"
 SENSOR_UNIT_SPEED = "SpeedUnit"
