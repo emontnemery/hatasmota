@@ -7,12 +7,7 @@ import attr
 from .const import (
     CONF_DEVICENAME,
     CONF_MAC,
-    SENSOR_ATTRIBUTE_MQTTCOUNT,
-    SENSOR_ATTRIBUTE_RSSI,
-    SENSOR_ATTRIBUTE_SIGNAL,
-    SENSOR_ATTRIBUTE_UPTIME,
-    SENSOR_ATTRIBUTE_WIFI_DOWNTIME,
-    SENSOR_ATTRIBUTE_WIFI_LINKCOUNT,
+    SENSOR_STATUS_IP,
     SENSOR_STATUS_SIGNAL,
 )
 from .entity import (
@@ -49,24 +44,35 @@ _LOGGER = logging.getLogger(__name__)
 #  "LoadAvg":19                                stat/STATUS11:"StatusSTS":"LoadAvg"; tele/STATE:"LoadAvg"
 # }
 
-STATE_ATTRIBUTES = {
-    SENSOR_ATTRIBUTE_UPTIME: ["Uptime"],
-    SENSOR_ATTRIBUTE_RSSI: ["Wifi", "RSSI"],
-    SENSOR_ATTRIBUTE_SIGNAL: ["Wifi", "Signal"],
-    SENSOR_ATTRIBUTE_WIFI_LINKCOUNT: ["Wifi", "LinkCount"],
-    SENSOR_ATTRIBUTE_WIFI_DOWNTIME: ["Wifi", "Downtime"],
-    SENSOR_ATTRIBUTE_MQTTCOUNT: ["MqttCount"],
+SENSORS = [SENSOR_STATUS_IP, SENSOR_STATUS_SIGNAL]
+
+NAMES = {
+    SENSOR_STATUS_SIGNAL: "Signal",
+    SENSOR_STATUS_IP: "IP",
 }
 
-STATUS_ATTRIBUTES = {
-    "STATUS11": {
-        SENSOR_ATTRIBUTE_UPTIME: ["StatusSTS", "Uptime"],
-        SENSOR_ATTRIBUTE_RSSI: ["StatusSTS", "Wifi", "RSSI"],
-        SENSOR_ATTRIBUTE_SIGNAL: ["StatusSTS", "Wifi", "Signal"],
-        SENSOR_ATTRIBUTE_WIFI_LINKCOUNT: ["StatusSTS", "Wifi", "LinkCount"],
-        SENSOR_ATTRIBUTE_WIFI_DOWNTIME: ["StatusSTS", "Wifi", "Downtime"],
-        SENSOR_ATTRIBUTE_MQTTCOUNT: ["StatusSTS", "MqttCount"],
-    },
+STATE_PATHS = {
+    SENSOR_STATUS_SIGNAL: ["Wifi", "Signal"],
+}
+
+STATUS_PATHS = {
+    SENSOR_STATUS_SIGNAL: ["StatusSTS", "Wifi", "Signal"],
+    SENSOR_STATUS_IP: ["StatusNET", "IPAddress"],
+}
+
+STATUS_TOPICS = {
+    SENSOR_STATUS_SIGNAL: 11,
+    SENSOR_STATUS_IP: 5,
+}
+
+QUANTITY = {
+    SENSOR_STATUS_SIGNAL: SENSOR_STATUS_SIGNAL,
+    SENSOR_STATUS_IP: None,
+}
+
+UNITS = {
+    SENSOR_STATUS_SIGNAL: "dB",
+    SENSOR_STATUS_IP: None,
 }
 
 
@@ -75,31 +81,37 @@ class TasmotaStatusSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota switch configuation."""
 
     poll_topic: str = attr.ib()
+    sensor: str = attr.ib()
     state_topic: str = attr.ib()
-    status_topic11: str = attr.ib()
+    status_topic: str = attr.ib()
 
     @classmethod
     def from_discovery_message(cls, config, platform):
         """Instantiate from discovery message."""
-        return cls(
-            endpoint="status_sensor",
-            idx=None,
-            friendly_name=f"{config[CONF_DEVICENAME]} Status",
-            mac=config[CONF_MAC],
-            platform=platform,
-            poll_payload="0",
-            poll_topic=get_topic_command_status(config),
-            availability_topic=get_topic_tele_will(config),
-            availability_offline=config_get_state_offline(config),
-            availability_online=config_get_state_online(config),
-            state_topic=get_topic_tele_state(config),
-            status_topic11=get_topic_stat_status(config, 11),
-        )
+        sensors = [
+            cls(
+                endpoint="status_sensor",
+                idx=None,
+                friendly_name=f"{config[CONF_DEVICENAME]} {NAMES[sensor]}",
+                mac=config[CONF_MAC],
+                platform=platform,
+                poll_payload="0",
+                poll_topic=get_topic_command_status(config),
+                availability_topic=get_topic_tele_will(config),
+                availability_offline=config_get_state_offline(config),
+                availability_online=config_get_state_online(config),
+                sensor=sensor,
+                state_topic=get_topic_tele_state(config),
+                status_topic=get_topic_stat_status(config, STATUS_TOPICS[sensor]),
+            )
+            for sensor in SENSORS
+        ]
+        return sensors
 
     @property
     def unique_id(self):
         """Return unique_id."""
-        return f"{self.mac}_{self.platform}_{self.endpoint}_{SENSOR_STATUS_SIGNAL}"
+        return f"{self.mac}_{self.platform}_{self.endpoint}_{self.sensor}"
 
 
 class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
@@ -121,34 +133,28 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
             except (json.decoder.JSONDecodeError):
                 return
 
+            state = None
             if msg.topic == self._cfg.state_topic:
-                for attribute, attribute_path in STATE_ATTRIBUTES.items():
-                    value = get_value_by_path(payload, attribute_path)
-                    if value is not None:
-                        self._attributes[attribute] = value
+                state = get_value_by_path(payload, STATE_PATHS[self._cfg.sensor])
             else:
-                topic = msg.topic[msg.topic.rfind("/") + 1 :]
-                status_attributes = STATUS_ATTRIBUTES.get(topic, {})
-                for attribute, attribute_path in status_attributes.items():
-                    value = get_value_by_path(payload, attribute_path)
-                    if value is not None:
-                        self._attributes[attribute] = value
-            self._on_state_callback(self._attributes.get("Signal"), **self._attributes)
+                state = get_value_by_path(payload, STATUS_PATHS[self._cfg.sensor])
+            if state is not None:
+                self._on_state_callback(state)
 
         availability_topics = self.get_availability_topics()
-        topics = {
+        topics = {}
+        if self._cfg.sensor in STATE_PATHS:
             # Periodic state update (tele/STATE)
-            "state_topic": {
+            topics["state_topic"] = {
                 "event_loop_safe": True,
                 "topic": self._cfg.state_topic,
                 "msg_callback": state_message_received,
-            },
-            # Polled state update (stat/STATUS#)
-            "status_topic11": {
-                "event_loop_safe": True,
-                "topic": self._cfg.status_topic11,
-                "msg_callback": state_message_received,
-            },
+            }
+        # Polled state update (stat/STATUS#)
+        topics["status_topic"] = {
+            "event_loop_safe": True,
+            "topic": self._cfg.status_topic,
+            "msg_callback": state_message_received,
         }
         topics = {**topics, **availability_topics}
 
@@ -164,9 +170,9 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
     @property
     def quantity(self):
         """Return the sensor's quantity (speed, mass, etc.)."""
-        return SENSOR_STATUS_SIGNAL
+        return QUANTITY[self._cfg.sensor]
 
     @property
     def unit(self):
         """Return the unit this state is expressed in."""
-        return "dB"
+        return UNITS[self._cfg.sensor]

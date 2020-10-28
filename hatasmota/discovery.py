@@ -306,16 +306,17 @@ def get_status_sensor_entities(discovery_msg):
     """Generate light configuration."""
     status_sensor_entities = []
 
-    discovery_hash = (
-        discovery_msg[CONF_MAC],
-        "status_sensor",
-        "status_sensor",
-        "status_signal",
-    )
-    entity = TasmotaStatusSensorConfig.from_discovery_message(
+    entities = TasmotaStatusSensorConfig.from_discovery_message(
         discovery_msg, "status_sensor"
     )
-    status_sensor_entities.append((entity, discovery_hash))
+    for entity in entities:
+        discovery_hash = (
+            discovery_msg[CONF_MAC],
+            "status_sensor",
+            "status_sensor",
+            entity.sensor,
+        )
+        status_sensor_entities.append((entity, discovery_hash))
 
     return status_sensor_entities
 
