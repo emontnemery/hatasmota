@@ -4,12 +4,7 @@ import logging
 
 import attr
 
-from .const import (
-    CONF_DEVICENAME,
-    CONF_MAC,
-    SENSOR_STATUS_IP,
-    SENSOR_STATUS_SIGNAL,
-)
+from .const import CONF_DEVICENAME, CONF_MAC, SENSOR_STATUS_IP, SENSOR_STATUS_SIGNAL
 from .entity import (
     TasmotaAvailability,
     TasmotaAvailabilityConfig,
