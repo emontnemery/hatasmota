@@ -122,7 +122,7 @@ SENSOR_SWITCH = "Switch"
 SENSOR_STATUS_MQTT_COUNT = "MqttCount"
 SENSOR_STATUS_LINK_COUNT = "LinkCount"
 SENSOR_STATUS_SIGNAL = "status_signal"
-SENSOR_STATUS_SIGNAL2 = "status_signal_2"
+SENSOR_STATUS_RSSI = "status_rssi"
 SENSOR_STATUS_IP = "status_ip"
 
 SENSOR_UNIT_PRESSURE = "PressureUnit"
