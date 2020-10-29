@@ -303,7 +303,7 @@ def get_light_entities(discovery_msg):
 
 
 def get_status_sensor_entities(discovery_msg):
-    """Generate Status sensors."""
+    """Generate light configuration."""
     status_sensor_entities = []
 
     entities = TasmotaStatusSensorConfig.from_discovery_message(
