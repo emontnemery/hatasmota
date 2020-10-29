@@ -60,8 +60,8 @@ SENSORS = [
 NAMES = {
     SENSOR_STATUS_SIGNAL: "Signal",
     SENSOR_STATUS_RSSI: "RSSI",
-    SENSOR_STATUS_MQTT_COUNT: "MqttCount",
-    SENSOR_STATUS_LINK_COUNT: "LinkCount",
+    SENSOR_STATUS_MQTT_COUNT: "MQTT connect count",
+    SENSOR_STATUS_LINK_COUNT: "WiFi connect count",
     SENSOR_STATUS_IP: "IP",
     SENSOR_STATUS_UPTIME: "Uptime",
 }
