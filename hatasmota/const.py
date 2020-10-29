@@ -124,6 +124,7 @@ SENSOR_STATUS_LINK_COUNT = "LinkCount"
 SENSOR_STATUS_SIGNAL = "status_signal"
 SENSOR_STATUS_RSSI = "status_rssi"
 SENSOR_STATUS_IP = "status_ip"
+SENSOR_STATUS_UPTIME = "Uptime"
 
 SENSOR_UNIT_PRESSURE = "PressureUnit"
 SENSOR_UNIT_SPEED = "SpeedUnit"
