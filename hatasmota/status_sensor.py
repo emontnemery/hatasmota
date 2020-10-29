@@ -4,7 +4,16 @@ import logging
 
 import attr
 
-from .const import CONF_DEVICENAME, CONF_MAC, SENSOR_STATUS_IP, SENSOR_STATUS_SIGNAL
+from .const import (
+    CONF_DEVICENAME,
+    CONF_MAC,
+    SENSOR_STATUS_IP,
+    SENSOR_STATUS_LINK_COUNT,
+    SENSOR_STATUS_MQTT_COUNT,
+    SENSOR_STATUS_RSSI,
+    SENSOR_STATUS_SIGNAL,
+    SENSOR_STATUS_UPTIME,
+)
 from .entity import (
     TasmotaAvailability,
     TasmotaAvailabilityConfig,
@@ -39,35 +48,66 @@ _LOGGER = logging.getLogger(__name__)
 #  "LoadAvg":19                                stat/STATUS11:"StatusSTS":"LoadAvg"; tele/STATE:"LoadAvg"
 # }
 
-SENSORS = [SENSOR_STATUS_IP, SENSOR_STATUS_SIGNAL]
+SENSORS = [
+    SENSOR_STATUS_IP,
+    SENSOR_STATUS_SIGNAL,
+    SENSOR_STATUS_RSSI,
+    SENSOR_STATUS_MQTT_COUNT,
+    SENSOR_STATUS_LINK_COUNT,
+    SENSOR_STATUS_UPTIME,
+]
 
 NAMES = {
     SENSOR_STATUS_SIGNAL: "Signal",
+    SENSOR_STATUS_RSSI: "RSSI",
+    SENSOR_STATUS_MQTT_COUNT: "MQTT connect count",
+    SENSOR_STATUS_LINK_COUNT: "WiFi connect count",
     SENSOR_STATUS_IP: "IP",
+    SENSOR_STATUS_UPTIME: "Uptime",
 }
 
 STATE_PATHS = {
     SENSOR_STATUS_SIGNAL: ["Wifi", "Signal"],
+    SENSOR_STATUS_RSSI: ["Wifi", "RSSI"],
+    SENSOR_STATUS_MQTT_COUNT: ["MqttCount"],
+    SENSOR_STATUS_LINK_COUNT: ["Wifi", "LinkCount"],
+    SENSOR_STATUS_UPTIME: ["Uptime"],
 }
 
 STATUS_PATHS = {
     SENSOR_STATUS_SIGNAL: ["StatusSTS", "Wifi", "Signal"],
+    SENSOR_STATUS_RSSI: ["StatusSTS", "Wifi", "RSSI"],
+    SENSOR_STATUS_MQTT_COUNT: ["StatusSTS", "Wifi", "MqttCount"],
+    SENSOR_STATUS_LINK_COUNT: ["StatusSTS", "Wifi", "LinkCount"],
     SENSOR_STATUS_IP: ["StatusNET", "IPAddress"],
+    SENSOR_STATUS_UPTIME: ["StatusSTS", "Uptime"],
 }
 
 STATUS_TOPICS = {
     SENSOR_STATUS_SIGNAL: 11,
+    SENSOR_STATUS_RSSI: 11,
+    SENSOR_STATUS_MQTT_COUNT: 11,
+    SENSOR_STATUS_LINK_COUNT: 11,
     SENSOR_STATUS_IP: 5,
+    SENSOR_STATUS_UPTIME: 11,
 }
 
 QUANTITY = {
     SENSOR_STATUS_SIGNAL: SENSOR_STATUS_SIGNAL,
-    SENSOR_STATUS_IP: None,
+    SENSOR_STATUS_RSSI: SENSOR_STATUS_RSSI,
+    SENSOR_STATUS_MQTT_COUNT: SENSOR_STATUS_MQTT_COUNT,
+    SENSOR_STATUS_LINK_COUNT: SENSOR_STATUS_LINK_COUNT,
+    SENSOR_STATUS_IP: SENSOR_STATUS_IP,
+    SENSOR_STATUS_UPTIME: SENSOR_STATUS_UPTIME,
 }
 
 UNITS = {
     SENSOR_STATUS_SIGNAL: "dB",
+    SENSOR_STATUS_RSSI: "%",
+    SENSOR_STATUS_MQTT_COUNT: None,
+    SENSOR_STATUS_LINK_COUNT: None,
     SENSOR_STATUS_IP: None,
+    SENSOR_STATUS_UPTIME: None,
 }
 
 
@@ -110,7 +150,7 @@ class TasmotaStatusSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
 
 class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
-    """Representation of a Tasmota switch."""
+    """Tasmota Status sensors."""
 
     def __init__(self, **kwds):
         """Initialize."""
