@@ -4,6 +4,7 @@ import logging
 import attr
 
 from .const import (
+    CONF_DEVICENAME,
     CONF_MAC,
     CONF_SENSOR,
     SENSOR_AMBIENT,
@@ -182,7 +183,7 @@ class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
         return cls(
             endpoint="sensor",
             idx=None,
-            friendly_name=sensor_name,
+            friendly_name=f"{device_config[CONF_DEVICENAME]} {sensor_name}",
             mac=device_config[CONF_MAC],
             platform=platform,
             poll_payload="8",
