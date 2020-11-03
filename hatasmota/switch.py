@@ -7,7 +7,7 @@ from .const import (
     CONF_MAC,
     CONF_STATE,
     CONF_SWITCH,
-    SENSOR_SWITCH,
+    RSLT_ACTION,
     STATE_HOLD,
     STATE_TOGGLE,
     STATUS_SENSOR,
@@ -41,12 +41,10 @@ from .utils import (
     config_get_state_online,
     config_get_state_power_off,
     config_get_state_power_on,
-    get_state_state,
-    get_state_switch_trigger,
+    config_get_switchname,
     get_topic_command_status,
+    get_topic_stat_result,
     get_topic_stat_status,
-    get_topic_stat_switch,
-    get_topic_stat_switch_trigger,
     get_topic_tele_sensor,
     get_topic_tele_will,
     get_value_by_path,
@@ -175,6 +173,7 @@ class TasmotaSwitchTriggerConfig:
     mac: str = attr.ib()
     source: str = attr.ib()
     subtype: str = attr.ib()
+    switchname: str = attr.ib()
     trigger_topic: str = attr.ib()
     type: str = attr.ib()
 
@@ -192,7 +191,8 @@ class TasmotaSwitchTriggerConfig:
                     idx=idx,
                     source="switch",
                     subtype=f"switch_{idx+1}",
-                    trigger_topic=get_topic_stat_switch_trigger(config, idx),
+                    switchname=config_get_switchname(config, idx),
+                    trigger_topic=get_topic_stat_result(config),
                     type=trigger_type,
                 )
             )
@@ -214,7 +214,7 @@ class TasmotaSwitchTrigger(TasmotaTrigger):
 
     def _trig_message_received(self, msg):
         """Handle new MQTT messages."""
-        event = get_state_switch_trigger(msg.payload)
+        event = get_value_by_path(msg.payload, [self.cfg.switchname, RSLT_ACTION])
         if event == self.cfg.event:
             self._on_trigger_callback()
 
@@ -225,13 +225,12 @@ class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
     off_delay: int = attr.ib()
     poll_topic: str = attr.ib()
-    sensor: str = attr.ib()
     state_power_off: str = attr.ib()
     state_power_on: str = attr.ib()
     state_topic1: str = attr.ib()
     state_topic2: str = attr.ib()
     state_topic3: str = attr.ib()
-    # unique_id: str = attr.ib()
+    switchname: str = attr.ib()
 
     @classmethod
     def from_discovery_message(cls, config, idx, platform):
@@ -253,12 +252,12 @@ class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
             off_delay=off_delay,
-            sensor=SENSOR_SWITCH + f"{idx+1}",
             state_power_off=config_get_state_power_off(config),
             state_power_on=config_get_state_power_on(config),
-            state_topic1=get_topic_stat_switch(config, idx),
+            state_topic1=get_topic_stat_result(config),
             state_topic2=get_topic_tele_sensor(config),
             state_topic3=get_topic_stat_status(config, 8),
+            switchname=config_get_switchname(config, idx),
         )
 
 
@@ -276,16 +275,18 @@ class TasmotaSwitch(TasmotaAvailability, TasmotaEntity):
         def state_message_received(msg):
             """Handle new MQTT state messages."""
             state = None
-            # tasmota_0848A2/stat/SWITCH1 / {"STATE":"OFF"}
+            # tasmota_0848A2/stat/RESULT  / {"Switch1":{"Action":"ON"}}
             if msg.topic == self._cfg.state_topic1:
-                state = get_state_state(msg.payload)
+                state = get_value_by_path(
+                    msg.payload, [self._cfg.switchname, RSLT_ACTION]
+                )
             # tasmota_0848A2/tele/SENSOR  / {"Time":"2020-09-20T09:41:28","Switch1":"ON"}
             if msg.topic == self._cfg.state_topic2:
-                state = get_value_by_path(msg.payload, [self._cfg.sensor])
+                state = get_value_by_path(msg.payload, [self._cfg.switchname])
             # tasmota_0848A2/stat/STATUS8 / {"StatusSNS":{"Time":"2020-09-20T09:41:00","Switch1":"ON"}}
             if msg.topic == self._cfg.state_topic3:
                 state = get_value_by_path(
-                    msg.payload, [STATUS_SENSOR, self._cfg.sensor]
+                    msg.payload, [STATUS_SENSOR, self._cfg.switchname]
                 )
             if state == self._cfg.state_power_on:
                 self._on_state_callback(True)
@@ -293,7 +294,7 @@ class TasmotaSwitch(TasmotaAvailability, TasmotaEntity):
                 self._on_state_callback(False)
 
         availability_topics = self.get_availability_topics()
-        # tasmota_0848A2/stat/SWITCH1 / {"STATE":"OFF"}
+        # tasmota_0848A2/stat/RESULT  / {"Switch1":{"Action":"ON"}}
         # tasmota_0848A2/tele/SENSOR  / {"Time":"2020-09-20T09:41:28","Switch1":"ON"}
         # tasmota_0848A2/stat/STATUS8 / {"StatusSNS":{"Time":"2020-09-20T09:41:00","Switch1":"ON"}}
         topics = {
