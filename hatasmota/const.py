@@ -126,6 +126,7 @@ SENSOR_STATUS_MQTT_COUNT = "status_MqttCount"
 SENSOR_STATUS_LINK_COUNT = "status_LinkCount"
 SENSOR_STATUS_SIGNAL = "status_signal"
 SENSOR_STATUS_RSSI = "status_rssi"
+SENSOR_STATUS_RESTART = "Restart Reason"
 SENSOR_STATUS_IP = "status_ip"
 SENSOR_STATUS_UPTIME = "status_Uptime"
 
