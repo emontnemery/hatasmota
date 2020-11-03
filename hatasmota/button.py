@@ -10,9 +10,10 @@ from .const import (
     OPTION_BUTTON_SINGLE,
     OPTION_BUTTON_SWAP,
     OPTION_MQTT_BUTTONS,
+    RSLT_ACTION,
 )
 from .trigger import TasmotaTrigger
-from .utils import get_state_button_trigger, get_topic_stat_button_trigger
+from .utils import get_topic_stat_result, get_value_by_path
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ class TasmotaButtonTriggerConfig:
                     idx=idx,
                     source="button",
                     subtype=f"button_{idx+1}",
-                    trigger_topic=get_topic_stat_button_trigger(config, idx),
+                    trigger_topic=get_topic_stat_result(config),
                     type=trigger_type,
                 )
             )
@@ -146,6 +147,6 @@ class TasmotaButtonTrigger(TasmotaTrigger):
 
     def _trig_message_received(self, msg):
         """Handle new MQTT messages."""
-        event = get_state_button_trigger(msg.payload)
+        event = get_value_by_path(msg.payload, [f"Button{self.cfg.idx+1}", RSLT_ACTION])
         if event == self.cfg.event:
             self._on_trigger_callback()

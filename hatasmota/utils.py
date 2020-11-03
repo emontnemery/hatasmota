@@ -17,6 +17,7 @@ from .const import (
     CONF_PREFIX,
     CONF_RELAY,
     CONF_STATE,
+    CONF_SWITCHNAME,
     CONF_TOPIC,
     PREFIX_CMND,
     PREFIX_STAT,
@@ -24,7 +25,6 @@ from .const import (
     RSLT_ACTION,
     RSLT_POWER,
     RSLT_STATE,
-    RSLT_TRIG,
     STATE_OFF,
     STATE_ON,
 )
@@ -85,7 +85,7 @@ def get_topic_command_status(config):
 
 def get_topic_stat_button_trigger(config, idx):
     """Get topic for tele state."""
-    return _get_topic_stat(config) + f"BUTTON{idx+1}T"
+    return _get_topic_stat(config) + f"BUTTON{idx+1}"
 
 
 def get_topic_stat_result(config):
@@ -107,7 +107,7 @@ def get_topic_stat_switch(config, idx):
 
 def get_topic_stat_switch_trigger(config, idx):
     """Get topic for tele state."""
-    return _get_topic_stat(config) + f"SWITCH{idx+1}T"
+    return _get_topic_stat(config) + f"SWITCH{idx+1}"
 
 
 def get_topic_tele_sensor(config):
@@ -185,11 +185,6 @@ def get_state_button_trigger(status):
     return get_value(status, RSLT_ACTION)
 
 
-def get_state_switch_trigger(status):
-    """Get state of switch."""
-    return get_value(status, RSLT_TRIG)
-
-
 def config_get_friendlyname(config, platform, idx):
     """Get config friendly name."""
     friendly_names = config[CONF_FRIENDLYNAME]
@@ -202,6 +197,15 @@ def config_get_friendlyname(config, platform, idx):
     if has_relay_at_idx or idx >= len(friendly_names) or friendly_names[idx] is None:
         return f"{config[CONF_DEVICENAME]} {platform} {idx+1}"
     return friendly_names[idx]
+
+
+def config_get_switchname(config, idx):
+    """Get switch name."""
+    switch_names = config[CONF_SWITCHNAME]
+
+    if idx >= len(switch_names) or switch_names[idx] is None:
+        return f"Switch{idx+1}"
+    return switch_names[idx]
 
 
 TOPIC_MATCHER = re.compile(r"^(?P<mac>[A-Z0-9_-]+)\/(?:config|sensors)$")
