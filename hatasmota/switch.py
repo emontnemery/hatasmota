@@ -246,7 +246,7 @@ class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             friendly_name=config_get_friendlyname(config, platform, idx),
             mac=config[CONF_MAC],
             platform=platform,
-            poll_payload="8",
+            poll_payload="10",
             poll_topic=get_topic_command_status(config),
             availability_topic=get_topic_tele_will(config),
             availability_offline=config_get_state_offline(config),
@@ -256,7 +256,7 @@ class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             state_power_on=config_get_state_power_on(config),
             state_topic1=get_topic_stat_result(config),
             state_topic2=get_topic_tele_sensor(config),
-            state_topic3=get_topic_stat_status(config, 8),
+            state_topic3=get_topic_stat_status(config, 10),
             switchname=config_get_switchname(config, idx),
         )
 
