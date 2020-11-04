@@ -5,6 +5,7 @@ on:
     # branches to consider in the event; optional, defaults to all
     branches:
       - master
+      - maint-0.0.25
 
 jobs:
   update_release_draft:
