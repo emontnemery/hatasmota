@@ -63,7 +63,7 @@ TASMOTA_OPTIONS_SCHEMA = vol.Schema(
     {
         vol.Optional(
             OPTION_MQTT_RESPONSE, default=0
-        ): cv.bit,  # Added in Tasmota 9.0.0.3
+        ): cv.bit,  # Added in Tasmota 9.0.0.4
         OPTION_BUTTON_SWAP: cv.bit,
         OPTION_BUTTON_SINGLE: cv.bit,
         OPTION_DECIMAL_TEXT: cv.bit,
@@ -77,7 +77,7 @@ TASMOTA_OPTIONS_SCHEMA = vol.Schema(
         OPTION_REDUCED_CT_RANGE: cv.bit,
         vol.Optional(
             OPTION_MQTT_SWITCHES, default=0
-        ): cv.bit,  # Added in Tasmota 9.0.0.3
+        ): cv.bit,  # Added in Tasmota 9.0.0.4
     },
     required=True,
 )
@@ -89,7 +89,7 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         CONF_FRIENDLYNAME: vol.All(cv.ensure_list, [cv.optional_string]),
         CONF_FULLTOPIC: cv.string,
         CONF_HOSTNAME: cv.string,
-        vol.Optional(CONF_IFAN, default=0): cv.bit,  # Added in Tasmota 9.0.0.3
+        vol.Optional(CONF_IFAN, default=0): cv.bit,  # Added in Tasmota 9.0.0.4
         CONF_IP: cv.string,
         CONF_LIGHT_SUBTYPE: cv.positive_int,
         CONF_LINK_RGB_CT: cv.bit,
@@ -104,7 +104,7 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         CONF_SWITCH: vol.All(cv.ensure_list, [int]),
         vol.Optional(CONF_SWITCHNAME, default=[]): vol.All(
             cv.ensure_list, [cv.optional_string]
-        ),
+        ),  # Added in Tasmota 9.0.0.4
         CONF_RELAY: vol.All(cv.ensure_list, [cv.positive_int]),
         CONF_TOPIC: cv.string,
         CONF_TUYA: cv.bit,
