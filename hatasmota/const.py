@@ -16,6 +16,7 @@ CONF_BUTTON = "btn"
 CONF_DEVICENAME = "dn"
 CONF_FRIENDLYNAME = "fn"
 CONF_FULLTOPIC = "ft"
+CONF_IFAN = "if"
 CONF_IP = "ip"
 CONF_HOSTNAME = "hn"
 CONF_MAC = "mac"
@@ -31,6 +32,7 @@ CONF_STATE = "state"
 CONF_RELAY = "rl"
 CONF_SW_VERSION = "sw"
 CONF_SWITCH = "swc"
+CONF_SWITCHNAME = "swn"
 CONF_TOPIC = "t"
 CONF_TUYA = "ty"
 CONF_VERSION = "ver"
@@ -46,6 +48,7 @@ LST_RGBW = 4
 LST_RGBCW = 5
 
 # fmt: off
+OPTION_MQTT_RESPONSE = "4"        # Return MQTT response as RESULT or %COMMAND%; added in Tasmota 9.0.0.4
 OPTION_BUTTON_SWAP = "11"         # Swap button single and double press functionality
 OPTION_BUTTON_SINGLE = "13"       # Allow immediate action on single button press
 OPTION_DECIMAL_TEXT = "17"        # Show Color string as hex or comma-separated
@@ -55,6 +58,7 @@ OPTION_PWM_MULTI_CHANNELS = "68"  # Multi-channel PWM instead of a single light
 OPTION_MQTT_BUTTONS = "73"        # Enable Buttons decoupling and send multi-press and hold MQTT messages
 OPTION_SHUTTER_MODE = "80"        # Blinds and shutters support
 OPTION_REDUCED_CT_RANGE = "82"    # Reduce the CT range from 153..500 to 200.380
+OPTION_MQTT_SWITCHES = "114"      # Enable sending switch MQTT messages; added in Tasmota 9.0.0.4
 # fmt: on
 
 PREFIX_CMND = 0
