@@ -56,6 +56,7 @@ OPTION_NOT_POWER_LINKED = "20"    # Update of Dimmer/Color/CT without turning po
 OPTION_HASS_LIGHT = "30"          # Enforce Home Assistant auto-discovery as light
 OPTION_PWM_MULTI_CHANNELS = "68"  # Multi-channel PWM instead of a single light
 OPTION_MQTT_BUTTONS = "73"        # Enable Buttons decoupling and send multi-press and hold MQTT messages
+OPTION_SHUTTER_MODE = "80"        # Blinds and shutters support; removed in Tasmota 9.0.0.4
 OPTION_REDUCED_CT_RANGE = "82"    # Reduce the CT range from 153..500 to 200.380
 OPTION_MQTT_SWITCHES = "114"      # Enable sending switch MQTT messages
 # fmt: on
