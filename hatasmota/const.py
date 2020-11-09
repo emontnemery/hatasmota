@@ -129,7 +129,7 @@ SENSOR_STATUS_SIGNAL = "status_signal"
 SENSOR_STATUS_RSSI = "status_rssi"
 SENSOR_STATUS_RESTART = "status_restart_reason"
 SENSOR_STATUS_IP = "status_ip"
-SENSOR_STATUS_UPTIME = "status_Uptime"
+SENSOR_STATUS_LAST_RESTART_TIME = "last_restart_time"
 
 SENSOR_UNIT_PRESSURE = "PressureUnit"
 SENSOR_UNIT_SPEED = "SpeedUnit"

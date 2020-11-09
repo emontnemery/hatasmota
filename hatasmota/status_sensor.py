@@ -1,6 +1,7 @@
 """Tasmota status sensor."""
 import json
 import logging
+from datetime import datetime, timedelta
 
 import attr
 
@@ -9,12 +10,12 @@ from .const import (
     CONF_MAC,
     PERCENTAGE,
     SENSOR_STATUS_IP,
+    SENSOR_STATUS_LAST_RESTART_TIME,
     SENSOR_STATUS_LINK_COUNT,
     SENSOR_STATUS_MQTT_COUNT,
     SENSOR_STATUS_RESTART,
     SENSOR_STATUS_RSSI,
     SENSOR_STATUS_SIGNAL,
-    SENSOR_STATUS_UPTIME,
     SIGNAL_STRENGTH_DECIBELS,
 )
 from .entity import (
@@ -58,7 +59,7 @@ SENSORS = [
     SENSOR_STATUS_RSSI,
     SENSOR_STATUS_MQTT_COUNT,
     SENSOR_STATUS_LINK_COUNT,
-    SENSOR_STATUS_UPTIME,
+    SENSOR_STATUS_LAST_RESTART_TIME,
 ]
 
 NAMES = {
@@ -68,7 +69,7 @@ NAMES = {
     SENSOR_STATUS_RESTART: "Restart Reason",
     SENSOR_STATUS_RSSI: "RSSI",
     SENSOR_STATUS_SIGNAL: "Signal",
-    SENSOR_STATUS_UPTIME: "Uptime",
+    SENSOR_STATUS_LAST_RESTART_TIME: "Last Restart Time",
 }
 
 STATE_PATHS = {
@@ -76,7 +77,7 @@ STATE_PATHS = {
     SENSOR_STATUS_MQTT_COUNT: ["MqttCount"],
     SENSOR_STATUS_RSSI: ["Wifi", "RSSI"],
     SENSOR_STATUS_SIGNAL: ["Wifi", "Signal"],
-    SENSOR_STATUS_UPTIME: ["Uptime"],
+    SENSOR_STATUS_LAST_RESTART_TIME: ["UptimeSec"],
 }
 
 STATUS_PATHS = {
@@ -86,7 +87,7 @@ STATUS_PATHS = {
     SENSOR_STATUS_RESTART: ["StatusPRM", "RestartReason"],
     SENSOR_STATUS_RSSI: ["StatusSTS", "Wifi", "RSSI"],
     SENSOR_STATUS_SIGNAL: ["StatusSTS", "Wifi", "Signal"],
-    SENSOR_STATUS_UPTIME: ["StatusSTS", "Uptime"],
+    SENSOR_STATUS_LAST_RESTART_TIME: ["StatusSTS", "UptimeSec"],
 }
 
 STATUS_TOPICS = {
@@ -96,7 +97,7 @@ STATUS_TOPICS = {
     SENSOR_STATUS_RESTART: 1,
     SENSOR_STATUS_RSSI: 11,
     SENSOR_STATUS_SIGNAL: 11,
-    SENSOR_STATUS_UPTIME: 1,
+    SENSOR_STATUS_LAST_RESTART_TIME: 11,
 }
 
 QUANTITY = {
@@ -106,7 +107,7 @@ QUANTITY = {
     SENSOR_STATUS_RESTART: SENSOR_STATUS_RESTART,
     SENSOR_STATUS_RSSI: SENSOR_STATUS_RSSI,
     SENSOR_STATUS_SIGNAL: SENSOR_STATUS_SIGNAL,
-    SENSOR_STATUS_UPTIME: SENSOR_STATUS_UPTIME,
+    SENSOR_STATUS_LAST_RESTART_TIME: SENSOR_STATUS_LAST_RESTART_TIME,
 }
 
 UNITS = {
@@ -116,7 +117,7 @@ UNITS = {
     SENSOR_STATUS_RESTART: None,
     SENSOR_STATUS_RSSI: PERCENTAGE,
     SENSOR_STATUS_SIGNAL: SIGNAL_STRENGTH_DECIBELS,
-    SENSOR_STATUS_UPTIME: None,
+    SENSOR_STATUS_LAST_RESTART_TIME: None,
 }
 
 
@@ -183,6 +184,8 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
             else:
                 state = get_value_by_path(payload, STATUS_PATHS[self._cfg.sensor])
             if state is not None:
+                if self._cfg.sensor == SENSOR_STATUS_LAST_RESTART_TIME:
+                    state = datetime.utcnow() - timedelta(seconds=int(state))
                 self._on_state_callback(state)
 
         availability_topics = self.get_availability_topics()
