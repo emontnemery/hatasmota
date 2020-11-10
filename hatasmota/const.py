@@ -179,7 +179,7 @@ MASS_KILOGRAMS: str = "kg"
 MASS_MICROGRAMS = "µg"
 
 # Light units
-LIGHT_LUX: str = "lx"
+LIGHT_LUX: str = "lux"
 
 # Percentage units
 PERCENTAGE = "%"
