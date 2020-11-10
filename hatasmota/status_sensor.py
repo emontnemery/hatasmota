@@ -7,13 +7,14 @@ import attr
 
 from .const import (
     CONF_DEVICENAME,
+    CONF_IP,
     CONF_MAC,
     PERCENTAGE,
     SENSOR_STATUS_IP,
     SENSOR_STATUS_LAST_RESTART_TIME,
     SENSOR_STATUS_LINK_COUNT,
     SENSOR_STATUS_MQTT_COUNT,
-    SENSOR_STATUS_RESTART,
+    SENSOR_STATUS_RESTART_REASON,
     SENSOR_STATUS_RSSI,
     SENSOR_STATUS_SIGNAL,
     SIGNAL_STRENGTH_DECIBELS,
@@ -55,7 +56,7 @@ _LOGGER = logging.getLogger(__name__)
 SENSORS = [
     SENSOR_STATUS_IP,
     SENSOR_STATUS_SIGNAL,
-    SENSOR_STATUS_RESTART,
+    SENSOR_STATUS_RESTART_REASON,
     SENSOR_STATUS_RSSI,
     SENSOR_STATUS_MQTT_COUNT,
     SENSOR_STATUS_LINK_COUNT,
@@ -66,35 +67,34 @@ NAMES = {
     SENSOR_STATUS_IP: "IP",
     SENSOR_STATUS_LINK_COUNT: "WiFi Connect Count",
     SENSOR_STATUS_MQTT_COUNT: "MQTT Connect Count",
-    SENSOR_STATUS_RESTART: "Restart Reason",
+    SENSOR_STATUS_RESTART_REASON: "Restart Reason",
     SENSOR_STATUS_RSSI: "RSSI",
     SENSOR_STATUS_SIGNAL: "Signal",
     SENSOR_STATUS_LAST_RESTART_TIME: "Last Restart Time",
 }
+
+SINGLE_SHOT = [SENSOR_STATUS_RESTART_REASON, SENSOR_STATUS_LAST_RESTART_TIME]
 
 STATE_PATHS = {
     SENSOR_STATUS_LINK_COUNT: ["Wifi", "LinkCount"],
     SENSOR_STATUS_MQTT_COUNT: ["MqttCount"],
     SENSOR_STATUS_RSSI: ["Wifi", "RSSI"],
     SENSOR_STATUS_SIGNAL: ["Wifi", "Signal"],
-    SENSOR_STATUS_LAST_RESTART_TIME: ["UptimeSec"],
 }
 
 STATUS_PATHS = {
-    SENSOR_STATUS_IP: ["StatusNET", "IPAddress"],
     SENSOR_STATUS_LINK_COUNT: ["StatusSTS", "Wifi", "LinkCount"],
     SENSOR_STATUS_MQTT_COUNT: ["StatusSTS", "MqttCount"],
-    SENSOR_STATUS_RESTART: ["StatusPRM", "RestartReason"],
+    SENSOR_STATUS_RESTART_REASON: ["StatusPRM", "RestartReason"],
     SENSOR_STATUS_RSSI: ["StatusSTS", "Wifi", "RSSI"],
     SENSOR_STATUS_SIGNAL: ["StatusSTS", "Wifi", "Signal"],
     SENSOR_STATUS_LAST_RESTART_TIME: ["StatusSTS", "UptimeSec"],
 }
 
 STATUS_TOPICS = {
-    SENSOR_STATUS_IP: 5,
     SENSOR_STATUS_LINK_COUNT: 11,
     SENSOR_STATUS_MQTT_COUNT: 11,
-    SENSOR_STATUS_RESTART: 1,
+    SENSOR_STATUS_RESTART_REASON: 1,
     SENSOR_STATUS_RSSI: 11,
     SENSOR_STATUS_SIGNAL: 11,
     SENSOR_STATUS_LAST_RESTART_TIME: 11,
@@ -104,7 +104,7 @@ QUANTITY = {
     SENSOR_STATUS_IP: SENSOR_STATUS_IP,
     SENSOR_STATUS_LINK_COUNT: SENSOR_STATUS_LINK_COUNT,
     SENSOR_STATUS_MQTT_COUNT: SENSOR_STATUS_MQTT_COUNT,
-    SENSOR_STATUS_RESTART: SENSOR_STATUS_RESTART,
+    SENSOR_STATUS_RESTART_REASON: SENSOR_STATUS_RESTART_REASON,
     SENSOR_STATUS_RSSI: SENSOR_STATUS_RSSI,
     SENSOR_STATUS_SIGNAL: SENSOR_STATUS_SIGNAL,
     SENSOR_STATUS_LAST_RESTART_TIME: SENSOR_STATUS_LAST_RESTART_TIME,
@@ -114,7 +114,7 @@ UNITS = {
     SENSOR_STATUS_IP: None,
     SENSOR_STATUS_LINK_COUNT: None,
     SENSOR_STATUS_MQTT_COUNT: None,
-    SENSOR_STATUS_RESTART: None,
+    SENSOR_STATUS_RESTART_REASON: None,
     SENSOR_STATUS_RSSI: PERCENTAGE,
     SENSOR_STATUS_SIGNAL: SIGNAL_STRENGTH_DECIBELS,
     SENSOR_STATUS_LAST_RESTART_TIME: None,
@@ -127,6 +127,7 @@ class TasmotaStatusSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
     poll_topic: str = attr.ib()
     sensor: str = attr.ib()
+    state: str = attr.ib()
     state_topic: str = attr.ib()
     status_topic: str = attr.ib()
 
@@ -140,14 +141,15 @@ class TasmotaStatusSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
                 friendly_name=f"{config[CONF_DEVICENAME]} {NAMES[sensor]}",
                 mac=config[CONF_MAC],
                 platform=platform,
-                poll_payload=str(STATUS_TOPICS[sensor]),
+                poll_payload=str(STATUS_TOPICS.get(sensor)),
                 poll_topic=get_topic_command_status(config),
                 availability_topic=get_topic_tele_will(config),
                 availability_offline=config_get_state_offline(config),
                 availability_online=config_get_state_online(config),
                 sensor=sensor,
+                state=config[CONF_IP] if sensor == SENSOR_STATUS_IP else None,
                 state_topic=get_topic_tele_state(config),
-                status_topic=get_topic_stat_status(config, STATUS_TOPICS[sensor]),
+                status_topic=get_topic_stat_status(config, STATUS_TOPICS.get(sensor)),
             )
             for sensor in SENSORS
         ]
@@ -168,6 +170,17 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
         self._attributes = {}
         super().__init__(**kwds)
 
+    async def _poll_status(self):
+        """Poll for status."""
+        await self.subscribe_topics()
+        self._mqtt_client.publish_debounced(
+            self._cfg.poll_topic, self._cfg.poll_payload
+        )
+
+    def poll_status(self):
+        """Poll for status."""
+        self._create_task(self._poll_status())
+
     async def subscribe_topics(self):
         """Subscribe to topics."""
 
@@ -184,6 +197,8 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
             else:
                 state = get_value_by_path(payload, STATUS_PATHS[self._cfg.sensor])
             if state is not None:
+                if self._cfg.sensor in SINGLE_SHOT:
+                    self._create_task(self._unsubscribe_state_topics())
                 if self._cfg.sensor == SENSOR_STATUS_LAST_RESTART_TIME:
                     state = datetime.utcnow() - timedelta(seconds=int(state))
                 self._on_state_callback(state)
@@ -197,21 +212,32 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
                 "topic": self._cfg.state_topic,
                 "msg_callback": state_message_received,
             }
-        # Polled state update (stat/STATUS#)
-        topics["status_topic"] = {
-            "event_loop_safe": True,
-            "topic": self._cfg.status_topic,
-            "msg_callback": state_message_received,
-        }
+        if self._cfg.sensor in STATUS_PATHS:
+            # Polled state update (stat/STATUS#)
+            topics["status_topic"] = {
+                "event_loop_safe": True,
+                "topic": self._cfg.status_topic,
+                "msg_callback": state_message_received,
+            }
         topics = {**topics, **availability_topics}
 
         self._sub_state = await self._mqtt_client.subscribe(
             self._sub_state,
             topics,
         )
+        if self._cfg.state:
+            self._on_state_callback(self._cfg.state)
+
+    async def _unsubscribe_state_topics(self):
+        """Unsubscribe from state topics."""
+        availability_topics = self.get_availability_topics()
+        self._sub_state = await self._mqtt_client.subscribe(
+            self._sub_state,
+            availability_topics,
+        )
 
     async def unsubscribe_topics(self):
-        """Unsubscribe to all MQTT topics."""
+        """Unsubscribe from all MQTT topics."""
         self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
     @property

@@ -36,9 +36,10 @@ class TasmotaAvailabilityConfig(TasmotaEntityConfig):
 class TasmotaEntity:
     """Base class for Tasmota entities."""
 
-    def __init__(self, config, mqtt_client):
+    def __init__(self, config, create_task, mqtt_client):
         """Initialize."""
         self._cfg = config
+        self._create_task = create_task
         self._mqtt_client = mqtt_client
         self._on_state_callback = None
         super().__init__()

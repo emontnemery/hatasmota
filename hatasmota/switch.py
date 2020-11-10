@@ -283,7 +283,7 @@ class TasmotaSwitch(TasmotaAvailability, TasmotaEntity):
             # tasmota_0848A2/tele/SENSOR  / {"Time":"2020-09-20T09:41:28","Switch1":"ON"}
             if msg.topic == self._cfg.state_topic2:
                 state = get_value_by_path(msg.payload, [self._cfg.switchname])
-            # tasmota_0848A2/stat/STATUS8 / {"StatusSNS":{"Time":"2020-09-20T09:41:00","Switch1":"ON"}}
+            # tasmota_0848A2/stat/STATUS10 / {"StatusSNS":{"Time":"2020-09-20T09:41:00","Switch1":"ON"}}
             if msg.topic == self._cfg.state_topic3:
                 state = get_value_by_path(
                     msg.payload, [STATUS_SENSOR, self._cfg.switchname]
@@ -296,7 +296,7 @@ class TasmotaSwitch(TasmotaAvailability, TasmotaEntity):
         availability_topics = self.get_availability_topics()
         # tasmota_0848A2/stat/RESULT  / {"Switch1":{"Action":"ON"}}
         # tasmota_0848A2/tele/SENSOR  / {"Time":"2020-09-20T09:41:28","Switch1":"ON"}
-        # tasmota_0848A2/stat/STATUS8 / {"StatusSNS":{"Time":"2020-09-20T09:41:00","Switch1":"ON"}}
+        # tasmota_0848A2/stat/STATUS10 / {"StatusSNS":{"Time":"2020-09-20T09:41:00","Switch1":"ON"}}
         topics = {
             "state_topic1": {
                 "event_loop_safe": True,
