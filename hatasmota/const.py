@@ -130,6 +130,7 @@ SENSOR_STATUS_MQTT_COUNT = "status_mqtt_count"
 SENSOR_STATUS_RESTART_REASON = "status_restart_reason"
 SENSOR_STATUS_RSSI = "status_rssi"
 SENSOR_STATUS_SIGNAL = "status_signal"
+SENSOR_STATUS_SSID = "status_ssid"
 
 SENSOR_UNIT_PRESSURE = "PressureUnit"
 SENSOR_UNIT_SPEED = "SpeedUnit"
