@@ -272,7 +272,7 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
                 "topic": self._cfg.state_topic1,
                 "msg_callback": state_message_received,
             },
-            # Polled state update (stat/STATUS8)
+            # Polled state update (stat/STATUS10)
             "state_topic2": {
                 "event_loop_safe": True,
                 "topic": self._cfg.state_topic2,
