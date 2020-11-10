@@ -197,7 +197,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @attr.s(slots=True, frozen=True)
 class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
-    """Tasmota switch configuation."""
+    """Tasmota Status Sensor configuration."""
 
     poll_topic: str = attr.ib()
     quantity: str = attr.ib()
@@ -244,7 +244,7 @@ class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
 
 class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
-    """Representation of a Tasmota switch."""
+    """Representation of Tasmota Status Sensors."""
 
     def __init__(self, **kwds):
         """Initialize."""

@@ -123,7 +123,7 @@ UNITS = {
 
 @attr.s(slots=True, frozen=True)
 class TasmotaStatusSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
-    """Tasmota switch configuation."""
+    """Tasmota Status Sensor configuration."""
 
     poll_topic: str = attr.ib()
     sensor: str = attr.ib()
