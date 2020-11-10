@@ -163,6 +163,8 @@ SWITCHMODE_MAP = {
     ),
 }
 
+NO_POLL_SWITCHMODES = [SWITCHMODE_PUSHON, SWITCHMODE_PUSHON_INV]
+
 
 @attr.s(slots=True, frozen=True)
 class TasmotaSwitchTriggerConfig:
@@ -236,6 +238,12 @@ class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     def from_discovery_message(cls, config, idx, platform):
         """Instantiate from discovery message."""
         switchmode = config[CONF_SWITCH][idx]
+        state_topic1 = get_topic_stat_result(config)
+        state_topic2 = None
+        state_topic3 = None
+        if switchmode not in NO_POLL_SWITCHMODES:
+            state_topic2 = get_topic_tele_sensor(config)
+            state_topic3 = get_topic_stat_status(config, 10)
         binary_sensor, off_delay, _ = SWITCHMODE_MAP[switchmode]
         if not binary_sensor:
             return None
@@ -254,9 +262,9 @@ class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             off_delay=off_delay,
             state_power_off=config_get_state_power_off(config),
             state_power_on=config_get_state_power_on(config),
-            state_topic1=get_topic_stat_result(config),
-            state_topic2=get_topic_tele_sensor(config),
-            state_topic3=get_topic_stat_status(config, 10),
+            state_topic1=state_topic1,
+            state_topic2=state_topic2,
+            state_topic3=state_topic3,
             switchname=config_get_switchname(config, idx),
         )
 
@@ -303,17 +311,20 @@ class TasmotaSwitch(TasmotaAvailability, TasmotaEntity):
                 "topic": self._cfg.state_topic1,
                 "msg_callback": state_message_received,
             },
-            "state_topic2": {
+        }
+        if self._cfg.state_topic2:
+            topics["state_topic2"] = {
                 "event_loop_safe": True,
                 "topic": self._cfg.state_topic2,
                 "msg_callback": state_message_received,
-            },
-            "state_topic3": {
+            }
+        if self._cfg.state_topic3:
+            topics["state_topic3"] = {
                 "event_loop_safe": True,
                 "topic": self._cfg.state_topic3,
                 "msg_callback": state_message_received,
-            },
-        }
+            }
+
         topics = {**topics, **availability_topics}
 
         self._sub_state = await self._mqtt_client.subscribe(
