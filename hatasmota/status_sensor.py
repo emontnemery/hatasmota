@@ -1,7 +1,7 @@
 """Tasmota status sensor."""
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import attr
 
@@ -207,7 +207,7 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
                 if self._cfg.sensor in SINGLE_SHOT:
                     self._create_task(self._unsubscribe_state_topics())
                 if self._cfg.sensor == SENSOR_STATUS_LAST_RESTART_TIME:
-                    state = datetime.utcnow() - timedelta(seconds=int(state))
+                    state = datetime.now(timezone.utc) - timedelta(seconds=int(state))
                 self._on_state_callback(state)
 
         availability_topics = self.get_availability_topics()
