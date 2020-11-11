@@ -1,4 +1,5 @@
 """Tasmota status sensor."""
+import asyncio
 import json
 import logging
 from datetime import datetime, timedelta
@@ -186,7 +187,7 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
 
     def poll_status(self):
         """Poll for status."""
-        self._create_task(self._poll_status())
+        asyncio.create_task(self._poll_status())
 
     async def subscribe_topics(self):
         """Subscribe to topics."""
@@ -205,7 +206,7 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
                 state = get_value_by_path(payload, STATUS_PATHS[self._cfg.sensor])
             if state is not None:
                 if self._cfg.sensor in SINGLE_SHOT:
-                    self._create_task(self._unsubscribe_state_topics())
+                    asyncio.create_task(self._unsubscribe_state_topics())
                 if self._cfg.sensor == SENSOR_STATUS_LAST_RESTART_TIME:
                     state = datetime.utcnow() - timedelta(seconds=int(state))
                 self._on_state_callback(state)
