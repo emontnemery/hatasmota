@@ -356,29 +356,19 @@ def has_entities_with_platform(discovery_msg, platform):
     return any(x is not None for (x, _) in entities)
 
 
-def get_entity(config, mqtt_client, create_task):
+def get_entity(config, mqtt_client):
     """Create entity for the given platform."""
     platform = config.platform
     if platform == "binary_sensor":
-        return TasmotaSwitch(
-            config=config, mqtt_client=mqtt_client, create_task=create_task
-        )
+        return TasmotaSwitch(config=config, mqtt_client=mqtt_client)
     if platform == "light":
-        return TasmotaLight(
-            config=config, mqtt_client=mqtt_client, create_task=create_task
-        )
+        return TasmotaLight(config=config, mqtt_client=mqtt_client)
     if platform == "sensor":
-        return TasmotaSensor(
-            config=config, mqtt_client=mqtt_client, create_task=create_task
-        )
+        return TasmotaSensor(config=config, mqtt_client=mqtt_client)
     if platform == "status_sensor":
-        return TasmotaStatusSensor(
-            config=config, mqtt_client=mqtt_client, create_task=create_task
-        )
+        return TasmotaStatusSensor(config=config, mqtt_client=mqtt_client)
     if platform == "switch":
-        return TasmotaRelay(
-            config=config, mqtt_client=mqtt_client, create_task=create_task
-        )
+        return TasmotaRelay(config=config, mqtt_client=mqtt_client)
     return None
 
 
