@@ -175,6 +175,7 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
     def __init__(self, **kwds):
         """Initialize."""
         self._sub_state = None
+        self._sub_state_lock = asyncio.Lock()
         self._attributes = {}
         super().__init__(**kwds)
 
@@ -229,24 +230,27 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
             }
         topics = {**topics, **availability_topics}
 
-        self._sub_state = await self._mqtt_client.subscribe(
-            self._sub_state,
-            topics,
-        )
+        async with self._sub_state_lock:
+            self._sub_state = await self._mqtt_client.subscribe(
+                self._sub_state,
+                topics,
+            )
         if self._cfg.state:
             self._on_state_callback(self._cfg.state)
 
     async def _unsubscribe_state_topics(self):
         """Unsubscribe from state topics."""
         availability_topics = self.get_availability_topics()
-        self._sub_state = await self._mqtt_client.subscribe(
-            self._sub_state,
-            availability_topics,
-        )
+        async with self._sub_state_lock:
+            self._sub_state = await self._mqtt_client.subscribe(
+                self._sub_state,
+                availability_topics,
+            )
 
     async def unsubscribe_topics(self):
         """Unsubscribe from all MQTT topics."""
-        self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
+        async with self._sub_state_lock:
+            self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
     @property
     def quantity(self):
