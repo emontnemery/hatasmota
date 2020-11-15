@@ -251,7 +251,7 @@ class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
         return cls(
             endpoint="switch",
             idx=idx,
-            friendly_name=config_get_friendlyname(config, platform, idx),
+            friendly_name=config_get_switchname(config, idx),
             mac=config[CONF_MAC],
             platform=platform,
             poll_payload="10",
