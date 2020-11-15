@@ -36,7 +36,6 @@ from .entity import (
 )
 from .trigger import TasmotaTrigger
 from .utils import (
-    config_get_friendlyname,
     config_get_state_offline,
     config_get_state_online,
     config_get_state_power_off,
