@@ -40,6 +40,7 @@ from .utils import (
     config_get_state_online,
     config_get_state_power_off,
     config_get_state_power_on,
+    config_get_switchfriendlyname,
     config_get_switchname,
     get_topic_command_status,
     get_topic_stat_result,
@@ -250,7 +251,7 @@ class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
         return cls(
             endpoint="switch",
             idx=idx,
-            friendly_name=config_get_switchname(config, idx),
+            friendly_name=config_get_switchfriendlyname(config, platform, idx),
             mac=config[CONF_MAC],
             platform=platform,
             poll_payload="10",
