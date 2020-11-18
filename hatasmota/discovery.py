@@ -80,6 +80,7 @@ TASMOTA_OPTIONS_SCHEMA = vol.Schema(
         ): cv.bit,  # Added in Tasmota 9.0.0.4
     },
     required=True,
+    extra=vol.ALLOW_EXTRA,
 )
 
 TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
@@ -111,6 +112,7 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         CONF_VERSION: 1,
     },
     required=True,
+    extra=vol.ALLOW_EXTRA,
 )
 
 TASMOTA_SENSOR_DISCOVERY_SCHEMA = vol.Schema(
@@ -119,6 +121,7 @@ TASMOTA_SENSOR_DISCOVERY_SCHEMA = vol.Schema(
         CONF_VERSION: 1,
     },
     required=True,
+    extra=vol.ALLOW_EXTRA,
 )
 
 _LOGGER = logging.getLogger(__name__)
