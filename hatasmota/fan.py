@@ -39,7 +39,6 @@ class TasmotaFanConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota fan configuation."""
 
     command_topic: str = attr.ib()
-    poll_topic = attr.ib()
     result_topic: str = attr.ib()
     state_topic: str = attr.ib()
 

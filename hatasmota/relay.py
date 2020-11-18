@@ -33,7 +33,6 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
     command_topic: str = attr.ib()
     is_light: bool = attr.ib()
-    poll_topic = attr.ib()
     result_topic: str = attr.ib()
     state_power_off: str = attr.ib()
     state_power_on: str = attr.ib()
