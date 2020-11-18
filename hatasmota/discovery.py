@@ -47,6 +47,7 @@ from .const import (
     RL_LIGHT,
     RL_RELAY,
 )
+from .fan import TasmotaFan, TasmotaFanConfig
 from .light import TasmotaLight, TasmotaLightConfig
 from .relay import TasmotaRelay, TasmotaRelayConfig
 from .sensor import TasmotaSensor, get_sensor_entities
@@ -275,6 +276,19 @@ def get_binary_sensor_entities(discovery_msg):
     return entities
 
 
+def get_fan_entities(discovery_msg):
+    """Generate fan configuration."""
+    fan_entities = []
+
+    entity = None
+    discovery_hash = (discovery_msg[CONF_MAC], "fan", "fan", "ifan")
+    if discovery_msg[CONF_IFAN]:
+        entity = TasmotaFanConfig.from_discovery_message(discovery_msg, "fan")
+    fan_entities.append((entity, discovery_hash))
+
+    return fan_entities
+
+
 def get_switch_entities(discovery_msg):
     """Generate switch configuration."""
     switch_entities = []
@@ -341,6 +355,8 @@ def get_entities_for_platform(discovery_msg, platform):
     """Generate configuration for the given platform."""
     if platform == "binary_sensor":
         return get_binary_sensor_entities(discovery_msg)
+    if platform == "fan":
+        return get_fan_entities(discovery_msg)
     if platform == "light":
         return get_light_entities(discovery_msg)
     if platform == "sensor":
@@ -361,6 +377,8 @@ def get_entity(config, mqtt_client):
     platform = config.platform
     if platform == "binary_sensor":
         return TasmotaSwitch(config=config, mqtt_client=mqtt_client)
+    if platform == "fan":
+        return TasmotaFan(config=config, mqtt_client=mqtt_client)
     if platform == "light":
         return TasmotaLight(config=config, mqtt_client=mqtt_client)
     if platform == "sensor":
