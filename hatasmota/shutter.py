@@ -15,6 +15,7 @@ from .const import (
     SHUTTER_DIRECTION,
     SHUTTER_OPTION_INVERT,
     SHUTTER_POSITION,
+    STATUS_SENSOR,
 )
 from .entity import (
     TasmotaAvailability,
@@ -26,9 +27,10 @@ from .utils import (
     config_get_state_offline,
     config_get_state_online,
     get_topic_command,
-    get_topic_command_state,
+    get_topic_command_status,
     get_topic_stat_result,
-    get_topic_tele_state,
+    get_topic_stat_status,
+    get_topic_tele_sensor,
     get_topic_tele_will,
     get_value_by_path,
 )
@@ -42,8 +44,9 @@ class TasmotaShutterConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
     command_topic: str = attr.ib()
     inverted_shutter = attr.ib()
-    result_topic: str = attr.ib()
-    state_topic: str = attr.ib()
+    state_topic1: str = attr.ib()
+    state_topic2: str = attr.ib()
+    state_topic3: str = attr.ib()
 
     @classmethod
     def from_discovery_message(cls, config, idx, platform):
@@ -56,15 +59,16 @@ class TasmotaShutterConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             friendly_name=f"{config[CONF_DEVICENAME]} {platform} {idx+1}",
             mac=config[CONF_MAC],
             platform=platform,
-            poll_payload="",
-            poll_topic=get_topic_command_state(config),
+            poll_payload="10",
+            poll_topic=get_topic_command_status(config),
             availability_topic=get_topic_tele_will(config),
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
             command_topic=get_topic_command(config),
             inverted_shutter=shutter_options & SHUTTER_OPTION_INVERT,
-            result_topic=get_topic_stat_result(config),
-            state_topic=get_topic_tele_state(config),
+            state_topic1=get_topic_stat_result(config),
+            state_topic2=get_topic_tele_sensor(config),
+            state_topic3=get_topic_stat_status(config, 10),
         )
 
 
@@ -83,12 +87,19 @@ class TasmotaShutter(TasmotaAvailability, TasmotaEntity):
         def state_message_received(msg):
             """Handle new MQTT state messages."""
             shutter = f"{RSLT_SHUTTER}{self._cfg.idx+1}"
+            prefix = []
+            if msg.topic == self._cfg.state_topic3:
+                prefix = [STATUS_SENSOR]
 
-            direction = get_value_by_path(msg.payload, [shutter, SHUTTER_DIRECTION])
+            direction = get_value_by_path(
+                msg.payload, prefix + [shutter, SHUTTER_DIRECTION]
+            )
             if direction is not None and self._cfg.inverted_shutter:
                 direction = direction * -1
 
-            position = get_value_by_path(msg.payload, [shutter, SHUTTER_POSITION])
+            position = get_value_by_path(
+                msg.payload, prefix + [shutter, SHUTTER_POSITION]
+            )
             if position is not None and self._cfg.inverted_shutter:
                 position = 100 - position
 
@@ -97,14 +108,19 @@ class TasmotaShutter(TasmotaAvailability, TasmotaEntity):
 
         availability_topics = self.get_availability_topics()
         topics = {
-            "result_topic": {
+            "state_topic1": {
                 "event_loop_safe": True,
-                "topic": self._cfg.result_topic,
+                "topic": self._cfg.state_topic1,
                 "msg_callback": state_message_received,
             },
-            "state_topic": {
+            "state_topic2": {
                 "event_loop_safe": True,
-                "topic": self._cfg.state_topic,
+                "topic": self._cfg.state_topic2,
+                "msg_callback": state_message_received,
+            },
+            "state_topic3": {
+                "event_loop_safe": True,
+                "topic": self._cfg.state_topic3,
                 "msg_callback": state_message_received,
             },
         }
