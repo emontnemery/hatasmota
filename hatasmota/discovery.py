@@ -301,7 +301,7 @@ def get_light_entities(discovery_msg):
         discovery_hash = (discovery_msg[CONF_MAC], "light", "light", idx)
         if value == RL_LIGHT:
             if discovery_msg[CONF_IFAN]:
-                #Special case for iFan: Non dimmable light
+                # Special case for iFan: Non dimmable light
                 entity = TasmotaRelayConfig.from_discovery_message(
                     discovery_msg, idx, "light"
                 )
