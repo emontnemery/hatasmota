@@ -104,7 +104,7 @@ class TasmotaShutter(TasmotaAvailability, TasmotaEntity):
                 position = 100 - position
 
             if direction is not None or position is not None:
-                self._on_state_callback(None, direction, position)
+                self._on_state_callback(None, direction=direction, position=position)
 
         availability_topics = self.get_availability_topics()
         topics = {
