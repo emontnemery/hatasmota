@@ -26,6 +26,7 @@ from .const import (
     CONF_PREFIX,
     CONF_RELAY,
     CONF_SENSOR,
+    CONF_SHUTTER_OPTIONS,
     CONF_STATE,
     CONF_SW_VERSION,
     CONF_SWITCH,
@@ -46,11 +47,13 @@ from .const import (
     OPTION_SHUTTER_MODE,
     RL_LIGHT,
     RL_RELAY,
+    RL_SHUTTER,
 )
 from .fan import TasmotaFan, TasmotaFanConfig
 from .light import TasmotaLight, TasmotaLightConfig
 from .relay import TasmotaRelay, TasmotaRelayConfig
 from .sensor import TasmotaSensor, get_sensor_entities
+from .shutter import TasmotaShutter, TasmotaShutterConfig
 from .status_sensor import TasmotaStatusSensor, TasmotaStatusSensorConfig
 from .switch import (
     TasmotaSwitch,
@@ -102,6 +105,9 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         CONF_OPTIONS: TASMOTA_OPTIONS_SCHEMA,
         CONF_PREFIX: vol.All(cv.ensure_list, [cv.string]),
         CONF_STATE: vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional(CONF_SHUTTER_OPTIONS, default=[]): vol.All(
+            cv.ensure_list, [cv.positive_int]
+        ),  # Added in Tasmota 9.2
         CONF_SW_VERSION: cv.string,
         CONF_SWITCH: vol.All(cv.ensure_list, [int]),
         vol.Optional(CONF_SWITCHNAME, default=[]): vol.All(
@@ -279,6 +285,30 @@ def get_binary_sensor_entities(discovery_msg):
     return entities
 
 
+def get_cover_entities(discovery_msg):
+    """Generate cover configuration."""
+    relays = discovery_msg[CONF_RELAY]
+    shutter_entities = []
+    shutter_indices = []
+    for (idx, value) in enumerate(relays):
+        if value == RL_SHUTTER and idx and relays[idx - 1] == RL_SHUTTER:
+            shutter_indices.append(idx - 1)
+
+    # pad / truncate the shutter index list to 4
+    shutter_indices = shutter_indices[:4] + [-1] * (4 - len(shutter_indices))
+
+    for (idx, relay_idx) in enumerate(shutter_indices):
+        entity = None
+        discovery_hash = (discovery_msg[CONF_MAC], "cover", "shutter", idx)
+        if relay_idx != -1:
+            entity = TasmotaShutterConfig.from_discovery_message(
+                discovery_msg, idx, "cover"
+            )
+        shutter_entities.append((entity, discovery_hash))
+
+    return shutter_entities
+
+
 def get_fan_entities(discovery_msg):
     """Generate fan configuration."""
     fan_entities = []
@@ -364,6 +394,8 @@ def get_entities_for_platform(discovery_msg, platform):
     """Generate configuration for the given platform."""
     if platform == "binary_sensor":
         return get_binary_sensor_entities(discovery_msg)
+    if platform == "cover":
+        return get_cover_entities(discovery_msg)
     if platform == "fan":
         return get_fan_entities(discovery_msg)
     if platform == "light":
@@ -386,6 +418,8 @@ def get_entity(config, mqtt_client):
     platform = config.platform
     if platform == "binary_sensor":
         return TasmotaSwitch(config=config, mqtt_client=mqtt_client)
+    if platform == "cover":
+        return TasmotaShutter(config=config, mqtt_client=mqtt_client)
     if platform == "fan":
         return TasmotaFan(config=config, mqtt_client=mqtt_client)
     if platform == "light":
