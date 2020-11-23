@@ -314,18 +314,15 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
                 if self.light_type >= LIGHT_TYPE_COLDWARM and self._color_temp:
                     now_color_temp = self._color_temp
                     new_color_temp = attributes.get("color_temp", self._color_temp)
-                    now_ct_ratio = (now_color_temp - self.min_mireds) / (
-                        self.max_mireds - self.min_mireds
-                    )
-                    new_ct_ratio = (new_color_temp - self.min_mireds) / (
-                        self.max_mireds - self.min_mireds
-                    )
+                    mired_range = self.max_mireds - self.min_mireds
+                    now_ct_ratio = (now_color_temp - self.min_mireds) / mired_range
+                    new_ct_ratio = (new_color_temp - self.min_mireds) / mired_range
                     now_channels.append(now_ct_ratio)
                     new_channels.append(new_ct_ratio)
                 now_channels = [x * now_brightness / 100 for x in now_channels]
                 new_channels = [x * new_brightness / 100 for x in new_channels]
 
-            # Dimmer, or color / color_temp unknown
+            # 1-channel dimmer, or color / color_temp unknown
             if not new_channels:
                 new_channels = [new_brightness / 100]
                 now_channels = [now_brightness / 100]
@@ -334,7 +331,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             delta_ratio = max(
                 map(abs, [x1 - x2 for (x1, x2) in zip(now_channels, new_channels)])
             )
-            speed = round(transition * 2 * delta_ratio)
+            speed = round(transition * 2 / delta_ratio)
             # Clamp speed to the range 1..40
             speed = min(max(speed, 1), 40)
             command = COMMAND_SPEED
