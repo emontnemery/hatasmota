@@ -159,6 +159,8 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
     def __init__(self, **kwds):
         """Initialize."""
         self._brightness = None
+        self._color = None
+        self._color_temp = None
         self._state = None
         self._sub_state = None
         super().__init__(**kwds)
@@ -184,10 +186,12 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
                         color = color.split(",", 3)
                         if len(color) >= 3:
                             color = [float(color[0]), float(color[1]), float(color[2])]
+                            self._color = color
                             attributes["color"] = color
 
                     color_temp = get_value_by_path(msg.payload, [COMMAND_CT])
                     if color_temp is not None:
+                        self._color_temp = color_temp
                         attributes["color_temp"] = color_temp
 
                     scheme = get_value_by_path(msg.payload, [COMMAND_SCHEME])
@@ -287,7 +291,9 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
         argument = 1 if do_transition else 0
         commands.append((command, argument))
 
-        # Calculate speed
+        # Calculate speed:
+        # Home Assistant's transition is the transition time in seconds.
+        # Tasmota's speed command is the number of half-seconds scaled for a 100% fade
         if do_transition:
             old_brightness = self._brightness if self._brightness is not None else 100
             now_brightness = old_brightness if self._state else 0
@@ -296,9 +302,36 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
                 "brightness", old_brightness if state else 0
             )
 
-            # Scale transition to percentage of brightness change
-            delta_ratio = abs(now_brightness - new_brightness) / 100
-            speed = round(transition * 2 * delta_ratio)
+            now_channels = []
+            new_channels = []
+            # Calculate normalized brightness for all channels
+            if self.light_type >= LIGHT_TYPE_COLDWARM:
+                if self.light_type >= LIGHT_TYPE_RGB and self._color:
+                    now_color = [x / 255 for x in self._color]
+                    new_color = [x / 255 for x in attributes.get("color", self._color)]
+                    now_channels.extend(now_color)
+                    new_channels.extend(new_color)
+                if self.light_type >= LIGHT_TYPE_COLDWARM and self._color_temp:
+                    now_color_temp = self._color_temp
+                    new_color_temp = attributes.get("color_temp", self._color_temp)
+                    mired_range = self.max_mireds - self.min_mireds
+                    now_ct_ratio = (now_color_temp - self.min_mireds) / mired_range
+                    new_ct_ratio = (new_color_temp - self.min_mireds) / mired_range
+                    now_channels.append(now_ct_ratio)
+                    new_channels.append(new_ct_ratio)
+                now_channels = [x * now_brightness / 100 for x in now_channels]
+                new_channels = [x * new_brightness / 100 for x in new_channels]
+
+            # 1-channel dimmer, or color / color_temp unknown
+            if not new_channels:
+                new_channels = [new_brightness / 100]
+                now_channels = [now_brightness / 100]
+
+            # Scale transition to the channel with the largest brightness change
+            delta_ratio = max(
+                map(abs, [x1 - x2 for (x1, x2) in zip(now_channels, new_channels)])
+            )
+            speed = round(transition * 2 / delta_ratio)
             # Clamp speed to the range 1..40
             speed = min(max(speed, 1), 40)
             command = COMMAND_SPEED
