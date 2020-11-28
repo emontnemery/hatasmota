@@ -18,6 +18,7 @@ from .const import (
     CONF_MAC,
     CONF_OPTIONS,
     CONF_RELAY,
+    CONF_TUYA,
     LST_COLDWARM,
     LST_NONE,
     LST_RGB,
@@ -82,7 +83,6 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     dimmer: str = attr.ib()
     command_topic: str = attr.ib()
     control_by_channel: bool = attr.ib()
-    dimmer_idx: int = attr.ib()
     light_type: int = attr.ib()
     max_mireds: int = attr.ib()
     min_mireds: int = attr.ib()
@@ -92,13 +92,16 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     state_power_off: str = attr.ib()
     state_power_on: str = attr.ib()
     state_topic: str = attr.ib()
+    tuya: bool = attr.ib()
 
     @classmethod
     def from_discovery_message(cls, config, idx, platform):
         """Instantiate from discovery message."""
         dimmer = COMMAND_DIMMER
         control_by_channel = False  # Use Channel<n> command to control the light
-        dimmer_idx = 0  # Use Dimmer<n> to control brightness
+        if config[CONF_TUYA]:
+            dimmer_idx = 3  # Brightness controlled by DIMMER3
+            dimmer = f"{COMMAND_DIMMER}{dimmer_idx}"
         tasmota_light_sub_type = config[CONF_LIGHT_SUBTYPE]
         light_type = LIGHT_TYPE_MAP[tasmota_light_sub_type]
 
@@ -141,7 +144,6 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             dimmer=dimmer,
             command_topic=get_topic_command(config),
             control_by_channel=control_by_channel,
-            dimmer_idx=dimmer_idx,
             light_type=light_type,
             max_mireds=max_mireds,
             min_mireds=min_mireds,
@@ -150,6 +152,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             state_power_off=config_get_state_power_off(config),
             state_power_on=config_get_state_power_on(config),
             state_topic=get_topic_tele_state(config),
+            tuya=config[CONF_TUYA],
         )
 
 
@@ -270,6 +273,11 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
         else:
             self._set_state_light(state, attributes)
 
+    @property
+    def supports_transition(self):
+        """Return if the light supports transitions."""
+        return self.light_type != LIGHT_TYPE_NONE and not self._cfg.tuya
+
     def _set_state_relay(self, state):
         """Turn the relay on or off."""
         payload = self._cfg.state_power_on if state else self._cfg.state_power_off
@@ -287,9 +295,10 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
         do_transition = transition > 0
 
         # Set fade
-        command = COMMAND_FADE
-        argument = 1 if do_transition else 0
-        commands.append((command, argument))
+        if self.supports_transition:
+            command = COMMAND_FADE
+            argument = 1 if do_transition else 0
+            commands.append((command, argument))
 
         # Calculate speed:
         # Home Assistant's transition is the transition time in seconds.
