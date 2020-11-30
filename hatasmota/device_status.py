@@ -122,8 +122,8 @@ class TasmotaDeviceStatus(TasmotaAvailability, TasmotaEntity):
                 return
 
             attributes = {}
-            state = None
             for attribute in ATTRIBUTES:
+                state = None
                 if msg.topic == self._cfg.state_topic and attribute in STATE_PATHS:
                     state = get_value_by_path(payload, STATE_PATHS[attribute])
                 elif msg.topic != self._cfg.state_topic and attribute in STATUS_PATHS:

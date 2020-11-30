@@ -256,6 +256,7 @@ def get_device_config_helper(discovery_msg):
         return {}
 
     device_config = {
+        CONF_IP: discovery_msg[CONF_IP],
         CONF_MAC: discovery_msg[CONF_MAC],
         CONF_MANUFACTURER: "Tasmota",
         CONF_MODEL: discovery_msg[CONF_MODEL],
