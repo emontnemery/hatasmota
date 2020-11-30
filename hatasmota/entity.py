@@ -91,6 +91,10 @@ class TasmotaAvailability(TasmotaEntity):
         def availability_message_received(msg):
             """Handle a new received MQTT availability message."""
             if msg.payload == self._cfg.availability_online:
+                self.poll_status()
+            if not self._on_availability_callback:
+                return
+            if msg.payload == self._cfg.availability_online:
                 self._on_availability_callback(True)
             if msg.payload == self._cfg.availability_offline:
                 self._on_availability_callback(False)
