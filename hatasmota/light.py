@@ -109,7 +109,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
         if config[CONF_OPTIONS][OPTION_PWM_MULTI_CHANNELS]:
             # Multi-channel PWM instead of a single light, each light controlled by CHANNEL<n>
-            dimmer = f"{COMMAND_CHANNEL}{idx+1}"
+            dimmer_state = f"{COMMAND_CHANNEL}{idx+1}"
             control_by_channel = True
             light_type = LIGHT_TYPE_DIMMER
         elif not config[CONF_LINK_RGB_CT] and tasmota_light_sub_type >= LST_RGBW:
