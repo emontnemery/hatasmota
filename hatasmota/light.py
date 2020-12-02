@@ -80,7 +80,8 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota light configuation."""
 
-    dimmer: str = attr.ib()
+    dimmer_cmd: str = attr.ib()
+    dimmer_state: str = attr.ib()
     command_topic: str = attr.ib()
     control_by_channel: bool = attr.ib()
     light_type: int = attr.ib()
@@ -97,11 +98,12 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     @classmethod
     def from_discovery_message(cls, config, idx, platform):
         """Instantiate from discovery message."""
-        dimmer = COMMAND_DIMMER
+        dimmer_cmd = COMMAND_DIMMER
+        dimmer_state = COMMAND_DIMMER
         control_by_channel = False  # Use Channel<n> command to control the light
         if config[CONF_TUYA]:
             dimmer_idx = 3  # Brightness controlled by DIMMER3
-            dimmer = f"{COMMAND_DIMMER}{dimmer_idx}"
+            dimmer_cmd = f"{COMMAND_DIMMER}{dimmer_idx}"
         tasmota_light_sub_type = config[CONF_LIGHT_SUBTYPE]
         light_type = LIGHT_TYPE_MAP[tasmota_light_sub_type]
 
@@ -122,7 +124,8 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
                     light_type = LIGHT_TYPE_DIMMER
                 else:
                     light_type = LIGHT_TYPE_COLDWARM
-            dimmer = f"{COMMAND_DIMMER}{dimmer_idx}"
+            dimmer_cmd = f"{COMMAND_DIMMER}{dimmer_idx}"
+            dimmer_state = f"{COMMAND_DIMMER}{dimmer_idx}"
 
         min_mireds = DEFAULT_MIN_MIREDS
         max_mireds = DEFAULT_MAX_MIREDS
@@ -141,7 +144,8 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_topic=get_topic_tele_will(config),
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
-            dimmer=dimmer,
+            dimmer_cmd=dimmer_cmd,
+            dimmer_state=dimmer_state,
             command_topic=get_topic_command(config),
             control_by_channel=control_by_channel,
             light_type=light_type,
@@ -179,7 +183,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             if self._cfg.endpoint == "light":
                 if self._cfg.light_type != LIGHT_TYPE_NONE:
 
-                    brightness = get_value_by_path(msg.payload, [self._cfg.dimmer])
+                    brightness = get_value_by_path(msg.payload, [self._cfg.dimmer_state])
                     if brightness is not None:
                         self._brightness = brightness
                         attributes["brightness"] = brightness
@@ -353,7 +357,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             if self._cfg.control_by_channel:
                 command = f"{COMMAND_CHANNEL}{idx+1}"
             else:
-                command = self._cfg.dimmer
+                command = self._cfg.dimmer_cmd
 
         commands.append((command, argument))
 
