@@ -183,7 +183,9 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             if self._cfg.endpoint == "light":
                 if self._cfg.light_type != LIGHT_TYPE_NONE:
 
-                    brightness = get_value_by_path(msg.payload, [self._cfg.dimmer_state])
+                    brightness = get_value_by_path(
+                        msg.payload, [self._cfg.dimmer_state]
+                    )
                     if brightness is not None:
                         self._brightness = brightness
                         attributes["brightness"] = brightness
