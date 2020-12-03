@@ -352,7 +352,10 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             delta_ratio = max(
                 map(abs, [x1 - x2 for (x1, x2) in zip(now_channels, new_channels)])
             )
-            speed = round(transition * 2 / delta_ratio)
+            if delta_ratio == 0:
+                speed = 0
+            else:
+                speed = round(transition * 2 / delta_ratio)
             # Clamp speed to the range 1..40
             speed = min(max(speed, 1), 40)
             command = COMMAND_SPEED
