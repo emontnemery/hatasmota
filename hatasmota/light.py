@@ -25,6 +25,7 @@ from .const import (
     LST_RGBCW,
     LST_RGBW,
     LST_SINGLE,
+    OPTION_DECIMAL_TEXT,
     OPTION_NOT_POWER_LINKED,
     OPTION_PWM_MULTI_CHANNELS,
     OPTION_REDUCED_CT_RANGE,
@@ -84,6 +85,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     dimmer_state: str = attr.ib()
     command_topic: str = attr.ib()
     control_by_channel: bool = attr.ib()
+    dec_color: bool = attr.ib()
     light_type: int = attr.ib()
     max_mireds: int = attr.ib()
     min_mireds: int = attr.ib()
@@ -148,6 +150,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             dimmer_state=dimmer_state,
             command_topic=get_topic_command(config),
             control_by_channel=control_by_channel,
+            dec_color=config[CONF_OPTIONS][OPTION_DECIMAL_TEXT],
             light_type=light_type,
             max_mireds=max_mireds,
             min_mireds=min_mireds,
@@ -192,7 +195,13 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
 
                     color = get_value_by_path(msg.payload, [COMMAND_COLOR])
                     if color is not None:
-                        color = color.split(",", 3)
+                        if self._cfg.dec_color:
+                            color = color.split(",", 3)
+                        else:
+                            color = [
+                                int(color[i : i + 2], 16)
+                                for i in range(0, len(color), 2)
+                            ]
                         if len(color) >= 3:
                             color = [float(color[0]), float(color[1]), float(color[2])]
                             self._color = color
