@@ -192,7 +192,13 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
 
                     color = get_value_by_path(msg.payload, [COMMAND_COLOR])
                     if color is not None:
-                        color = color.split(",", 3)
+                        if color.find(",") != -1:
+                            color = color.split(",", 3)
+                        else:
+                            color = [
+                                int(color[i : i + 2], 16)
+                                for i in range(0, len(color), 2)
+                            ]
                         if len(color) >= 3:
                             color = [float(color[0]), float(color[1]), float(color[2])]
                             self._color = color
