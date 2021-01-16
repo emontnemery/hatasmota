@@ -37,6 +37,7 @@ from .const import (
     OPTION_BUTTON_SINGLE,
     OPTION_BUTTON_SWAP,
     OPTION_DECIMAL_TEXT,
+    OPTION_FADE_FIXED_DURATION,
     OPTION_HASS_LIGHT,
     OPTION_MQTT_BUTTONS,
     OPTION_MQTT_RESPONSE,
@@ -82,6 +83,9 @@ TASMOTA_OPTIONS_SCHEMA = vol.Schema(
         vol.Optional(
             OPTION_MQTT_SWITCHES, default=0
         ): cv.bit,  # Added in Tasmota 9.0.0.4
+        vol.Optional(
+            OPTION_FADE_FIXED_DURATION, default=0
+        ): cv.bit,  # Added in Tasmota 9.3.0
     },
     required=True,
     extra=vol.ALLOW_EXTRA,
