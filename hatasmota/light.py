@@ -25,6 +25,7 @@ from .const import (
     LST_RGBCW,
     LST_RGBW,
     LST_SINGLE,
+    OPTION_FADE_FIXED_DURATION,
     OPTION_NOT_POWER_LINKED,
     OPTION_PWM_MULTI_CHANNELS,
     OPTION_REDUCED_CT_RANGE,
@@ -84,6 +85,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     dimmer_state: str = attr.ib()
     command_topic: str = attr.ib()
     control_by_channel: bool = attr.ib()
+    fade_fixed_duration: bool = attr.ib()
     light_type: int = attr.ib()
     max_mireds: int = attr.ib()
     min_mireds: int = attr.ib()
@@ -148,6 +150,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             dimmer_state=dimmer_state,
             command_topic=get_topic_command(config),
             control_by_channel=control_by_channel,
+            fade_fixed_duration=config[CONF_OPTIONS][OPTION_FADE_FIXED_DURATION],
             light_type=light_type,
             max_mireds=max_mireds,
             min_mireds=min_mireds,
@@ -312,50 +315,9 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             argument = 1 if do_transition else 0
             commands.append((command, argument))
 
-        # Calculate speed:
-        # Home Assistant's transition is the transition time in seconds.
-        # Tasmota's speed command is the number of half-seconds scaled for a 100% fade
         if do_transition:
-            old_brightness = self._brightness if self._brightness is not None else 100
-            now_brightness = old_brightness if self._state else 0
+            speed = self._calculate_speed(state, attributes)
 
-            new_brightness = attributes.get(
-                "brightness", old_brightness if state else 0
-            )
-
-            now_channels = []
-            new_channels = []
-            # Calculate normalized brightness for all channels
-            if self.light_type >= LIGHT_TYPE_COLDWARM:
-                if self.light_type >= LIGHT_TYPE_RGB and self._color:
-                    now_color = [x / 255 for x in self._color]
-                    new_color = [x / 255 for x in attributes.get("color", self._color)]
-                    now_channels.extend(now_color)
-                    new_channels.extend(new_color)
-                if self.light_type >= LIGHT_TYPE_COLDWARM and self._color_temp:
-                    now_color_temp = self._color_temp
-                    new_color_temp = attributes.get("color_temp", self._color_temp)
-                    mired_range = self.max_mireds - self.min_mireds
-                    now_ct_ratio = (now_color_temp - self.min_mireds) / mired_range
-                    new_ct_ratio = (new_color_temp - self.min_mireds) / mired_range
-                    now_channels.append(now_ct_ratio)
-                    new_channels.append(new_ct_ratio)
-                now_channels = [x * now_brightness / 100 for x in now_channels]
-                new_channels = [x * new_brightness / 100 for x in new_channels]
-
-            # 1-channel dimmer, or color / color_temp unknown
-            if not new_channels:
-                new_channels = [new_brightness / 100]
-                now_channels = [now_brightness / 100]
-
-            # Scale transition to the channel with the largest brightness change
-            delta_ratio = max(
-                map(abs, [x1 - x2 for (x1, x2) in zip(now_channels, new_channels)])
-            )
-            if delta_ratio == 0:
-                speed = 0
-            else:
-                speed = round(transition * 2 / delta_ratio)
             # Clamp speed to the range 1..40
             speed = min(max(speed, 1), 40)
             command = COMMAND_SPEED
@@ -401,3 +363,54 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             commands.append((command, argument))
 
         send_commands(self._mqtt_client, self._cfg.command_topic, commands)
+
+    def _calculate_speed(self, state, attributes):
+        # Calculate speed:
+        # Home Assistant's transition is the transition time in seconds.
+        # Tasmota's speed command is the number of half-seconds, scaled for a 100% fade
+        # if fade_fixed_duration (SetOption117) is not set
+        transition = attributes.get("transition", 0)
+
+        if self._cfg.fade_fixed_duration:
+            # Fading at fixed duration
+            return round(transition * 2)
+
+        old_brightness = self._brightness if self._brightness is not None else 100
+        now_brightness = old_brightness if self._state else 0
+
+        new_brightness = attributes.get("brightness", old_brightness if state else 0)
+
+        now_channels = []
+        new_channels = []
+        # Calculate normalized brightness for all channels
+        if self.light_type >= LIGHT_TYPE_COLDWARM:
+            if self.light_type >= LIGHT_TYPE_RGB and self._color:
+                now_color = [x / 255 for x in self._color]
+                new_color = [x / 255 for x in attributes.get("color", self._color)]
+                now_channels.extend(now_color)
+                new_channels.extend(new_color)
+            if self.light_type >= LIGHT_TYPE_COLDWARM and self._color_temp:
+                now_color_temp = self._color_temp
+                new_color_temp = attributes.get("color_temp", self._color_temp)
+                mired_range = self.max_mireds - self.min_mireds
+                now_ct_ratio = (now_color_temp - self.min_mireds) / mired_range
+                new_ct_ratio = (new_color_temp - self.min_mireds) / mired_range
+                now_channels.append(now_ct_ratio)
+                new_channels.append(new_ct_ratio)
+            now_channels = [x * now_brightness / 100 for x in now_channels]
+            new_channels = [x * new_brightness / 100 for x in new_channels]
+
+        # 1-channel dimmer, or color / color_temp unknown
+        if not new_channels:
+            new_channels = [new_brightness / 100]
+            now_channels = [now_brightness / 100]
+
+        # Scale transition to the channel with the largest brightness change
+        delta_ratio = max(
+            map(abs, [x1 - x2 for (x1, x2) in zip(now_channels, new_channels)])
+        )
+        if delta_ratio == 0:
+            speed = 0
+        else:
+            speed = round(transition * 2 / delta_ratio)
+        return speed
