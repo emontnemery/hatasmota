@@ -329,16 +329,15 @@ def get_fan_entities(discovery_msg):
 
 def get_switch_entities(discovery_msg):
     """Generate switch configuration."""
+    force_light = discovery_msg[CONF_OPTIONS][OPTION_HASS_LIGHT] == 1
     switch_entities = []
     for (idx, value) in enumerate(discovery_msg[CONF_RELAY]):
         entity = None
         discovery_hash = (discovery_msg[CONF_MAC], "switch", "relay", idx)
-        if value == RL_RELAY:
+        if value == RL_RELAY and not force_light:
             entity = TasmotaRelayConfig.from_discovery_message(
                 discovery_msg, idx, "switch"
             )
-            if entity.is_light:
-                entity = None
         switch_entities.append((entity, discovery_hash))
 
     return switch_entities
@@ -346,31 +345,30 @@ def get_switch_entities(discovery_msg):
 
 def get_light_entities(discovery_msg):
     """Generate light configuration."""
+    force_light = discovery_msg[CONF_OPTIONS][OPTION_HASS_LIGHT] == 1
     light_entities = []
+    relays = list(discovery_msg[CONF_RELAY])
 
-    for (idx, value) in enumerate(discovery_msg[CONF_RELAY]):
+    if discovery_msg[CONF_IFAN] and relays[0] == RL_LIGHT:
+        # Special case for iFan: Single, non dimmable light
+        relays[0] = RL_RELAY
+
+    for (idx, value) in enumerate(relays):
         entity = None
         discovery_hash = (discovery_msg[CONF_MAC], "light", "light", idx)
         if value == RL_LIGHT:
-            if discovery_msg[CONF_IFAN]:
-                # Special case for iFan: Non dimmable light
-                entity = TasmotaRelayConfig.from_discovery_message(
-                    discovery_msg, idx, "light"
-                )
-            else:
-                entity = TasmotaLightConfig.from_discovery_message(
-                    discovery_msg, idx, "light"
-                )
+            entity = TasmotaLightConfig.from_discovery_message(
+                discovery_msg, idx, "light"
+            )
         light_entities.append((entity, discovery_hash))
-    for (idx, value) in enumerate(discovery_msg[CONF_RELAY]):
+    for (idx, value) in enumerate(relays):
         entity = None
         discovery_hash = (discovery_msg[CONF_MAC], "light", "relay", idx)
         if value == RL_RELAY:
-            entity = TasmotaRelayConfig.from_discovery_message(
-                discovery_msg, idx, "light"
-            )
-            if not entity.is_light:
-                entity = None
+            if force_light or (discovery_msg[CONF_IFAN] and idx == 0):
+                entity = TasmotaRelayConfig.from_discovery_message(
+                    discovery_msg, idx, "light"
+                )
         light_entities.append((entity, discovery_hash))
 
     return light_entities
