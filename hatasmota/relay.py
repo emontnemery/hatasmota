@@ -3,7 +3,7 @@ import logging
 
 import attr
 
-from .const import COMMAND_POWER, CONF_MAC, CONF_OPTIONS, OPTION_HASS_LIGHT
+from .const import COMMAND_POWER, CONF_MAC
 from .entity import (
     TasmotaAvailability,
     TasmotaAvailabilityConfig,
@@ -32,7 +32,6 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota relay configuation."""
 
     command_topic: str = attr.ib()
-    is_light: bool = attr.ib()
     result_topic: str = attr.ib()
     state_power_off: str = attr.ib()
     state_power_on: str = attr.ib()
@@ -53,7 +52,6 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
             command_topic=get_topic_command(config),
-            is_light=config[CONF_OPTIONS][OPTION_HASS_LIGHT] == 1,
             result_topic=get_topic_stat_result(config),
             state_power_off=config_get_state_power_off(config),
             state_power_on=config_get_state_power_on(config),
