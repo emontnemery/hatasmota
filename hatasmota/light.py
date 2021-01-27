@@ -310,7 +310,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
         do_transition = transition > 0
 
         # Set fade
-        if self.supports_transition:
+        if self.supports_transition and "transition" in attributes:
             command = COMMAND_FADE
             argument = 1 if do_transition else 0
             commands.append((command, argument))
