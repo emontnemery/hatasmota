@@ -1,5 +1,5 @@
 """Tasmota utility functions."""
-import collections
+import collections.abc
 import json
 import logging
 import operator
@@ -162,7 +162,7 @@ def get_value(status, key, idx=None, idx_optional=False):
 def get_value_by_path(status, path):
     """Get status from JSON formatted status or result by path."""
     try:
-        if not isinstance(status, collections.Mapping):
+        if not isinstance(status, collections.abc.Mapping):
             status = json.loads(status)
         return get_by_path(status, path)
     except (json.decoder.JSONDecodeError, KeyError):
