@@ -257,11 +257,24 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
         def state_message_received(msg):
             """Handle new MQTT state messages."""
             if msg.topic == self._cfg.state_topic1:
-                state = get_value_by_path(msg.payload, self._cfg.value_path)
+                state = get_value_by_path(msg.payload, self._cfg.value_path[:-1])
+                last_node = self._cfg.value_path[-1]
             if msg.topic == self._cfg.state_topic2:
                 value_path = ["StatusSNS"] + self._cfg.value_path
-                state = get_value_by_path(msg.payload, value_path)
+                state = get_value_by_path(msg.payload, value_path[:-1])
+                last_node = value_path[-1]
             if state is not None:
+                # Indexed sensors may be announced with more indices than present in
+                # the status. Handle this gracefully wihtout throwing. This is a
+                # workaround for energy sensors which are announced with multiple phases
+                # but where the actual sensor sends updates with fewer phases.
+                try:
+                    if hasattr(state, "__getitem__"):
+                        state = state[last_node]
+                    elif last_node != 0:
+                        state = None
+                except (IndexError, KeyError):
+                    state = None
                 self._on_state_callback(state)
 
         availability_topics = self.get_availability_topics()
