@@ -1,4 +1,5 @@
 """Tasmota light."""
+from distutils.version import LooseVersion
 import logging
 
 import attr
@@ -18,6 +19,7 @@ from .const import (
     CONF_MAC,
     CONF_OPTIONS,
     CONF_RELAY,
+    CONF_SW_VERSION,
     CONF_TUYA,
     LST_COLDWARM,
     LST_NONE,
@@ -92,6 +94,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     not_power_linked: bool = attr.ib()
     poll_topic: str = attr.ib()
     result_topic: str = attr.ib()
+    rgbw: bool = attr.ib()
     state_power_off: str = attr.ib()
     state_power_on: str = attr.ib()
     state_topic: str = attr.ib()
@@ -134,6 +137,13 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
         if config[CONF_OPTIONS][OPTION_REDUCED_CT_RANGE]:
             min_mireds = REDUCED_MIN_MIREDS
             max_mireds = REDUCED_MAX_MIREDS
+        support_rgbw = LooseVersion(config[CONF_SW_VERSION]) >= LooseVersion("9.4.0.4")
+        if support_rgbw and light_type==LIGHT_TYPE_RGBW:
+            rgbw = True
+            dimmer_idx = 4  # Brightness controlled by DIMMER4
+            dimmer_cmd = f"{COMMAND_DIMMER}{dimmer_idx}"
+        else:
+            rgbw = False
 
         return cls(
             endpoint="light",
@@ -156,6 +166,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             min_mireds=min_mireds,
             not_power_linked=config[CONF_OPTIONS][OPTION_NOT_POWER_LINKED],
             result_topic=get_topic_stat_result(config),
+            rgbw=rgbw,
             state_power_off=config_get_state_power_off(config),
             state_power_on=config_get_state_power_on(config),
             state_topic=get_topic_tele_state(config),
@@ -334,7 +345,22 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
 
         commands.append((command, argument))
 
-        if "color" in attributes:
+        if "color" in attributes and len(attributes["color"]) == 4:
+            color = attributes["color"]
+            if self._cfg.rgbw:
+                argument = f"{color[0]},{color[1]},{color[2]},{color[3]}"
+                command = f"{COMMAND_COLOR}2"
+                commands.append((command, argument))
+            elif color[3]==0:
+                argument = f"{color[0]},{color[1]},{color[2]}"
+                command = f"{COMMAND_COLOR}2"
+                commands.append((command, argument))
+            else:
+                white_value_normalized = color[3] / 255
+                argument = min(round(white_value_normalized * 100), 100)
+                command = COMMAND_WHITE
+                commands.append((command, argument))
+        elif "color" in attributes:
             color = attributes["color"]
             argument = f"{color[0]},{color[1]},{color[2]}"
             command = f"{COMMAND_COLOR}2"
@@ -351,10 +377,6 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
                 commands.append((command, argument))
             except ValueError:
                 _LOGGER.debug("Unknown effect %s", effect)
-        if "white_value" in attributes:
-            argument = attributes["white_value"]
-            command = COMMAND_WHITE
-            commands.append((command, argument))
 
         if self._cfg.not_power_linked and "brightness" in attributes:
             # Always send power
