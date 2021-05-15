@@ -138,7 +138,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             min_mireds = REDUCED_MIN_MIREDS
             max_mireds = REDUCED_MAX_MIREDS
         support_rgbw = LooseVersion(config[CONF_SW_VERSION]) >= LooseVersion("9.4.0.4")
-        if support_rgbw and light_type==LIGHT_TYPE_RGBW:
+        if support_rgbw and light_type == LIGHT_TYPE_RGBW:
             rgbw = True
             dimmer_idx = 4  # Brightness controlled by DIMMER4
             dimmer_cmd = f"{COMMAND_DIMMER}{dimmer_idx}"
@@ -351,7 +351,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
                 argument = f"{color[0]},{color[1]},{color[2]},{color[3]}"
                 command = f"{COMMAND_COLOR}2"
                 commands.append((command, argument))
-            elif color[3]==0:
+            elif color[3] == 0:
                 argument = f"{color[0]},{color[1]},{color[2]}"
                 command = f"{COMMAND_COLOR}2"
                 commands.append((command, argument))
