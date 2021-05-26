@@ -192,6 +192,8 @@ SENSOR_DYNAMIC_UNIT_MAP = {
     SENSOR_TEMPERATURE: (SENSOR_UNIT_TEMPERATURE, SUPPORTED_TEMPERATURE_UNITS),
 }
 
+LAST_RESET_SENSOR_MAP = {SENSOR_TOTAL: SENSOR_TOTAL_START_TIME}
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -199,6 +201,7 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota Status Sensor configuration."""
 
+    last_reset_key: str = attr.ib()
     poll_topic: str = attr.ib()
     quantity: str = attr.ib()
     unit: str = attr.ib()
@@ -222,6 +225,7 @@ class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             endpoint="sensor",
             idx=None,
             friendly_name=f"{device_config[CONF_DEVICENAME]} {sensor_name}",
+            last_reset_key=LAST_RESET_SENSOR_MAP.get(quantity),
             mac=device_config[CONF_MAC],
             platform=platform,
             poll_payload="10",
@@ -268,14 +272,19 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
                 # the status. Handle this gracefully wihtout throwing. This is a
                 # workaround for energy sensors which are announced with multiple phases
                 # but where the actual sensor sends updates with fewer phases.
+                kwargs = {}
                 try:
                     if hasattr(state, "__getitem__"):
+                        if (last_reset_key := self._cfg.last_reset_key) and (
+                            last_reset := state.get(last_reset_key)
+                        ):
+                            kwargs["last_reset"] = last_reset
                         state = state[last_node]
                     elif last_node != 0:
                         state = None
                 except (IndexError, KeyError):
                     state = None
-                self._on_state_callback(state)
+                self._on_state_callback(state, **kwargs)
 
         availability_topics = self.get_availability_topics()
         topics = {
