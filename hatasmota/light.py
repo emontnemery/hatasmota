@@ -83,6 +83,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
     dimmer_cmd: str = attr.ib()
     dimmer_state: str = attr.ib()
+    color_suffix: str = attr.ib()
     command_topic: str = attr.ib()
     control_by_channel: bool = attr.ib()
     fade_fixed_duration: bool = attr.ib()
@@ -100,6 +101,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     @classmethod
     def from_discovery_message(cls, config, idx, platform):
         """Instantiate from discovery message."""
+        color_suffix = ""
         dimmer_cmd = COMMAND_DIMMER
         dimmer_state = COMMAND_DIMMER
         control_by_channel = False  # Use Channel<n> command to control the light
@@ -120,6 +122,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             if idx - first_light == 0:
                 dimmer_idx = 1  # Brightness controlled by DIMMER1
                 light_type = LIGHT_TYPE_RGB
+                color_suffix = "="
             if idx - first_light == 1:
                 dimmer_idx = 2  # Brightness controlled by DIMMER2
                 if tasmota_light_sub_type == LST_RGBW:
@@ -148,6 +151,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_online=config_get_state_online(config),
             dimmer_cmd=dimmer_cmd,
             dimmer_state=dimmer_state,
+            color_suffix=color_suffix,
             command_topic=get_topic_command(config),
             control_by_channel=control_by_channel,
             fade_fixed_duration=config[CONF_OPTIONS][OPTION_FADE_FIXED_DURATION],
@@ -206,6 +210,13 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
                             color = [float(color[0]), float(color[1]), float(color[2])]
                             self._color = color
                             attributes["color"] = color
+
+                    color_hsb = get_value_by_path(msg.payload, ["HSBColor"])
+                    if color_hsb is not None:
+                        color_hsb = color_hsb.split(",", 3)
+                        if len(color_hsb) == 3:
+                            color_hs = [float(color_hsb[0]), float(color_hsb[1])]
+                            attributes["color_hs"] = color_hs
 
                     color_temp = get_value_by_path(msg.payload, [COMMAND_CT])
                     if color_temp is not None:
@@ -336,8 +347,15 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
 
         if "color" in attributes:
             color = attributes["color"]
-            argument = f"{color[0]},{color[1]},{color[2]}"
+            argument = f"{color[0]},{color[1]},{color[2]}{self._cfg.color_suffix}"
             command = f"{COMMAND_COLOR}2"
+            commands.append((command, argument))
+        if "color_hs" in attributes:
+            argument = round(attributes["color_hs"][0])
+            command = "HsbColor1"  # Hue
+            commands.append((command, argument))
+            argument = round(attributes["color_hs"][1])
+            command = "HsbColor2"  # Saturation
             commands.append((command, argument))
         if "color_temp" in attributes:
             argument = attributes["color_temp"]
