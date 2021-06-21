@@ -1,4 +1,5 @@
 """Tasmota light."""
+import colorsys
 import logging
 
 import attr
@@ -403,8 +404,18 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
         # Calculate normalized brightness for all channels
         if self.light_type >= LIGHT_TYPE_COLDWARM:
             if self.light_type >= LIGHT_TYPE_RGB and self._color:
+                if "color" in attributes:
+                    new_color = attributes["color"]
+                elif "color_hs" in attributes:
+                    # Convert hs_color to color
+                    color_hs = attributes["color_hs"]
+                    rgb = colorsys.hsv_to_rgb(color_hs[0] / 360, color_hs[1] / 100, 1)
+                    rgb = (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255))
+                    new_color = rgb
+                else:
+                    new_color = self._color
                 now_color = [x / 255 for x in self._color]
-                new_color = [x / 255 for x in attributes.get("color", self._color)]
+                new_color = [x / 255 for x in new_color]
                 now_channels.extend(now_color)
                 new_channels.extend(new_color)
             if self.light_type >= LIGHT_TYPE_COLDWARM and self._color_temp:
