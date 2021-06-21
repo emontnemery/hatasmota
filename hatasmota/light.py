@@ -409,9 +409,9 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
                 elif "color_hs" in attributes:
                     # Convert hs_color to color
                     color_hs = attributes["color_hs"]
-                    fRGB = colorsys.hsv_to_rgb(color_hs[0] / 360, color_hs[1] / 100, 1)
-                    RGB = (int(fRGB[0] * 255), int(fRGB[1] * 255), int(fRGB[2] * 255))
-                    new_color = RGB
+                    rgb = colorsys.hsv_to_rgb(color_hs[0] / 360, color_hs[1] / 100, 1)
+                    rgb = (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255))
+                    new_color = rgb
                 else:
                     new_color = self._color
                 now_color = [x / 255 for x in self._color]
