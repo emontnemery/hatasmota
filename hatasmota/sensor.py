@@ -281,9 +281,9 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
                             kwargs["last_reset"] = last_reset
                         state = state[last_node]
                     elif last_node != 0:
-                        state = None
+                        return
                 except (IndexError, KeyError):
-                    state = None
+                    return
                 self._on_state_callback(state, **kwargs)
 
         availability_topics = self.get_availability_topics()
