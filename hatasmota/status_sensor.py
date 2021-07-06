@@ -1,8 +1,11 @@
 """Tasmota status sensor."""
+from __future__ import annotations
+
 import asyncio
 import json
 import logging
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import attr
 
@@ -22,12 +25,9 @@ from .const import (
     SENSOR_STATUS_VERSION,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
 )
-from .entity import (
-    TasmotaAvailability,
-    TasmotaAvailabilityConfig,
-    TasmotaEntity,
-    TasmotaEntityConfig,
-)
+from .entity import TasmotaAvailability, TasmotaEntity
+from .mqtt import ReceiveMessage
+from .sensor import TasmotaBaseSensorConfig
 from .utils import (
     config_get_state_offline,
     config_get_state_online,
@@ -86,14 +86,14 @@ SINGLE_SHOT = [
     SENSOR_STATUS_VERSION,
 ]
 
-STATE_PATHS = {
+STATE_PATHS: dict[str, list[str | int]] = {
     SENSOR_STATUS_LINK_COUNT: ["Wifi", "LinkCount"],
     SENSOR_STATUS_MQTT_COUNT: ["MqttCount"],
     SENSOR_STATUS_RSSI: ["Wifi", "RSSI"],
     SENSOR_STATUS_SIGNAL: ["Wifi", "Signal"],
 }
 
-STATUS_PATHS = {
+STATUS_PATHS: dict[str, list[str | int]] = {
     SENSOR_STATUS_LAST_RESTART_TIME: ["StatusSTS", "UptimeSec"],
     SENSOR_STATUS_LINK_COUNT: ["StatusSTS", "Wifi", "LinkCount"],
     SENSOR_STATUS_MQTT_COUNT: ["StatusSTS", "MqttCount"],
@@ -141,7 +141,7 @@ UNITS = {
 
 
 @attr.s(slots=True, frozen=True)
-class TasmotaStatusSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
+class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
     """Tasmota Status Sensor configuration."""
 
     poll_topic: str = attr.ib()
@@ -151,7 +151,9 @@ class TasmotaStatusSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     status_topic: str = attr.ib()
 
     @classmethod
-    def from_discovery_message(cls, config, platform):
+    def from_discovery_message(
+        cls, config: dict, platform: str
+    ) -> list[TasmotaStatusSensorConfig]:
         """Instantiate from discovery message."""
         sensors = [
             cls(
@@ -175,7 +177,7 @@ class TasmotaStatusSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
         return sensors
 
     @property
-    def unique_id(self):
+    def unique_id(self) -> str:
         """Return unique_id."""
         return f"{self.mac}_{self.platform}_{self.endpoint}_{self.sensor}"
 
@@ -183,29 +185,33 @@ class TasmotaStatusSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
     """Tasmota Status sensors."""
 
-    def __init__(self, **kwds):
+    _cfg: TasmotaStatusSensorConfig
+
+    def __init__(self, **kwds: Any):
         """Initialize."""
-        self._sub_state = None
+        self._sub_state: dict | None = None
         self._sub_state_lock = asyncio.Lock()
-        self._attributes = {}
         super().__init__(**kwds)
 
-    async def _poll_status(self):
+    async def _poll_status(self) -> None:
         """Poll for status."""
         await self.subscribe_topics()
         self._mqtt_client.publish_debounced(
             self._cfg.poll_topic, self._cfg.poll_payload
         )
 
-    def poll_status(self):
+    def poll_status(self) -> None:
         """Poll for status."""
         asyncio.create_task(self._poll_status())
 
-    async def subscribe_topics(self):
+    async def subscribe_topics(self) -> None:
         """Subscribe to topics."""
 
-        def state_message_received(msg):
+        def state_message_received(msg: ReceiveMessage) -> None:
             """Handle new MQTT state messages."""
+            if not self._on_state_callback:
+                return
+
             try:
                 payload = json.loads(msg.payload)
             except (json.decoder.JSONDecodeError):
@@ -246,10 +252,10 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
                 self._sub_state,
                 topics,
             )
-        if self._cfg.state:
+        if self._cfg.state and self._on_state_callback:
             self._on_state_callback(self._cfg.state)
 
-    async def _unsubscribe_state_topics(self):
+    async def _unsubscribe_state_topics(self) -> None:
         """Unsubscribe from state topics."""
         availability_topics = self.get_availability_topics()
         async with self._sub_state_lock:
@@ -258,17 +264,17 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
                 availability_topics,
             )
 
-    async def unsubscribe_topics(self):
+    async def unsubscribe_topics(self) -> None:
         """Unsubscribe from all MQTT topics."""
         async with self._sub_state_lock:
             self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
     @property
-    def quantity(self):
+    def quantity(self) -> str:
         """Return the sensor's quantity (speed, mass, etc.)."""
         return QUANTITY[self._cfg.sensor]
 
     @property
-    def unit(self):
+    def unit(self) -> str | None:
         """Return the unit this state is expressed in."""
         return UNITS[self._cfg.sensor]
