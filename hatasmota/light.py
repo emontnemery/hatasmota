@@ -1,6 +1,9 @@
 """Tasmota light."""
+from __future__ import annotations
+
 import colorsys
 import logging
+from typing import Any, cast
 
 import attr
 
@@ -38,7 +41,7 @@ from .entity import (
     TasmotaEntity,
     TasmotaEntityConfig,
 )
-from .mqtt import send_commands
+from .mqtt import ReceiveMessage, send_commands
 from .utils import (
     config_get_friendlyname,
     config_get_state_offline,
@@ -82,6 +85,8 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota light configuation."""
 
+    idx: int = attr.ib()
+
     dimmer_cmd: str = attr.ib()
     dimmer_state: str = attr.ib()
     color_suffix: str = attr.ib()
@@ -100,7 +105,9 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     tuya: bool = attr.ib()
 
     @classmethod
-    def from_discovery_message(cls, config, idx, platform):
+    def from_discovery_message(
+        cls, config: dict, idx: int, platform: str
+    ) -> TasmotaLightConfig:
         """Instantiate from discovery message."""
         color_suffix = ""
         dimmer_cmd = COMMAND_DIMMER
@@ -171,20 +178,25 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 class TasmotaLight(TasmotaAvailability, TasmotaEntity):
     """Representation of a Tasmota light."""
 
-    def __init__(self, **kwds):
+    _cfg: TasmotaLightConfig
+
+    def __init__(self, **kwds: Any):
         """Initialize."""
         self._brightness = None
-        self._color = None
-        self._color_temp = None
-        self._state = None
-        self._sub_state = None
+        self._color: list[float] | None = None
+        self._color_temp: int | None = None
+        self._state: bool | None = None
+        self._sub_state: dict | None = None
         super().__init__(**kwds)
 
-    async def subscribe_topics(self):
+    async def subscribe_topics(self) -> None:
         """Subscribe to topics."""
 
-        def state_message_received(msg):
+        def state_message_received(msg: ReceiveMessage) -> None:
             """Handle new MQTT state messages."""
+            if not self._on_state_callback:
+                return
+
             attributes = {}
             idx = self._cfg.idx
 
@@ -225,7 +237,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
                         attributes["color_temp"] = color_temp
 
                     scheme = get_value_by_path(msg.payload, [COMMAND_SCHEME])
-                    if scheme is not None:
+                    if scheme is not None and self.effect_list:
                         try:
                             attributes["effect"] = self.effect_list[scheme]
                         except IndexError:
@@ -236,7 +248,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
                     if white_value is not None:
                         attributes["white_value"] = white_value
 
-            state = get_state_power(msg.payload, idx)
+            state = get_state_power(cast(str, msg.payload), idx)
 
             if state == self._cfg.state_power_on:
                 self._state = True
@@ -265,35 +277,35 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             topics,
         )
 
-    async def unsubscribe_topics(self):
+    async def unsubscribe_topics(self) -> None:
         """Unsubscribe to all MQTT topics."""
         self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
     @property
-    def effect_list(self):
+    def effect_list(self) -> list[str] | None:
         """Return effect list."""
         if self._cfg.endpoint == "light":
             return ["None", "Wake up", "Cycle up", "Cycle down", "Random"]
         return None
 
     @property
-    def light_type(self):
+    def light_type(self) -> int:
         """Return light type."""
         if self._cfg.endpoint == "light":
             return self._cfg.light_type
         return LIGHT_TYPE_NONE
 
     @property
-    def min_mireds(self):
+    def min_mireds(self) -> int:
         """Return the coldest color_temp that this light supports."""
         return self._cfg.min_mireds
 
     @property
-    def max_mireds(self):
+    def max_mireds(self) -> int:
         """Return the warmest color_temp that this light supports."""
         return self._cfg.max_mireds
 
-    def set_state(self, state, attributes):
+    def set_state(self, state: bool, attributes: dict[str, Any]) -> None:
         """Turn the light on or off."""
         if self._cfg.endpoint == "relay":
             self._set_state_relay(state)
@@ -301,11 +313,11 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             self._set_state_light(state, attributes)
 
     @property
-    def supports_transition(self):
+    def supports_transition(self) -> bool:
         """Return if the light supports transitions."""
         return self.light_type != LIGHT_TYPE_NONE and not self._cfg.tuya
 
-    def _set_state_relay(self, state):
+    def _set_state_relay(self, state: bool) -> None:
         """Turn the relay on or off."""
         payload = self._cfg.state_power_on if state else self._cfg.state_power_off
         command = f"{COMMAND_POWER}{self._cfg.idx+1}"
@@ -314,12 +326,14 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             payload,
         )
 
-    def _set_state_light(self, state, attributes):
+    def _set_state_light(self, state: bool, attributes: dict[str, Any]) -> None:
         idx = self._cfg.idx
 
-        commands = []
+        commands: list[tuple[str, str | float]] = []
         transition = attributes.get("transition", 0)
         do_transition = transition > 0
+
+        argument: str | float
 
         # Set fade
         if self.supports_transition and "transition" in attributes:
@@ -362,7 +376,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             argument = attributes["color_temp"]
             command = COMMAND_CT
             commands.append((command, argument))
-        if "effect" in attributes:
+        if "effect" in attributes and self.effect_list:
             try:
                 effect = attributes["effect"]
                 argument = self.effect_list.index(effect)
@@ -383,7 +397,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
 
         send_commands(self._mqtt_client, self._cfg.command_topic, commands)
 
-    def _calculate_speed(self, state, attributes):
+    def _calculate_speed(self, state: bool, attributes: dict[str, Any]) -> float:
         # Calculate speed:
         # Home Assistant's transition is the transition time in seconds.
         # Tasmota's speed command is the number of half-seconds, scaled for a 100% fade
@@ -435,9 +449,10 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             now_channels = [now_brightness / 100]
 
         # Scale transition to the channel with the largest brightness change
-        delta_ratio = max(
-            map(abs, [x1 - x2 for (x1, x2) in zip(now_channels, new_channels)])
+        abs_changes = map(
+            abs, [x1 - x2 for (x1, x2) in zip(now_channels, new_channels)]
         )
+        delta_ratio = max(abs_changes)  # type:ignore[type-var]
         if delta_ratio == 0:
             speed = 0
         else:

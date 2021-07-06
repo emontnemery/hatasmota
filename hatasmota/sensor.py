@@ -1,5 +1,8 @@
 """Tasmota sensor."""
+from __future__ import annotations
+
 import logging
+from typing import Any
 
 import attr
 
@@ -75,12 +78,9 @@ from .const import (
     TEMP_KELVIN,
     VOLT,
 )
-from .entity import (
-    TasmotaAvailability,
-    TasmotaAvailabilityConfig,
-    TasmotaEntity,
-    TasmotaEntityConfig,
-)
+from .entity import TasmotaAvailability, TasmotaEntity
+from .models import DiscoveryHashType, TasmotaBaseSensorConfig
+from .mqtt import ReceiveMessage
 from .utils import (
     config_get_state_offline,
     config_get_state_online,
@@ -198,21 +198,27 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @attr.s(slots=True, frozen=True)
-class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
+class TasmotaSensorConfig(TasmotaBaseSensorConfig):
     """Tasmota Status Sensor configuration."""
 
-    last_reset_key: str = attr.ib()
+    last_reset_key: str | None = attr.ib()
     poll_topic: str = attr.ib()
     quantity: str = attr.ib()
     unit: str = attr.ib()
     state_topic1: str = attr.ib()
     state_topic2: str = attr.ib()
-    value_path: str = attr.ib()
+    value_path: list[str | int] = attr.ib()
 
     @classmethod
     def from_discovery_message(
-        cls, device_config, sensor_config, platform, sensor_name, value_path, quantity
-    ):
+        cls,
+        device_config: dict,
+        sensor_config: dict,
+        platform: str,
+        sensor_name: str,
+        value_path: list[str | int],
+        quantity: str,
+    ) -> TasmotaSensorConfig:
         """Instantiate from discovery message."""
         unit = SENSOR_UNIT_MAP.get(quantity, " ")
         if quantity in SENSOR_DYNAMIC_UNIT_MAP:
@@ -241,7 +247,7 @@ class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
         )
 
     @property
-    def unique_id(self):
+    def unique_id(self) -> str:
         """Return unique_id."""
         sensor_id = "_".join([str(i) for i in self.value_path])
         return f"{self.mac}_{self.platform}_{self.endpoint}_{sensor_id}"
@@ -250,21 +256,27 @@ class TasmotaSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
     """Representation of Tasmota Status Sensors."""
 
-    def __init__(self, **kwds):
+    _cfg: TasmotaSensorConfig
+
+    def __init__(self, **kwds: Any):
         """Initialize."""
-        self._sub_state = None
+        self._sub_state: dict | None = None
         super().__init__(**kwds)
 
-    async def subscribe_topics(self):
+    async def subscribe_topics(self) -> None:
         """Subscribe to topics."""
 
-        def state_message_received(msg):
+        def state_message_received(msg: ReceiveMessage) -> None:
             """Handle new MQTT state messages."""
+            if not self._on_state_callback:
+                return
+
             if msg.topic == self._cfg.state_topic1:
                 state = get_value_by_path(msg.payload, self._cfg.value_path[:-1])
                 last_node = self._cfg.value_path[-1]
             if msg.topic == self._cfg.state_topic2:
-                value_path = ["StatusSNS"] + self._cfg.value_path
+                prefix: list[str | int] = ["StatusSNS"]
+                value_path = prefix + self._cfg.value_path
                 state = get_value_by_path(msg.payload, value_path[:-1])
                 last_node = value_path[-1]
             if state is not None:
@@ -308,17 +320,17 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
             topics,
         )
 
-    async def unsubscribe_topics(self):
+    async def unsubscribe_topics(self) -> None:
         """Unsubscribe to all MQTT topics."""
         self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
     @property
-    def quantity(self):
+    def quantity(self) -> str:
         """Return the sensor's quantity (speed, mass, etc.)."""
         return self._cfg.quantity
 
     @property
-    def unit(self):
+    def unit(self) -> str:
         """Return the unit this state is expressed in."""
         return self._cfg.unit
 
@@ -357,8 +369,11 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
 #   "SpeedUnit":"km/h"
 # }
 def _get_sensor_entity(
-    sensor_discovery_message, device_discovery_msg, sensorpath, quantity
-):
+    sensor_discovery_message: dict,
+    device_discovery_msg: dict,
+    sensorpath: list[str | int],
+    quantity: str,
+) -> tuple[TasmotaSensorConfig, DiscoveryHashType]:
     sensorname = " ".join([str(i) for i in sensorpath])
     discovery_hash = (
         device_discovery_msg[CONF_MAC],
@@ -377,9 +392,11 @@ def _get_sensor_entity(
     return (sensor_config, discovery_hash)
 
 
-def get_sensor_entities(sensor_discovery_message, device_discovery_msg):
+def get_sensor_entities(
+    sensor_discovery_message: dict, device_discovery_msg: dict
+) -> list[tuple[TasmotaBaseSensorConfig, DiscoveryHashType]]:
     """Generate sensor configuration."""
-    sensor_configs = []
+    sensor_configs: list[tuple[TasmotaBaseSensorConfig, DiscoveryHashType]] = []
     for sensorkey, sensor in sensor_discovery_message[CONF_SENSOR].items():
         sensorpath = [sensorkey]
         if sensorkey in IGNORED_SENSORS or not isinstance(sensor, dict):

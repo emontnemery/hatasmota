@@ -1,5 +1,8 @@
 """Tasmota switch."""
+from __future__ import annotations
+
 import logging
+from typing import Any, cast
 
 import attr
 
@@ -10,6 +13,7 @@ from .entity import (
     TasmotaEntity,
     TasmotaEntityConfig,
 )
+from .mqtt import ReceiveMessage
 from .utils import (
     config_get_friendlyname,
     config_get_state_offline,
@@ -31,6 +35,8 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota relay configuation."""
 
+    idx: int = attr.ib()
+
     command_topic: str = attr.ib()
     result_topic: str = attr.ib()
     state_power_off: str = attr.ib()
@@ -38,7 +44,9 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     state_topic: str = attr.ib()
 
     @classmethod
-    def from_discovery_message(cls, config, idx, platform):
+    def from_discovery_message(
+        cls, config: dict, idx: int, platform: str
+    ) -> TasmotaRelayConfig:
         """Instantiate from discovery message."""
         return cls(
             endpoint="relay",
@@ -62,18 +70,23 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 class TasmotaRelay(TasmotaAvailability, TasmotaEntity):
     """Representation of a Tasmota relay."""
 
-    def __init__(self, **kwds):
+    _cfg: TasmotaRelayConfig
+
+    def __init__(self, **kwds: Any):
         """Initialize."""
-        self._sub_state = None
+        self._sub_state: dict | None = None
         self.light_type = None
         super().__init__(**kwds)
 
-    async def subscribe_topics(self):
+    async def subscribe_topics(self) -> None:
         """Subscribe to topics."""
 
-        def state_message_received(msg):
+        def state_message_received(msg: ReceiveMessage) -> None:
             """Handle new MQTT state messages."""
-            state = get_state_power(msg.payload, self._cfg.idx)
+            if not self._on_state_callback:
+                return
+
+            state = get_state_power(cast(str, msg.payload), self._cfg.idx)
             if state == self._cfg.state_power_on:
                 self._on_state_callback(True)
             elif state == self._cfg.state_power_off:
@@ -99,11 +112,11 @@ class TasmotaRelay(TasmotaAvailability, TasmotaEntity):
             topics,
         )
 
-    async def unsubscribe_topics(self):
+    async def unsubscribe_topics(self) -> None:
         """Unsubscribe to all MQTT topics."""
         self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
-    def set_state(self, state):
+    def set_state(self, state: bool) -> None:
         """Turn the relay on or off."""
         payload = self._cfg.state_power_on if state else self._cfg.state_power_off
         command = f"{COMMAND_POWER}{self._cfg.idx+1}"

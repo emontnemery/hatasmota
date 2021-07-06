@@ -1,5 +1,8 @@
 """Tasmota shutter."""
+from __future__ import annotations
+
 import logging
+from typing import Any
 
 import attr
 
@@ -23,6 +26,7 @@ from .entity import (
     TasmotaEntity,
     TasmotaEntityConfig,
 )
+from .mqtt import ReceiveMessage
 from .utils import (
     config_get_state_offline,
     config_get_state_online,
@@ -42,14 +46,17 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaShutterConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota shutter configuation."""
 
+    idx: int = attr.ib()
     command_topic: str = attr.ib()
-    inverted_shutter = attr.ib()
+    inverted_shutter: bool = attr.ib()
     state_topic1: str = attr.ib()
     state_topic2: str = attr.ib()
     state_topic3: str = attr.ib()
 
     @classmethod
-    def from_discovery_message(cls, config, idx, platform):
+    def from_discovery_message(
+        cls, config: dict, idx: int, platform: str
+    ) -> TasmotaShutterConfig:
         """Instantiate from discovery message."""
         shutter_options = config[CONF_SHUTTER_OPTIONS]
         shutter_options = shutter_options[idx] if idx < len(shutter_options) else 0
@@ -75,19 +82,23 @@ class TasmotaShutterConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 class TasmotaShutter(TasmotaAvailability, TasmotaEntity):
     """Representation of a Tasmota shutter."""
 
-    def __init__(self, **kwds):
+    _cfg: TasmotaShutterConfig
+
+    def __init__(self, **kwds: Any):
         """Initialize."""
-        self._sub_state = None
-        self.light_type = None
+        self._sub_state: dict | None = None
         super().__init__(**kwds)
 
-    async def subscribe_topics(self):
+    async def subscribe_topics(self) -> None:
         """Subscribe to topics."""
 
-        def state_message_received(msg):
+        def state_message_received(msg: ReceiveMessage) -> None:
             """Handle new MQTT state messages."""
+            if not self._on_state_callback:
+                return
+
             shutter = f"{RSLT_SHUTTER}{self._cfg.idx+1}"
-            prefix = []
+            prefix: list[str | int] = []
             if msg.topic == self._cfg.state_topic3:
                 prefix = [STATUS_SENSOR]
 
@@ -131,11 +142,11 @@ class TasmotaShutter(TasmotaAvailability, TasmotaEntity):
             topics,
         )
 
-    async def unsubscribe_topics(self):
+    async def unsubscribe_topics(self) -> None:
         """Unsubscribe to all MQTT topics."""
         self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
-    def open(self):
+    def open(self) -> None:
         """Open the shutter."""
         payload = ""
         command = f"{COMMAND_SHUTTER_OPEN}{self._cfg.idx+1}"
@@ -144,7 +155,7 @@ class TasmotaShutter(TasmotaAvailability, TasmotaEntity):
             payload,
         )
 
-    def close(self):
+    def close(self) -> None:
         """Close the shutter."""
         payload = ""
         command = f"{COMMAND_SHUTTER_CLOSE}{self._cfg.idx+1}"
@@ -153,7 +164,7 @@ class TasmotaShutter(TasmotaAvailability, TasmotaEntity):
             payload,
         )
 
-    def set_position(self, position):
+    def set_position(self, position: int) -> None:
         """Set the shutter's position.
 
         0 is closed, 100 is fully open.
@@ -167,7 +178,7 @@ class TasmotaShutter(TasmotaAvailability, TasmotaEntity):
             payload,
         )
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop the shutter."""
         payload = ""
         command = f"{COMMAND_SHUTTER_STOP}{self._cfg.idx+1}"

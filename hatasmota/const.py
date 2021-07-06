@@ -1,250 +1,254 @@
 """Tasmota constants."""
-AUTOMATION_TYPE_TRIGGER = "trigger"
+from typing import Final
 
-COMMAND_BACKLOG = "Backlog"
-COMMAND_CHANNEL = "Channel"
-COMMAND_COLOR = "Color"
-COMMAND_CT = "CT"
-COMMAND_DIMMER = "Dimmer"
-COMMAND_FADE = "Fade2"
-COMMAND_FANSPEED = "FanSpeed"
-COMMAND_POWER = "Power"
-COMMAND_SCHEME = "Scheme"
-COMMAND_SHUTTER_CLOSE = "ShutterClose"
-COMMAND_SHUTTER_OPEN = "ShutterOpen"
-COMMAND_SHUTTER_POSITION = "ShutterPosition"
-COMMAND_SHUTTER_STOP = "ShutterStop"
-COMMAND_SPEED = "Speed2"
-COMMAND_WHITE = "White"
+AUTOMATION_TYPE_TRIGGER: Final = "trigger"
 
-CONF_BUTTON = "btn"
-CONF_DEVICENAME = "dn"
-CONF_FRIENDLYNAME = "fn"
-CONF_FULLTOPIC = "ft"
-CONF_IFAN = "if"
-CONF_IP = "ip"
-CONF_HOSTNAME = "hn"
-CONF_MAC = "mac"
-CONF_LIGHT_SUBTYPE = "lt_st"
-CONF_LINK_RGB_CT = "lk"  # RGB + white channels linked to a single light
-CONF_MODEL = "md"
-CONF_OFFLINE = "ofln"
-CONF_ONLINE = "onln"
-CONF_OPTIONS = "so"
-CONF_PREFIX = "tp"
-CONF_SENSOR = "sn"
-CONF_SHUTTER_OPTIONS = "sho"
-CONF_STATE = "state"
-CONF_RELAY = "rl"
-CONF_SW_VERSION = "sw"
-CONF_SWITCH = "swc"
-CONF_SWITCHNAME = "swn"
-CONF_TOPIC = "t"
-CONF_TUYA = "ty"
-CONF_VERSION = "ver"
+COMMAND_BACKLOG: Final = "Backlog"
+COMMAND_CHANNEL: Final = "Channel"
+COMMAND_COLOR: Final = "Color"
+COMMAND_CT: Final = "CT"
+COMMAND_DIMMER: Final = "Dimmer"
+COMMAND_FADE: Final = "Fade2"
+COMMAND_FANSPEED: Final = "FanSpeed"
+COMMAND_POWER: Final = "Power"
+COMMAND_SCHEME: Final = "Scheme"
+COMMAND_SHUTTER_CLOSE: Final = "ShutterClose"
+COMMAND_SHUTTER_OPEN: Final = "ShutterOpen"
+COMMAND_SHUTTER_POSITION: Final = "ShutterPosition"
+COMMAND_SHUTTER_STOP: Final = "ShutterStop"
+COMMAND_SPEED: Final = "Speed2"
+COMMAND_WHITE: Final = "White"
 
-CONF_MANUFACTURER = "manufacturer"
-CONF_NAME = "name"
+CONF_BUTTON: Final = "btn"
+CONF_DEVICENAME: Final = "dn"
+CONF_FRIENDLYNAME: Final = "fn"
+CONF_FULLTOPIC: Final = "ft"
+CONF_IFAN: Final = "if"
+CONF_IP: Final = "ip"
+CONF_HOSTNAME: Final = "hn"
+CONF_MAC: Final = "mac"
+CONF_LIGHT_SUBTYPE: Final = "lt_st"
+CONF_LINK_RGB_CT: Final = "lk"  # RGB + white channels linked to a single light
+CONF_MODEL: Final = "md"
+CONF_OFFLINE: Final = "ofln"
+CONF_ONLINE: Final = "onln"
+CONF_OPTIONS: Final = "so"
+CONF_PREFIX: Final = "tp"
+CONF_SENSOR: Final = "sn"
+CONF_SHUTTER_OPTIONS: Final = "sho"
+CONF_STATE: Final = "state"
+CONF_RELAY: Final = "rl"
+CONF_SW_VERSION: Final = "sw"
+CONF_SWITCH: Final = "swc"
+CONF_SWITCHNAME: Final = "swn"
+CONF_TOPIC: Final = "t"
+CONF_TUYA: Final = "ty"
+CONF_VERSION: Final = "ver"
 
-FAN_SPEED_OFF = 0
-FAN_SPEED_LOW = 1
-FAN_SPEED_MEDIUM = 2
-FAN_SPEED_HIGH = 3
+CONF_MANUFACTURER: Final = "manufacturer"
+CONF_NAME: Final = "name"
 
-LST_NONE = 0
-LST_SINGLE = 1
-LST_COLDWARM = 2
-LST_RGB = 3
-LST_RGBW = 4
-LST_RGBCW = 5
+FAN_SPEED_OFF: Final = 0
+FAN_SPEED_LOW: Final = 1
+FAN_SPEED_MEDIUM: Final = 2
+FAN_SPEED_HIGH: Final = 3
+
+LST_NONE: Final = 0
+LST_SINGLE: Final = 1
+LST_COLDWARM: Final = 2
+LST_RGB: Final = 3
+LST_RGBW: Final = 4
+LST_RGBCW: Final = 5
 
 # fmt: off
-OPTION_MQTT_RESPONSE = "4"          # Return MQTT response as RESULT or %COMMAND%
-OPTION_BUTTON_SWAP = "11"           # Swap button single and double press functionality
-OPTION_BUTTON_SINGLE = "13"         # Allow immediate action on single button press
-OPTION_DECIMAL_TEXT = "17"          # Show Color string as hex or comma-separated
-OPTION_NOT_POWER_LINKED = "20"      # Update of Dimmer/Color/CT without turning power on
-OPTION_HASS_LIGHT = "30"            # Enforce Home Assistant auto-discovery as light
-OPTION_PWM_MULTI_CHANNELS = "68"    # Multi-channel PWM instead of a single light
-OPTION_MQTT_BUTTONS = "73"          # Enable Buttons decoupling and send multi-press and hold MQTT messages
-OPTION_SHUTTER_MODE = "80"          # Blinds and shutters support; removed in Tasmota 9.0.0.4
-OPTION_REDUCED_CT_RANGE = "82"      # Reduce the CT range from 153..500 to 200.380
-OPTION_MQTT_SWITCHES = "114"        # Enable sending switch MQTT messages
-OPTION_FADE_FIXED_DURATION = "117"  # Run fading at fixed duration instead of fixed slew rate
+OPTION_MQTT_RESPONSE: Final = "4"          # Return MQTT response as RESULT or %COMMAND%
+OPTION_BUTTON_SWAP: Final = "11"           # Swap button single and double press functionality
+OPTION_BUTTON_SINGLE: Final = "13"         # Allow immediate action on single button press
+OPTION_DECIMAL_TEXT: Final = "17"          # Show Color string as hex or comma-separated
+OPTION_NOT_POWER_LINKED: Final = "20"      # Update of Dimmer/Color/CT without turning power on
+OPTION_HASS_LIGHT: Final = "30"            # Enforce Home Assistant auto-discovery as light
+OPTION_PWM_MULTI_CHANNELS: Final = "68"    # Multi-channel PWM instead of a single light
+OPTION_MQTT_BUTTONS: Final = "73"          # Enable Buttons decoupling and send multi-press and hold MQTT messages
+OPTION_SHUTTER_MODE: Final = "80"          # Blinds and shutters support; removed in Tasmota 9.0.0.4
+OPTION_REDUCED_CT_RANGE: Final = "82"      # Reduce the CT range from 153..500 to 200.380
+OPTION_MQTT_SWITCHES: Final = "114"        # Enable sending switch MQTT messages
+OPTION_FADE_FIXED_DURATION: Final = "117"  # Run fading at fixed duration instead of fixed slew rate
 # fmt: on
 
-PREFIX_CMND = 0
-PREFIX_STAT = 1
-PREFIX_TELE = 2
+PREFIX_CMND: Final = 0
+PREFIX_STAT: Final = 1
+PREFIX_TELE: Final = 2
 
-RL_NONE = 0
-RL_RELAY = 1
-RL_LIGHT = 2
-RL_SHUTTER = 3
+RL_NONE: Final = 0
+RL_RELAY: Final = 1
+RL_LIGHT: Final = 2
+RL_SHUTTER: Final = 3
 
-RSLT_ACTION = "Action"
-RSLT_POWER = "POWER"
-RSLT_SHUTTER = "Shutter"
-RSLT_STATE = "STATE"
-RSLT_TRIG = "TRIG"
+RSLT_ACTION: Final = "Action"
+RSLT_POWER: Final = "POWER"
+RSLT_SHUTTER: Final = "Shutter"
+RSLT_STATE: Final = "STATE"
+RSLT_TRIG: Final = "TRIG"
 
-SENSOR_ATTRIBUTE_RSSI = "RSSI"
-SENSOR_ATTRIBUTE_UPTIME = "Uptime"
-SENSOR_ATTRIBUTE_SIGNAL = "Signal"
-SENSOR_ATTRIBUTE_WIFI_LINKCOUNT = "LinkCount"
-SENSOR_ATTRIBUTE_WIFI_DOWNTIME = "Downtime"
-SENSOR_ATTRIBUTE_MQTTCOUNT = "MqttCount"
+SENSOR_ATTRIBUTE_RSSI: Final = "RSSI"
+SENSOR_ATTRIBUTE_UPTIME: Final = "Uptime"
+SENSOR_ATTRIBUTE_SIGNAL: Final = "Signal"
+SENSOR_ATTRIBUTE_WIFI_LINKCOUNT: Final = "LinkCount"
+SENSOR_ATTRIBUTE_WIFI_DOWNTIME: Final = "Downtime"
+SENSOR_ATTRIBUTE_MQTTCOUNT: Final = "MqttCount"
 
-SENSOR_TEMPERATURE = "Temperature"
-SENSOR_DEWPOINT = "DewPoint"
-SENSOR_PRESSURE = "Pressure"
-SENSOR_PRESSUREATSEALEVEL = "SeaPressure"
-SENSOR_APPARENT_POWERUSAGE = "ApparentPower"
-SENSOR_BATTERY = "Battery"
-SENSOR_CURRENT = "Current"
-SENSOR_DISTANCE = "Distance"
-SENSOR_FREQUENCY = "Frequency"
-SENSOR_HUMIDITY = "Humidity"
-SENSOR_ILLUMINANCE = "Illuminance"
-SENSOR_MOISTURE = "Moisture"
-SENSOR_PB0_3 = "PB0.3"
-SENSOR_PB0_5 = "PB0.5"
-SENSOR_PB1 = "PB1"
-SENSOR_PB2_5 = "PB2.5"
-SENSOR_PB5 = "PB5"
-SENSOR_PB10 = "PB10"
-SENSOR_PM1 = "PM1"
-SENSOR_PM2_5 = "PM2.5"
-SENSOR_PM10 = "PM10"
-SENSOR_POWERFACTOR = "Factor"
-SENSOR_POWERUSAGE = "Power"
-SENSOR_SPEED = "Speed"
-SENSOR_TOTAL_START_TIME = "TotalStartTime"
-SENSOR_REACTIVE_POWERUSAGE = "ReactivePower"
-SENSOR_TODAY = "Today"
-SENSOR_TOTAL = "Total"
-SENSOR_VOLTAGE = "Voltage"
-SENSOR_WEIGHT = "Weight"
-SENSOR_YESTERDAY = "Yesterday"
-SENSOR_CO2 = "CarbonDioxide"
-SENSOR_ECO2 = "eCO2"
-SENSOR_TVOC = "TVOC"
-SENSOR_COLOR_RED = "Red"
-SENSOR_COLOR_GREEN = "Green"
-SENSOR_COLOR_BLUE = "Blue"
-SENSOR_CCT = "CCT"
-SENSOR_PROXIMITY = "Proximity"
-SENSOR_AMBIENT = "Ambient"
-SENSOR_SWITCH = "Switch"
-SENSOR_STATUS_IP = "status_ip"
-SENSOR_STATUS_LAST_RESTART_TIME = "last_restart_time"
-SENSOR_STATUS_LINK_COUNT = "status_link_count"
-SENSOR_STATUS_MQTT_COUNT = "status_mqtt_count"
-SENSOR_STATUS_RESTART_REASON = "status_restart_reason"
-SENSOR_STATUS_RSSI = "status_rssi"
-SENSOR_STATUS_SIGNAL = "status_signal"
-SENSOR_STATUS_SSID = "status_ssid"
-SENSOR_STATUS_VERSION = "status_version"
+SENSOR_TEMPERATURE: Final = "Temperature"
+SENSOR_DEWPOINT: Final = "DewPoint"
+SENSOR_PRESSURE: Final = "Pressure"
+SENSOR_PRESSUREATSEALEVEL: Final = "SeaPressure"
+SENSOR_APPARENT_POWERUSAGE: Final = "ApparentPower"
+SENSOR_BATTERY: Final = "Battery"
+SENSOR_CURRENT: Final = "Current"
+SENSOR_DISTANCE: Final = "Distance"
+SENSOR_FREQUENCY: Final = "Frequency"
+SENSOR_HUMIDITY: Final = "Humidity"
+SENSOR_ILLUMINANCE: Final = "Illuminance"
+SENSOR_MOISTURE: Final = "Moisture"
+SENSOR_PB0_3: Final = "PB0.3"
+SENSOR_PB0_5: Final = "PB0.5"
+SENSOR_PB1: Final = "PB1"
+SENSOR_PB2_5: Final = "PB2.5"
+SENSOR_PB5: Final = "PB5"
+SENSOR_PB10: Final = "PB10"
+SENSOR_PM1: Final = "PM1"
+SENSOR_PM2_5: Final = "PM2.5"
+SENSOR_PM10: Final = "PM10"
+SENSOR_POWERFACTOR: Final = "Factor"
+SENSOR_POWERUSAGE: Final = "Power"
+SENSOR_SPEED: Final = "Speed"
+SENSOR_TOTAL_START_TIME: Final = "TotalStartTime"
+SENSOR_REACTIVE_POWERUSAGE: Final = "ReactivePower"
+SENSOR_TODAY: Final = "Today"
+SENSOR_TOTAL: Final = "Total"
+SENSOR_VOLTAGE: Final = "Voltage"
+SENSOR_WEIGHT: Final = "Weight"
+SENSOR_YESTERDAY: Final = "Yesterday"
+SENSOR_CO2: Final = "CarbonDioxide"
+SENSOR_ECO2: Final = "eCO2"
+SENSOR_TVOC: Final = "TVOC"
+SENSOR_COLOR_RED: Final = "Red"
+SENSOR_COLOR_GREEN: Final = "Green"
+SENSOR_COLOR_BLUE: Final = "Blue"
+SENSOR_CCT: Final = "CCT"
+SENSOR_PROXIMITY: Final = "Proximity"
+SENSOR_AMBIENT: Final = "Ambient"
+SENSOR_SWITCH: Final = "Switch"
+SENSOR_STATUS_IP: Final = "status_ip"
+SENSOR_STATUS_LAST_RESTART_TIME: Final = "last_restart_time"
+SENSOR_STATUS_LINK_COUNT: Final = "status_link_count"
+SENSOR_STATUS_MQTT_COUNT: Final = "status_mqtt_count"
+SENSOR_STATUS_RESTART_REASON: Final = "status_restart_reason"
+SENSOR_STATUS_RSSI: Final = "status_rssi"
+SENSOR_STATUS_SIGNAL: Final = "status_signal"
+SENSOR_STATUS_SSID: Final = "status_ssid"
+SENSOR_STATUS_VERSION: Final = "status_version"
 
-SENSOR_UNIT_PRESSURE = "PressureUnit"
-SENSOR_UNIT_SPEED = "SpeedUnit"
-SENSOR_UNIT_TEMPERATURE = "TempUnit"
+SENSOR_UNIT_PRESSURE: Final = "PressureUnit"
+SENSOR_UNIT_SPEED: Final = "SpeedUnit"
+SENSOR_UNIT_TEMPERATURE: Final = "TempUnit"
 
-SHUTTER_DIRECTION = "Direction"
-SHUTTER_DIRECTION_DOWN = -1
-SHUTTER_DIRECTION_STOP = 0
-SHUTTER_DIRECTION_UP = 1
-SHUTTER_POSITION = "Position"
+SHUTTER_DIRECTION: Final = "Direction"
+SHUTTER_DIRECTION_DOWN: Final = -1
+SHUTTER_DIRECTION_STOP: Final = 0
+SHUTTER_DIRECTION_UP: Final = 1
+SHUTTER_POSITION: Final = "Position"
 
-SHUTTER_OPTION_INVERT = 1
+SHUTTER_OPTION_INVERT: Final = 1
 
 # #### UNITS OF MEASUREMENT ####
 # Power units
-POWER_WATT = "W"
+POWER_WATT: Final = "W"
 
 # Voltage units
-VOLT = "V"
+VOLT: Final = "V"
 
 # Energy units
-ENERGY_WATT_HOUR = f"{POWER_WATT}h"
-ENERGY_KILO_WATT_HOUR = f"k{ENERGY_WATT_HOUR}"
+ENERGY_WATT_HOUR: Final = f"{POWER_WATT}h"
+ENERGY_KILO_WATT_HOUR: Final = f"k{ENERGY_WATT_HOUR}"
 
 # Electrical units
-ELECTRICAL_CURRENT_AMPERE = "A"
-ELECTRICAL_VOLT_AMPERE = f"{VOLT}{ELECTRICAL_CURRENT_AMPERE}"
+ELECTRICAL_CURRENT_AMPERE: Final = "A"
+ELECTRICAL_VOLT_AMPERE: Final = f"{VOLT}{ELECTRICAL_CURRENT_AMPERE}"
 
 # Temperature units
-TEMP_CELSIUS = "C"
-TEMP_FAHRENHEIT = "F"
-TEMP_KELVIN = "K"
+TEMP_CELSIUS: Final = "C"
+TEMP_FAHRENHEIT: Final = "F"
+TEMP_KELVIN: Final = "K"
 
 # Time units
-TIME_SECONDS = "s"
-TIME_HOURS = "h"
+TIME_SECONDS: Final = "s"
+TIME_HOURS: Final = "h"
 
 # Length units
-LENGTH_CENTIMETERS: str = "cm"
-LENGTH_METERS: str = "m"
-LENGTH_KILOMETERS: str = "km"
+LENGTH_CENTIMETERS: Final = "cm"
+LENGTH_METERS: Final = "m"
+LENGTH_KILOMETERS: Final = "km"
 
 # Frequency units
-FREQUENCY_HERTZ = "Hz"
+FREQUENCY_HERTZ: Final = "Hz"
 
 # Pressure units
-PRESSURE_HPA: str = "hPa"
-PRESSURE_MMHG: str = "mmHg"
+PRESSURE_HPA: Final = "hPa"
+PRESSURE_MMHG: Final = "mmHg"
 
 # Volume units
-VOLUME_CUBIC_METERS = f"{LENGTH_METERS}³"
+VOLUME_CUBIC_METERS: Final = f"{LENGTH_METERS}³"
 
 # Mass units
-MASS_KILOGRAMS: str = "kg"
-MASS_MICROGRAMS = "µg"
+MASS_KILOGRAMS: Final = "kg"
+MASS_MICROGRAMS: Final = "µg"
 
 # Light units
-LIGHT_LUX: str = "lux"
+LIGHT_LUX: Final = "lux"
 
 # Percentage units
-PERCENTAGE = "%"
+PERCENTAGE: Final = "%"
 
 # Concentration units
-CONCENTRATION_MICROGRAMS_PER_CUBIC_METER = f"{MASS_MICROGRAMS}/{VOLUME_CUBIC_METERS}"
-CONCENTRATION_PARTS_PER_MILLION = "ppm"
-CONCENTRATION_PARTS_PER_BILLION = "ppb"
+CONCENTRATION_MICROGRAMS_PER_CUBIC_METER: Final = (
+    f"{MASS_MICROGRAMS}/{VOLUME_CUBIC_METERS}"
+)
+CONCENTRATION_PARTS_PER_MILLION: Final = "ppm"
+CONCENTRATION_PARTS_PER_BILLION: Final = "ppb"
 
 # Speed units
-SPEED_METERS_PER_SECOND = f"{LENGTH_METERS}/{TIME_SECONDS}"
-SPEED_KILOMETERS_PER_HOUR = f"{LENGTH_KILOMETERS}/{TIME_HOURS}"
-SPEED_KNOT = "kn"
-SPEED_MILES_PER_HOUR = "mph"
-SPEED_FEET_PER_SECOND = "ft/s"
-SPEED_YARDS_PER_SECOND = "yd/s"
+SPEED_METERS_PER_SECOND: Final = f"{LENGTH_METERS}/{TIME_SECONDS}"
+SPEED_KILOMETERS_PER_HOUR: Final = f"{LENGTH_KILOMETERS}/{TIME_HOURS}"
+SPEED_KNOT: Final = "kn"
+SPEED_MILES_PER_HOUR: Final = "mph"
+SPEED_FEET_PER_SECOND: Final = "ft/s"
+SPEED_YARDS_PER_SECOND: Final = "yd/s"
 
 # Signal_strength units
-SIGNAL_STRENGTH_DECIBELS = "dB"
-SIGNAL_STRENGTH_DECIBELS_MILLIWATT = "dBm"
+SIGNAL_STRENGTH_DECIBELS: Final = "dB"
+SIGNAL_STRENGTH_DECIBELS_MILLIWATT: Final = "dBm"
 
-STATE_OFF = 0
-STATE_ON = 1
-STATE_TOGGLE = 2
-STATE_HOLD = 3
+STATE_OFF: Final = 0
+STATE_ON: Final = 1
+STATE_TOGGLE: Final = 2
+STATE_HOLD: Final = 3
 
-STATUS_SENSOR = "StatusSNS"
+STATUS_SENSOR: Final = "StatusSNS"
 
-SWITCHMODE_NONE = -1
-SWITCHMODE_TOGGLE = 0
-SWITCHMODE_FOLLOW = 1
-SWITCHMODE_FOLLOW_INV = 2
-SWITCHMODE_PUSHBUTTON = 3
-SWITCHMODE_PUSHBUTTON_INV = 4
-SWITCHMODE_PUSHBUTTONHOLD = 5
-SWITCHMODE_PUSHBUTTONHOLD_INV = 6
-SWITCHMODE_PUSHBUTTON_TOGGLE = 7
-SWITCHMODE_TOGGLEMULTI = 8
-SWITCHMODE_FOLLOWMULTI = 9
-SWITCHMODE_FOLLOWMULTI_INV = 10
-SWITCHMODE_PUSHHOLDMULTI = 11
-SWITCHMODE_PUSHHOLDMULTI_INV = 12
-SWITCHMODE_PUSHON = 13
-SWITCHMODE_PUSHON_INV = 14
-SWITCHMODE_PUSH_IGNORE = 15
+SWITCHMODE_NONE: Final = -1
+SWITCHMODE_TOGGLE: Final = 0
+SWITCHMODE_FOLLOW: Final = 1
+SWITCHMODE_FOLLOW_INV: Final = 2
+SWITCHMODE_PUSHBUTTON: Final = 3
+SWITCHMODE_PUSHBUTTON_INV: Final = 4
+SWITCHMODE_PUSHBUTTONHOLD: Final = 5
+SWITCHMODE_PUSHBUTTONHOLD_INV: Final = 6
+SWITCHMODE_PUSHBUTTON_TOGGLE: Final = 7
+SWITCHMODE_TOGGLEMULTI: Final = 8
+SWITCHMODE_FOLLOWMULTI: Final = 9
+SWITCHMODE_FOLLOWMULTI_INV: Final = 10
+SWITCHMODE_PUSHHOLDMULTI: Final = 11
+SWITCHMODE_PUSHHOLDMULTI_INV: Final = 12
+SWITCHMODE_PUSHON: Final = 13
+SWITCHMODE_PUSHON_INV: Final = 14
+SWITCHMODE_PUSH_IGNORE: Final = 15

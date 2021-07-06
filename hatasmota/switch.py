@@ -1,5 +1,8 @@
 """Tasmota binary sensor."""
+from __future__ import annotations
+
 import logging
+from typing import Any
 
 import attr
 
@@ -35,7 +38,8 @@ from .entity import (
     TasmotaEntity,
     TasmotaEntityConfig,
 )
-from .trigger import TasmotaTrigger
+from .mqtt import ReceiveMessage
+from .trigger import TasmotaTrigger, TasmotaTriggerConfig
 from .utils import (
     config_get_state_offline,
     config_get_state_online,
@@ -174,20 +178,15 @@ NO_POLL_SWITCHMODES = [SWITCHMODE_PUSHON, SWITCHMODE_PUSHON_INV]
 
 
 @attr.s(slots=True, frozen=True)
-class TasmotaSwitchTriggerConfig:
+class TasmotaSwitchTriggerConfig(TasmotaTriggerConfig):
     """Tasmota switch configuation."""
 
-    event: str = attr.ib()
-    idx: int = attr.ib()
-    mac: str = attr.ib()
-    source: str = attr.ib()
-    subtype: str = attr.ib()
     switchname: str = attr.ib()
-    trigger_topic: str = attr.ib()
-    type: str = attr.ib()
 
     @classmethod
-    def from_discovery_message(cls, config, idx):
+    def from_discovery_message(
+        cls, config: dict, idx: int
+    ) -> list[TasmotaSwitchTriggerConfig]:
         """Instantiate from discovery message."""
         switchmode = config[CONF_SWITCH][idx]
         _, _, triggers = SWITCHMODE_MAP[switchmode]
@@ -208,12 +207,12 @@ class TasmotaSwitchTriggerConfig:
         return configs
 
     @property
-    def is_active(self):
+    def is_active(self) -> bool:
         """Return if the trigger is active."""
         return self.type != SW_TRIG_NONE
 
     @property
-    def trigger_id(self):
+    def trigger_id(self) -> str:
         """Return trigger id."""
         return f"{self.mac}_switch_{self.idx+1}_{self.event}"
 
@@ -221,10 +220,12 @@ class TasmotaSwitchTriggerConfig:
 class TasmotaSwitchTrigger(TasmotaTrigger):
     """Representation of a Tasmota switch trigger."""
 
-    def _trig_message_received(self, msg):
+    cfg: TasmotaSwitchTriggerConfig
+
+    def _trig_message_received(self, msg: ReceiveMessage) -> None:
         """Handle new MQTT messages."""
         event = get_value_by_path(msg.payload, [self.cfg.switchname, RSLT_ACTION])
-        if event == self.cfg.event:
+        if event == self.cfg.event and self._on_trigger_callback:
             self._on_trigger_callback()
 
 
@@ -232,17 +233,19 @@ class TasmotaSwitchTrigger(TasmotaTrigger):
 class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota switch configuation."""
 
-    off_delay: int = attr.ib()
+    off_delay: int | None = attr.ib()
     poll_topic: str = attr.ib()
     state_power_off: str = attr.ib()
     state_power_on: str = attr.ib()
     state_topic1: str = attr.ib()
-    state_topic2: str = attr.ib()
-    state_topic3: str = attr.ib()
+    state_topic2: str | None = attr.ib()
+    state_topic3: str | None = attr.ib()
     switchname: str = attr.ib()
 
     @classmethod
-    def from_discovery_message(cls, config, idx, platform):
+    def from_discovery_message(
+        cls, config: dict, idx: int, platform: str
+    ) -> TasmotaSwitchConfig | None:
         """Instantiate from discovery message."""
         switchmode = config[CONF_SWITCH][idx]
         state_topic1 = get_topic_stat_result(config)
@@ -279,16 +282,21 @@ class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 class TasmotaSwitch(TasmotaAvailability, TasmotaEntity):
     """Representation of a Tasmota switch."""
 
-    def __init__(self, **kwds):
+    _cfg: TasmotaSwitchConfig
+
+    def __init__(self, **kwds: Any):
         """Initialize."""
-        self._sub_state = None
+        self._sub_state: dict | None = None
         super().__init__(**kwds)
 
-    async def subscribe_topics(self):
+    async def subscribe_topics(self) -> None:
         """Subscribe to topics."""
 
-        def state_message_received(msg):
+        def state_message_received(msg: ReceiveMessage) -> None:
             """Handle new MQTT state messages."""
+            if not self._on_state_callback:
+                return
+
             state = None
             # tasmota_0848A2/stat/RESULT  / {"Switch1":{"Action":"ON"}}
             if msg.topic == self._cfg.state_topic1:
@@ -339,11 +347,11 @@ class TasmotaSwitch(TasmotaAvailability, TasmotaEntity):
             topics,
         )
 
-    async def unsubscribe_topics(self):
+    async def unsubscribe_topics(self) -> None:
         """Unsubscribe to all MQTT topics."""
         self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
     @property
-    def off_delay(self):
+    def off_delay(self) -> int | None:
         """Return off delay."""
         return self._cfg.off_delay

@@ -1,4 +1,6 @@
 """Tasmota binary sensor."""
+from __future__ import annotations
+
 import logging
 
 import attr
@@ -12,7 +14,8 @@ from .const import (
     OPTION_MQTT_BUTTONS,
     RSLT_ACTION,
 )
-from .trigger import TasmotaTrigger
+from .mqtt import ReceiveMessage
+from .trigger import TasmotaTrigger, TasmotaTriggerConfig
 from .utils import get_topic_stat_result, get_value_by_path
 
 _LOGGER = logging.getLogger(__name__)
@@ -89,19 +92,13 @@ BUTTONMODE_MAP = {
 
 
 @attr.s(slots=True, frozen=True)
-class TasmotaButtonTriggerConfig:
+class TasmotaButtonTriggerConfig(TasmotaTriggerConfig):
     """Tasmota switch configuation."""
 
-    event: str = attr.ib()
-    idx: int = attr.ib()
-    mac: str = attr.ib()
-    source: str = attr.ib()
-    subtype: str = attr.ib()
-    trigger_topic: str = attr.ib()
-    type: str = attr.ib()
-
     @classmethod
-    def from_discovery_message(cls, config, idx):
+    def from_discovery_message(
+        cls, config: dict, idx: int
+    ) -> list[TasmotaButtonTriggerConfig]:
         """Instantiate from discovery message."""
         mqtt_buttons = config[CONF_OPTIONS][OPTION_MQTT_BUTTONS]
         single_buttons = config[CONF_OPTIONS][OPTION_BUTTON_SINGLE]
@@ -132,12 +129,12 @@ class TasmotaButtonTriggerConfig:
         return configs
 
     @property
-    def is_active(self):
+    def is_active(self) -> bool:
         """Return if the trigger is active."""
         return self.type != BTN_TRIG_NONE
 
     @property
-    def trigger_id(self):
+    def trigger_id(self) -> str:
         """Return trigger id."""
         return f"{self.mac}_button_{self.idx+1}_{self.event}"
 
@@ -145,8 +142,10 @@ class TasmotaButtonTriggerConfig:
 class TasmotaButtonTrigger(TasmotaTrigger):
     """Representation of a Tasmota button trigger."""
 
-    def _trig_message_received(self, msg):
+    cfg: TasmotaButtonTriggerConfig
+
+    def _trig_message_received(self, msg: ReceiveMessage) -> None:
         """Handle new MQTT messages."""
         event = get_value_by_path(msg.payload, [f"Button{self.cfg.idx+1}", RSLT_ACTION])
-        if event == self.cfg.event:
+        if event == self.cfg.event and self._on_trigger_callback:
             self._on_trigger_callback()
