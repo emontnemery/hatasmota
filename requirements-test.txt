@@ -1,4 +1,4 @@
-flake8==3.9.2
+flake8==4.0.1
 pylint==2.9.3
 black==21.6b0
 isort==5.9.1
