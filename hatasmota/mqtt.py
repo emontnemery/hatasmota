@@ -117,5 +117,5 @@ def send_commands(
 ) -> None:
     """Send a sequence of commands."""
     backlog_topic = command_topic + COMMAND_BACKLOG
-    backlog = ";".join(["NoDelay;%s %s" % command for command in commands])
+    backlog = ";".join([f"NoDelay;{command[0]} {command[1]}" for command in commands])
     mqtt_client.publish(backlog_topic, backlog)
