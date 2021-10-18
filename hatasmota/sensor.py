@@ -201,7 +201,7 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaSensorConfig(TasmotaBaseSensorConfig):
     """Tasmota Status Sensor configuration."""
 
-    last_reset_key: str | None = attr.ib()
+    last_reset_path: str | None = attr.ib()
     poll_topic: str = attr.ib()
     quantity: str = attr.ib()
     unit: str = attr.ib()
@@ -217,6 +217,7 @@ class TasmotaSensorConfig(TasmotaBaseSensorConfig):
         platform: str,
         sensor_name: str,
         value_path: list[str | int],
+        parent_path: list[str | int],
         quantity: str,
     ) -> TasmotaSensorConfig:
         """Instantiate from discovery message."""
@@ -227,11 +228,16 @@ class TasmotaSensorConfig(TasmotaBaseSensorConfig):
             if unit not in supported_units:
                 _LOGGER.warning("Unknown unit %s for %s", unit, quantity)
 
+        if last_reset_key:=LAST_RESET_SENSOR_MAP.get(quantity):
+            last_reset_path = list(parent_path).append(last_reset_key)
+        else:
+            last_reset_path = None
+
         return cls(
             endpoint="sensor",
             idx=None,
             friendly_name=f"{device_config[CONF_DEVICENAME]} {sensor_name}",
-            last_reset_key=LAST_RESET_SENSOR_MAP.get(quantity),
+            last_reset_path=last_reset_path,
             mac=device_config[CONF_MAC],
             platform=platform,
             poll_payload="10",
@@ -271,6 +277,7 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
             if not self._on_state_callback:
                 return
 
+            last_reset_path = self._cfg.last_reset_path
             if msg.topic == self._cfg.state_topic1:
                 state = get_value_by_path(msg.payload, self._cfg.value_path[:-1])
                 last_node = self._cfg.value_path[-1]
@@ -279,6 +286,8 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
                 value_path = prefix + self._cfg.value_path
                 state = get_value_by_path(msg.payload, value_path[:-1])
                 last_node = value_path[-1]
+                if self._cfg.last_reset_path:
+                    last_reset_path = prefix + self._cfg.last_reset_path
             if state is not None:
                 # Indexed sensors may be announced with more indices than present in
                 # the status. Handle this gracefully wihtout throwing. This is a
@@ -287,15 +296,15 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
                 kwargs = {}
                 try:
                     if hasattr(state, "__getitem__"):
-                        if (last_reset_key := self._cfg.last_reset_key) and (
-                            last_reset := state.get(last_reset_key)
-                        ):
-                            kwargs["last_reset"] = last_reset
                         state = state[last_node]
                     elif last_node != 0:
                         return
                 except (IndexError, KeyError):
                     return
+                if last_reset_path:
+                    last_reset = get_value_by_path(msg.payload, last_reset_path)
+                    if last_reset:
+                        kwargs["last_reset"] = last_reset
                 self._on_state_callback(state, **kwargs)
 
         availability_topics = self.get_availability_topics()
@@ -371,10 +380,11 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
 def _get_sensor_entity(
     sensor_discovery_message: dict,
     device_discovery_msg: dict,
-    sensorpath: list[str | int],
+    sensor_path: list[str | int],
+    parent_path: list[str | int],
     quantity: str,
 ) -> tuple[TasmotaSensorConfig, DiscoveryHashType]:
-    sensorname = " ".join([str(i) for i in sensorpath])
+    sensorname = " ".join([str(i) for i in sensor_path])
     discovery_hash = (
         device_discovery_msg[CONF_MAC],
         "sensor",
@@ -386,7 +396,8 @@ def _get_sensor_entity(
         sensor_discovery_message,
         "sensor",
         sensorname,
-        sensorpath,
+        sensor_path,
+        parent_path,
         quantity,
     )
     return (sensor_config, discovery_hash)
@@ -415,6 +426,7 @@ def get_sensor_entities(
                             sensor_discovery_message,
                             device_discovery_msg,
                             subsubsensorpath,
+                            subsubsensorpath,
                             quantity,
                         )
                     )
@@ -428,6 +440,7 @@ def get_sensor_entities(
                             sensor_discovery_message,
                             device_discovery_msg,
                             subsubsensorpath,
+                            subsensorpath,
                             quantity,
                         )
                     )
@@ -437,6 +450,7 @@ def get_sensor_entities(
                     _get_sensor_entity(
                         sensor_discovery_message,
                         device_discovery_msg,
+                        subsensorpath,
                         subsensorpath,
                         quantity,
                     )
