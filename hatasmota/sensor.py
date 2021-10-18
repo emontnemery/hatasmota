@@ -228,7 +228,7 @@ class TasmotaSensorConfig(TasmotaBaseSensorConfig):
             if unit not in supported_units:
                 _LOGGER.warning("Unknown unit %s for %s", unit, quantity)
 
-        if last_reset_key:=LAST_RESET_SENSOR_MAP.get(quantity):
+        if last_reset_key := LAST_RESET_SENSOR_MAP.get(quantity):
             last_reset_path = list(parent_path).append(last_reset_key)
         else:
             last_reset_path = None
