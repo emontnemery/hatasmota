@@ -305,28 +305,28 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
         """Return the warmest color_temp that this light supports."""
         return self._cfg.max_mireds
 
-    def set_state(self, state: bool, attributes: dict[str, Any]) -> None:
+    async def set_state(self, state: bool, attributes: dict[str, Any]) -> None:
         """Turn the light on or off."""
         if self._cfg.endpoint == "relay":
-            self._set_state_relay(state)
+            await self._set_state_relay(state)
         else:
-            self._set_state_light(state, attributes)
+            await self._set_state_light(state, attributes)
 
     @property
     def supports_transition(self) -> bool:
         """Return if the light supports transitions."""
         return self.light_type != LIGHT_TYPE_NONE and not self._cfg.tuya
 
-    def _set_state_relay(self, state: bool) -> None:
+    async def _set_state_relay(self, state: bool) -> None:
         """Turn the relay on or off."""
         payload = self._cfg.state_power_on if state else self._cfg.state_power_off
         command = f"{COMMAND_POWER}{self._cfg.idx+1}"
-        self._mqtt_client.publish(
+        await self._mqtt_client.publish(
             self._cfg.command_topic + command,
             payload,
         )
 
-    def _set_state_light(self, state: bool, attributes: dict[str, Any]) -> None:
+    async def _set_state_light(self, state: bool, attributes: dict[str, Any]) -> None:
         idx = self._cfg.idx
 
         commands: list[tuple[str, str | float]] = []
@@ -395,7 +395,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             command = f"{COMMAND_POWER}{idx+1}"
             commands.append((command, argument))
 
-        send_commands(self._mqtt_client, self._cfg.command_topic, commands)
+        await send_commands(self._mqtt_client, self._cfg.command_topic, commands)
 
     def _calculate_speed(self, state: bool, attributes: dict[str, Any]) -> float:
         # Calculate speed:

@@ -24,7 +24,7 @@ class Timer:
 
     async def _job(self) -> None:
         await asyncio.sleep(self._timeout)
-        self._callback()
+        await self._callback()
 
     def cancel(self) -> None:
         """Cancel the timer."""
@@ -70,30 +70,30 @@ class TasmotaMQTTClient:
         self._subscribe = subscribe
         self._unsubscribe = unsubscribe
 
-    def publish(
+    async def publish(
         self,
         topic: str,
         payload: PublishPayloadType,
-        qos: int | None = None,
-        retain: bool | None = None,
+        qos: int | None = 0,
+        retain: bool | None = False,
     ) -> None:
         """Publish a message."""
-        return self._publish(topic, payload, qos, retain)
+        return await self._publish(topic, payload, qos, retain)
 
-    def publish_debounced(
+    async def publish_debounced(
         self,
         topic: str,
         payload: PublishPayloadType,
-        qos: int | None = None,
-        retain: bool | None = None,
+        qos: int | None = 0,
+        retain: bool | None = False,
     ) -> None:
         """Publish a message, with debounce."""
         msg = PublishMessage(topic, payload, qos, retain)
 
-        def publish_callback() -> None:
+        async def publish_callback() -> None:
             _LOGGER.debug("publish_debounced: publishing %s", msg)
             self._pending_messages.pop(msg)
-            self.publish(msg.topic, msg.payload, qos=msg.qos, retain=msg.retain)
+            await self.publish(msg.topic, msg.payload, qos=msg.qos, retain=msg.retain)
 
         if msg in self._pending_messages:
             timer = self._pending_messages.pop(msg)
@@ -110,7 +110,7 @@ class TasmotaMQTTClient:
         return await self._unsubscribe(sub_state)
 
 
-def send_commands(
+async def send_commands(
     mqtt_client: TasmotaMQTTClient,
     command_topic: str,
     commands: list[tuple[str, str | float]],
@@ -118,4 +118,4 @@ def send_commands(
     """Send a sequence of commands."""
     backlog_topic = command_topic + COMMAND_BACKLOG
     backlog = ";".join([f"NoDelay;{command[0]} {command[1]}" for command in commands])
-    mqtt_client.publish(backlog_topic, backlog)
+    await mqtt_client.publish(backlog_topic, backlog)

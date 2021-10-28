@@ -265,16 +265,16 @@ class TasmotaDiscovery:
         self._sub_state = await self._mqtt_client.subscribe(self._sub_state, topics)
 
 
-def clear_discovery_topic(
+async def clear_discovery_topic(
     mac: str, discovery_prefix: str, mqtt_client: TasmotaMQTTClient
 ) -> None:
     """Clear retained discovery topic."""
     mac = mac.replace(":", "")
     mac = mac.upper()
     device_discovery_topic = f"{discovery_prefix}/{mac}/config"
-    mqtt_client.publish(device_discovery_topic, "", retain=True)
+    await mqtt_client.publish(device_discovery_topic, "", retain=True)
     sensor_discovery_topic = f"{discovery_prefix}/{mac}/sensors"
-    mqtt_client.publish(sensor_discovery_topic, "", retain=True)
+    await mqtt_client.publish(sensor_discovery_topic, "", retain=True)
 
 
 def get_device_config_helper(discovery_msg: dict) -> TasmotaDeviceConfig:

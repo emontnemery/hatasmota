@@ -196,13 +196,13 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
     async def _poll_status(self) -> None:
         """Poll for status."""
         await self.subscribe_topics()
-        self._mqtt_client.publish_debounced(
+        await self._mqtt_client.publish_debounced(
             self._cfg.poll_topic, self._cfg.poll_payload
         )
 
-    def poll_status(self) -> None:
+    async def poll_status(self) -> None:
         """Poll for status."""
-        asyncio.create_task(self._poll_status())
+        await self._poll_status()
 
     async def subscribe_topics(self) -> None:
         """Subscribe to topics."""

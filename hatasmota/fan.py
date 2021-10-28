@@ -111,11 +111,11 @@ class TasmotaFan(TasmotaAvailability, TasmotaEntity):
         """Unsubscribe to all MQTT topics."""
         self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
-    def set_speed(self, fanspeed: int) -> None:
+    async def set_speed(self, fanspeed: int) -> None:
         """Set the fan's speed."""
         payload = fanspeed
         command = COMMAND_FANSPEED
-        self._mqtt_client.publish(
+        await self._mqtt_client.publish(
             self._cfg.command_topic + command,
             payload,
         )
