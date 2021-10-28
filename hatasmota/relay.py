@@ -116,11 +116,11 @@ class TasmotaRelay(TasmotaAvailability, TasmotaEntity):
         """Unsubscribe to all MQTT topics."""
         self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
-    def set_state(self, state: bool) -> None:
+    async def set_state(self, state: bool) -> None:
         """Turn the relay on or off."""
         payload = self._cfg.state_power_on if state else self._cfg.state_power_off
         command = f"{COMMAND_POWER}{self._cfg.idx+1}"
-        self._mqtt_client.publish(
+        await self._mqtt_client.publish(
             self._cfg.command_topic + command,
             payload,
         )

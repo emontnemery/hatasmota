@@ -56,9 +56,9 @@ class TasmotaEntity:
         """Update config."""
         self._cfg = new_config
 
-    def poll_status(self) -> None:
+    async def poll_status(self) -> None:
         """Poll for status."""
-        self._mqtt_client.publish_debounced(
+        await self._mqtt_client.publish_debounced(
             self._cfg.poll_topic, self._cfg.poll_payload
         )
 
@@ -95,22 +95,22 @@ class TasmotaAvailability(TasmotaEntity):
 
     def __init__(self, **kwds: Any):
         """Initialize."""
-        self._on_availability_callback: Callable | None = None
+        self._on_availability_callback: Awaitable | None = None
         super().__init__(**kwds)
 
     def get_availability_topics(self) -> dict:
         """Return MQTT topics to subscribe to for availability state."""
 
-        def availability_message_received(msg: ReceiveMessage) -> None:
+        async def availability_message_received(msg: ReceiveMessage) -> None:
             """Handle a new received MQTT availability message."""
             if msg.payload == self._cfg.availability_online:
-                self.poll_status()
+                await self.poll_status()
             if not self._on_availability_callback:
                 return
             if msg.payload == self._cfg.availability_online:
-                self._on_availability_callback(True)
+                await self._on_availability_callback(True)
             if msg.payload == self._cfg.availability_offline:
-                self._on_availability_callback(False)
+                await self._on_availability_callback(False)
 
         topics = {
             "availability_topic": {
