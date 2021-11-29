@@ -333,7 +333,7 @@ def get_cover_entities(
         if value == RL_SHUTTER:
             if relays[idx + 1] == RL_SHUTTER:
                 shutter_indices.append(idx)
-                _LOGGER.debug("Found shutter pair %s + %s", idx, idx+1)
+                _LOGGER.debug("Found shutter pair %s + %s", idx, idx + 1)
             else:
                 # The 2nd half of the pair is missing, abort
                 _LOGGER.error(
