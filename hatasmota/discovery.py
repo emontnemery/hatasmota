@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import logging
+from itertools import chain
 
 import voluptuous as vol
 
@@ -322,9 +323,26 @@ def get_cover_entities(
     relays = discovery_msg[CONF_RELAY]
     shutter_entities: list[tuple[TasmotaShutterConfig | None, DiscoveryHashType]] = []
     shutter_indices = []
-    for (idx, value) in enumerate(relays):
-        if value == RL_SHUTTER and idx and relays[idx - 1] == RL_SHUTTER:
-            shutter_indices.append(idx - 1)
+
+    # Tasmota supports up to 4 shutters, each shutter is assigned two consecutive relays
+    for (idx, value) in enumerate(chain(relays, [-1])):
+        if idx - 1 in shutter_indices:
+            # This is the 2nd half of a pair, skip
+            continue
+
+        if value == RL_SHUTTER:
+            if relays[idx + 1] == RL_SHUTTER:
+                shutter_indices.append(idx)
+                _LOGGER.debug("Found shutter pair %s + %s", idx, idx + 1)
+            else:
+                # The 2nd half of the pair is missing, abort
+                _LOGGER.error(
+                    "Invalid shutter configuration, relay %s is shutter but %s is not",
+                    idx + 1,
+                    idx + 2,
+                )
+                shutter_indices = []
+                break
 
     # pad / truncate the shutter index list to 4
     shutter_indices = shutter_indices[:4] + [-1] * (4 - len(shutter_indices))
