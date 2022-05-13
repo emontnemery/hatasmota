@@ -16,6 +16,7 @@ COMMAND_SHUTTER_CLOSE: Final = "ShutterClose"
 COMMAND_SHUTTER_OPEN: Final = "ShutterOpen"
 COMMAND_SHUTTER_POSITION: Final = "ShutterPosition"
 COMMAND_SHUTTER_STOP: Final = "ShutterStop"
+COMMAND_SHUTTER_TILT: Final = "ShutterTilt"
 COMMAND_SPEED: Final = "Speed2"
 COMMAND_WHITE: Final = "White"
 
@@ -36,6 +37,7 @@ CONF_OPTIONS: Final = "so"
 CONF_PREFIX: Final = "tp"
 CONF_SENSOR: Final = "sn"
 CONF_SHUTTER_OPTIONS: Final = "sho"
+CONF_SHUTTER_TILT: Final = "sht"
 CONF_STATE: Final = "state"
 CONF_RELAY: Final = "rl"
 CONF_SW_VERSION: Final = "sw"
@@ -157,6 +159,7 @@ SHUTTER_DIRECTION_DOWN: Final = -1
 SHUTTER_DIRECTION_STOP: Final = 0
 SHUTTER_DIRECTION_UP: Final = 1
 SHUTTER_POSITION: Final = "Position"
+SHUTTER_TILT: Final = "Tilt"
 
 SHUTTER_OPTION_INVERT: Final = 1
 

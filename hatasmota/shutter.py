@@ -11,13 +11,16 @@ from .const import (
     COMMAND_SHUTTER_OPEN,
     COMMAND_SHUTTER_POSITION,
     COMMAND_SHUTTER_STOP,
+    COMMAND_SHUTTER_TILT,
     CONF_DEVICENAME,
     CONF_MAC,
     CONF_SHUTTER_OPTIONS,
+    CONF_SHUTTER_TILT,
     RSLT_SHUTTER,
     SHUTTER_DIRECTION,
     SHUTTER_OPTION_INVERT,
     SHUTTER_POSITION,
+    SHUTTER_TILT,
     STATUS_SENSOR,
 )
 from .entity import (
@@ -52,6 +55,9 @@ class TasmotaShutterConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     state_topic1: str = attr.ib()
     state_topic2: str = attr.ib()
     state_topic3: str = attr.ib()
+    tilt_min: int = attr.ib()
+    tilt_max: int = attr.ib()
+    tilt_dur: int = attr.ib()
 
     @classmethod
     def from_discovery_message(
@@ -60,6 +66,8 @@ class TasmotaShutterConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
         """Instantiate from discovery message."""
         shutter_options = config[CONF_SHUTTER_OPTIONS]
         shutter_options = shutter_options[idx] if idx < len(shutter_options) else 0
+        shutter_tilt = config[CONF_SHUTTER_TILT]
+        shutter_tilt = shutter_tilt[idx] if idx < len(shutter_tilt) else [0, 0, 0]
         return cls(
             endpoint="shutter",
             idx=idx,
@@ -76,6 +84,9 @@ class TasmotaShutterConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             state_topic1=get_topic_stat_result(config),
             state_topic2=get_topic_tele_sensor(config),
             state_topic3=get_topic_stat_status(config, 10),
+            tilt_min=shutter_tilt[0],
+            tilt_max=shutter_tilt[1],
+            tilt_dur=shutter_tilt[2],
         )
 
 
@@ -114,8 +125,19 @@ class TasmotaShutter(TasmotaAvailability, TasmotaEntity):
             if position is not None and self._cfg.inverted_shutter:
                 position = 100 - position
 
-            if direction is not None or position is not None:
-                self._on_state_callback(None, direction=direction, position=position)
+            tilt = get_value_by_path(msg.payload, prefix + [shutter, SHUTTER_TILT])
+            ha_tilt = None
+            if tilt is not None:
+                ha_tilt_range = 100
+                tasmota_tilt_range = self._cfg.tilt_max - self._cfg.tilt_min
+                ha_tilt = (
+                    (tilt - self._cfg.tilt_min) * ha_tilt_range / tasmota_tilt_range
+                )
+
+            if direction is not None or position is not None or ha_tilt is not None:
+                self._on_state_callback(
+                    None, direction=direction, position=position, tilt=ha_tilt
+                )
 
         availability_topics = self.get_availability_topics()
         topics = {
@@ -182,6 +204,44 @@ class TasmotaShutter(TasmotaAvailability, TasmotaEntity):
         """Stop the shutter."""
         payload = ""
         command = f"{COMMAND_SHUTTER_STOP}{self._cfg.idx+1}"
+        await self._mqtt_client.publish(
+            self._cfg.command_topic + command,
+            payload,
+        )
+
+    @property
+    def supports_tilt(self) -> bool:
+        """Return if the shutter supports tilt."""
+        return self._cfg.tilt_dur != 0 and (self._cfg.tilt_min != self._cfg.tilt_max)
+
+    async def open_tilt(self) -> None:
+        """Open the shutter tilt."""
+        payload = "OPEN"
+        command = f"{COMMAND_SHUTTER_TILT}{self._cfg.idx+1}"
+        await self._mqtt_client.publish(
+            self._cfg.command_topic + command,
+            payload,
+        )
+
+    async def close_tilt(self) -> None:
+        """Close the shutter tilt."""
+        payload = "CLOSE"
+        command = f"{COMMAND_SHUTTER_TILT}{self._cfg.idx+1}"
+        await self._mqtt_client.publish(
+            self._cfg.command_topic + command,
+            payload,
+        )
+
+    async def set_tilt_position(self, tilt: int) -> None:
+        """Set the shutter's tilt position.
+
+        0 is closed, 100 is fully open.
+        """
+        ha_tilt_range = 100
+        tasmota_tilt_range = self._cfg.tilt_max - self._cfg.tilt_min
+        tasmota_tilt = self._cfg.tilt_min + (tilt * tasmota_tilt_range / ha_tilt_range)
+        payload = round(tasmota_tilt)
+        command = f"{COMMAND_SHUTTER_TILT}{self._cfg.idx+1}"
         await self._mqtt_client.publish(
             self._cfg.command_topic + command,
             payload,
