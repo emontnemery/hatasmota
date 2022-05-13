@@ -30,6 +30,7 @@ from .const import (
     CONF_RELAY,
     CONF_SENSOR,
     CONF_SHUTTER_OPTIONS,
+    CONF_SHUTTER_TILT,
     CONF_STATE,
     CONF_SW_VERSION,
     CONF_SWITCH,
@@ -124,6 +125,9 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         vol.Optional(CONF_SHUTTER_OPTIONS, default=[]): vol.All(
             cv.ensure_list, [cv.positive_int]
         ),  # Added in Tasmota 9.2
+        vol.Optional(CONF_SHUTTER_TILT, default=[]): vol.All(
+            cv.ensure_list, [[int]]
+        ),  # Added in Tasmota 11.x
         CONF_SW_VERSION: cv.string,
         CONF_SWITCH: vol.All(cv.ensure_list, [int]),
         vol.Optional(CONF_SWITCHNAME, default=[]): vol.All(
