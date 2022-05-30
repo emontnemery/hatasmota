@@ -130,9 +130,10 @@ class TasmotaShutter(TasmotaAvailability, TasmotaEntity):
             if tilt is not None:
                 ha_tilt_range = 100
                 tasmota_tilt_range = self._cfg.tilt_max - self._cfg.tilt_min
-                ha_tilt = (
-                    (tilt - self._cfg.tilt_min) * ha_tilt_range / tasmota_tilt_range
-                )
+                if tasmota_tilt_range:
+                    ha_tilt = (
+                        (tilt - self._cfg.tilt_min) * ha_tilt_range / tasmota_tilt_range
+                    )
 
             if direction is not None or position is not None or ha_tilt is not None:
                 self._on_state_callback(
