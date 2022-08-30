@@ -285,7 +285,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
     def effect_list(self) -> list[str] | None:
         """Return effect list."""
         if self._cfg.endpoint == "light":
-            return ["None", "Wake up", "Cycle up", "Cycle down", "Random"]
+            return ["Solid", "Wake up", "Cycle up", "Cycle down", "Random"]
         return None
 
     @property
