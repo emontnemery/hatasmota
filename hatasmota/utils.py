@@ -88,6 +88,11 @@ def get_topic_command_status(config: ConfigType) -> str:
     return _get_topic_cmnd(config) + "STATUS"
 
 
+def get_topic_stat(config: ConfigType) -> str:
+    """Get stat topic."""
+    return _get_topic_stat(config)
+
+
 def get_topic_stat_button_trigger(config: ConfigType, idx: int) -> str:
     """Get topic for tele state."""
     return _get_topic_stat(config) + f"BUTTON{idx+1}"
@@ -113,6 +118,11 @@ def get_topic_stat_switch(config: ConfigType, idx: int) -> str:
 def get_topic_stat_switch_trigger(config: ConfigType, idx: int) -> str:
     """Get topic for tele state."""
     return _get_topic_stat(config) + f"SWITCH{idx+1}"
+
+
+def get_topic_tele(config: ConfigType) -> str:
+    """Get tele topic."""
+    return _get_topic_tele(config)
 
 
 def get_topic_tele_sensor(config: ConfigType) -> str:
