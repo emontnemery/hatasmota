@@ -16,6 +16,7 @@ from .const import (
     COMMAND_POWER,
     COMMAND_SCHEME,
     COMMAND_SPEED,
+    COMMAND_WAKEUP,
     COMMAND_WHITE,
     CONF_LIGHT_SUBTYPE,
     CONF_LINK_RGB_CT,
@@ -396,6 +397,14 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             commands.append((command, argument))
 
         await send_commands(self._mqtt_client, self._cfg.command_topic, commands)
+
+    async def wakeup(self, **kwargs: Any) -> None:
+        """Wake up the light."""
+        payload = kwargs.get("dimmer", "")
+        await self._mqtt_client.publish(
+            self._cfg.command_topic + COMMAND_WAKEUP,
+            payload,
+        )
 
     def _calculate_speed(self, state: bool, attributes: dict[str, Any]) -> float:
         # Calculate speed:
