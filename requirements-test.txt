@@ -1,5 +1,5 @@
 flake8==5.0.4
 pylint==2.15.0
-black==22.6.0
+black==22.10.0
 isort==5.10.1
 mypy==0.971
