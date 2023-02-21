@@ -214,7 +214,7 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
 
             try:
                 payload = json.loads(msg.payload)
-            except (json.decoder.JSONDecodeError):
+            except json.decoder.JSONDecodeError:
                 return
 
             state = None

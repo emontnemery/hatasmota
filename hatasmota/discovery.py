@@ -316,7 +316,7 @@ def get_binary_sensor_entities(
 ) -> list[tuple[TasmotaSwitchConfig | None, DiscoveryHashType]]:
     """Generate binary sensor configuration."""
     entities: list[tuple[TasmotaSwitchConfig | None, DiscoveryHashType]] = []
-    for (idx, value) in enumerate(discovery_msg[CONF_SWITCH]):
+    for idx, value in enumerate(discovery_msg[CONF_SWITCH]):
         entity = None
         discovery_hash = (discovery_msg[CONF_MAC], "binary_sensor", "switch", idx)
         if value:
@@ -337,7 +337,7 @@ def get_cover_entities(
     shutter_indices = []
 
     # Tasmota supports up to 4 shutters, each shutter is assigned two consecutive relays
-    for (idx, value) in enumerate(chain(relays, [-1])):
+    for idx, value in enumerate(chain(relays, [-1])):
         if idx - 1 in shutter_indices:
             # This is the 2nd half of a pair, skip
             continue
@@ -359,7 +359,7 @@ def get_cover_entities(
     # pad / truncate the shutter index list to 4
     shutter_indices = shutter_indices[:4] + [-1] * (4 - len(shutter_indices))
 
-    for (idx, relay_idx) in enumerate(shutter_indices):
+    for idx, relay_idx in enumerate(shutter_indices):
         entity = None
         discovery_hash = (discovery_msg[CONF_MAC], "cover", "shutter", idx)
         if relay_idx != -1:
@@ -392,7 +392,7 @@ def get_switch_entities(
     """Generate switch configuration."""
     force_light = discovery_msg[CONF_OPTIONS][OPTION_HASS_LIGHT] == 1
     switch_entities: list[tuple[TasmotaRelayConfig | None, DiscoveryHashType]] = []
-    for (idx, value) in enumerate(discovery_msg[CONF_RELAY]):
+    for idx, value in enumerate(discovery_msg[CONF_RELAY]):
         entity = None
         discovery_hash = (discovery_msg[CONF_MAC], "switch", "relay", idx)
         if value == RL_RELAY and not force_light:
@@ -419,7 +419,7 @@ def get_light_entities(
         # Special case for iFan: Single, non dimmable light
         relays[0] = RL_RELAY
 
-    for (idx, value) in enumerate(relays):
+    for idx, value in enumerate(relays):
         entity = None
         discovery_hash = (discovery_msg[CONF_MAC], "light", "light", idx)
         if value == RL_LIGHT:
@@ -427,7 +427,7 @@ def get_light_entities(
                 discovery_msg, idx, "light"
             )
         light_entities.append((entity, discovery_hash))
-    for (idx, value) in enumerate(relays):
+    for idx, value in enumerate(relays):
         entity = None
         discovery_hash = (discovery_msg[CONF_MAC], "light", "relay", idx)
         if value == RL_RELAY:
@@ -514,7 +514,7 @@ def get_entity(
 def get_button_triggers(discovery_msg: dict) -> list[TasmotaButtonTriggerConfig]:
     """Generate binary sensor configuration."""
     triggers = []
-    for (idx, _) in enumerate(discovery_msg[CONF_BUTTON]):
+    for idx, _ in enumerate(discovery_msg[CONF_BUTTON]):
         trigger = TasmotaButtonTriggerConfig.from_discovery_message(discovery_msg, idx)
         triggers.extend(trigger)
 
@@ -524,7 +524,7 @@ def get_button_triggers(discovery_msg: dict) -> list[TasmotaButtonTriggerConfig]
 def get_switch_triggers(discovery_msg: dict) -> list[TasmotaSwitchTriggerConfig]:
     """Generate binary sensor configuration."""
     triggers = []
-    for (idx, _) in enumerate(discovery_msg[CONF_SWITCH]):
+    for idx, _ in enumerate(discovery_msg[CONF_SWITCH]):
         trigger = TasmotaSwitchTriggerConfig.from_discovery_message(discovery_msg, idx)
         triggers.extend(trigger)
 

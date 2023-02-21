@@ -458,7 +458,7 @@ def get_sensor_entities(
                     )
             elif isinstance(subsensor, list):
                 # Array sensor
-                for (idx, _) in enumerate(subsensor):
+                for idx, _ in enumerate(subsensor):
                     subsubsensorpath = list(subsensorpath)
                     subsubsensorpath.append(idx)
                     sensor_configs.append(
