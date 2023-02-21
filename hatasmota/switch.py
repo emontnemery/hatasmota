@@ -20,6 +20,7 @@ from .const import (
     SWITCHMODE_FOLLOWMULTI_INV,
     SWITCHMODE_NONE,
     SWITCHMODE_PUSH_IGNORE,
+    SWITCHMODE_PUSH_IGNORE_INV,
     SWITCHMODE_PUSHBUTTON,
     SWITCHMODE_PUSHBUTTON_INV,
     SWITCHMODE_PUSHBUTTON_TOGGLE,
@@ -77,6 +78,7 @@ _LOGGER = logging.getLogger(__name__)
 # 13             PUSHON                YES (PIR)     NONE                          NONE                        NONE                        0,0
 # 14             PUSHON_INV            YES (PIR)     NONE                          NONE                        NONE                        0,0
 # 15             PUSH_IGNORE           YES           NONE                          NONE                        NONE                        0,0
+# 16             PUSH_IGNORE_INV       YES           NONE                          NONE                        NONE                        0,0
 # Please note: SwitchMode11 and 12 will register just TOGGLE (button_short_press)
 # Trigger types: "0 = none | 1 = button_short_press | 2 = button_long_press | 3 = button_double_press";
 # PIR: automatic off after 1 second
@@ -168,6 +170,11 @@ SWITCHMODE_MAP = {
         {STATE_TOGGLE: SW_TRIG_NONE, STATE_HOLD: SW_TRIG_NONE},
     ),
     SWITCHMODE_PUSH_IGNORE: (
+        True,
+        None,
+        {STATE_TOGGLE: SW_TRIG_NONE, STATE_HOLD: SW_TRIG_NONE},
+    ),
+    SWITCHMODE_PUSH_IGNORE_INV: (
         True,
         None,
         {STATE_TOGGLE: SW_TRIG_NONE, STATE_HOLD: SW_TRIG_NONE},
