@@ -247,7 +247,7 @@ class TasmotaSensorConfig(TasmotaBaseSensorConfig):
         quantity: str,
     ) -> TasmotaSensorConfig:
         """Instantiate from discovery message."""
-        unit = SENSOR_UNIT_MAP.get(quantity, " ")
+        unit = SENSOR_UNIT_MAP.get(quantity)
         if quantity in SENSOR_DYNAMIC_UNIT_MAP:
             key, supported_units = SENSOR_DYNAMIC_UNIT_MAP[quantity]
             unit = sensor_config[CONF_SENSOR].get(key)
