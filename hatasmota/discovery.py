@@ -336,7 +336,7 @@ def get_cover_entities(
     shutter_entities: list[tuple[TasmotaShutterConfig | None, DiscoveryHashType]] = []
     shutter_indices = []
 
-    # Tasmota supports up to 4 shutters, each shutter is assigned two consecutive relays
+    # Tasmota supports up to 16 shutters, each shutter is assigned two consecutive relays
     for idx, value in enumerate(chain(relays, [-1])):
         if idx - 1 in shutter_indices:
             # This is the 2nd half of a pair, skip
@@ -356,8 +356,8 @@ def get_cover_entities(
                 shutter_indices = []
                 break
 
-    # pad / truncate the shutter index list to 4
-    shutter_indices = shutter_indices[:4] + [-1] * (4 - len(shutter_indices))
+    # pad / truncate the shutter index list to 16
+    shutter_indices = shutter_indices[:16] + [-1] * (16 - len(shutter_indices))
 
     for idx, relay_idx in enumerate(shutter_indices):
         entity = None
