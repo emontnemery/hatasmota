@@ -68,7 +68,6 @@ from .models import (
 from .mqtt import ReceiveMessage, TasmotaMQTTClient
 from .relay import TasmotaRelay, TasmotaRelayConfig
 from .sensor import TasmotaBaseSensorConfig, TasmotaSensor, get_sensor_entities
-from .battery import TasmotaBattery
 from .deepsleep import TasmotaDeepSleep
 from .shutter import TasmotaShutter, TasmotaShutterConfig
 from .status_sensor import TasmotaStatusSensor, TasmotaStatusSensorConfig
