@@ -29,6 +29,8 @@ from .const import (
     CONF_PREFIX,
     CONF_RELAY,
     CONF_SENSOR,
+    CONF_BATTERY,
+    CONF_DEEPSLEEP,
     CONF_SHUTTER_OPTIONS,
     CONF_SHUTTER_TILT,
     CONF_STATE,
@@ -66,6 +68,8 @@ from .models import (
 from .mqtt import ReceiveMessage, TasmotaMQTTClient
 from .relay import TasmotaRelay, TasmotaRelayConfig
 from .sensor import TasmotaBaseSensorConfig, TasmotaSensor, get_sensor_entities
+from .battery import TasmotaBattery
+from .deepsleep import TasmotaDeepSleep
 from .shutter import TasmotaShutter, TasmotaShutterConfig
 from .status_sensor import TasmotaStatusSensor, TasmotaStatusSensorConfig
 from .switch import (
@@ -122,9 +126,15 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         CONF_OPTIONS: TASMOTA_OPTIONS_SCHEMA,
         CONF_PREFIX: vol.All(cv.ensure_list, [cv.string]),
         CONF_STATE: vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional(CONF_BATTERY, default=[]): vol.All(
+            cv.ensure_list, [cv.positive_int]
+        ), # Added in Tasmota 13.0.0.3
+        vol.Optional(CONF_DEEPSLEEP, default=[]): vol.All(
+            cv.ensure_list, [cv.positive_int]
+        ), # Added in Tasmota 13.0.0.3
         vol.Optional(CONF_SHUTTER_OPTIONS, default=[]): vol.All(
             cv.ensure_list, [cv.positive_int]
-        ),  # Added in Tasmota 9.2
+        ),  positive_int
         vol.Optional(CONF_SHUTTER_TILT, default=[]): vol.All(
             cv.ensure_list, [[int]]
         ),  # Added in Tasmota 11.x
