@@ -1,4 +1,4 @@
-OR"""Tasmota status sensor."""
+"""Tasmota status sensor."""
 from __future__ import annotations
 
 import json
