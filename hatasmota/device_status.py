@@ -1,4 +1,4 @@
-"""Tasmota status sensor."""
+OR"""Tasmota status sensor."""
 from __future__ import annotations
 
 import json
@@ -12,6 +12,7 @@ from .const import (
     SENSOR_STATUS_RSSI,
     SENSOR_STATUS_SIGNAL,
     SENSOR_STATUS_SSID,
+    SENSOR_STATUS_BATTERY,
 )
 from .entity import (
     TasmotaAvailability,
