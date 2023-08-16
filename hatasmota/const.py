@@ -167,8 +167,8 @@ SENSOR_STATUS_SIGNAL: Final = "status_signal"
 SENSOR_STATUS_SSID: Final = "status_ssid"
 SENSOR_STATUS_VERSION: Final = "status_version"
 
-SENSOR_STATUS_BATTERY: Final = "BatteryPercentage"
-SENSOR_STATUS_DEEPSLEEP: Final = "DeepSleep"
+SENSOR_STATUS_BATTERY: Final = "status_battery_percentage"
+SENSOR_STATUS_DEEPSLEEP: Final = "status_deepdleep"
 
 SENSOR_UNIT_PRESSURE: Final = "PressureUnit"
 SENSOR_UNIT_SPEED: Final = "SpeedUnit"
