@@ -13,6 +13,7 @@ from .const import (
     CONF_DEVICENAME,
     CONF_IP,
     CONF_MAC,
+    CONF_BATTERY,
     PERCENTAGE,
     SENSOR_STATUS_IP,
     SENSOR_STATUS_LAST_RESTART_TIME,
@@ -64,7 +65,6 @@ SENSORS = [
     SENSOR_STATUS_LINK_COUNT,
     SENSOR_STATUS_MQTT_COUNT,
     SENSOR_STATUS_RESTART_REASON,
-    SENSOR_STATUS_BATTERY,
     SENSOR_STATUS_RSSI,
     SENSOR_STATUS_SIGNAL,
     SENSOR_STATUS_SSID,
@@ -162,6 +162,8 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
         cls, config: dict, platform: str
     ) -> list[TasmotaStatusSensorConfig]:
         """Instantiate from discovery message."""
+        if CONF_BATTERY == 1:
+          SENSORS.append(SENSOR_STATUS_BATTERY)
         sensors = [
             cls(
                 endpoint="status_sensor",
@@ -181,6 +183,7 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
             )
             for sensor in SENSORS
         ]
+ 
         return sensors
 
     @property
