@@ -162,9 +162,9 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
         cls, config: dict, platform: str
     ) -> list[TasmotaStatusSensorConfig]:
         """Instantiate from discovery message."""
-        _LOGGER.warning("CONF_BATTERY <%d>", config[CONF_BATTERY])
+        SENSORS_LOKAL = SENSORS
         if config[CONF_BATTERY] == 1:
-          SENSORS.append(SENSOR_STATUS_BATTERY)
+          SENSORS_LOKAL.append(SENSOR_STATUS_BATTERY)
         sensors = [
             cls(
                 endpoint="status_sensor",
@@ -182,7 +182,7 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
                 state_topic=get_topic_tele_state(config),
                 status_topic=get_topic_stat_status(config, STATUS_TOPICS.get(sensor)),
             )
-            for sensor in SENSORS
+            for sensor in SENSORS_LOKAL
         ]
  
         return sensors
