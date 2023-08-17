@@ -12,7 +12,6 @@ from .const import (
     SENSOR_STATUS_RSSI,
     SENSOR_STATUS_SIGNAL,
     SENSOR_STATUS_SSID,
-    SENSOR_STATUS_BATTERY,
 )
 from .entity import (
     TasmotaAvailability,
