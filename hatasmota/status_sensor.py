@@ -48,7 +48,7 @@ _LOGGER = logging.getLogger(__name__)
 #  "Module or Template":"Generic",             <NONE>
 #  "RestartReason":"Software/System restart",  stat/STATUS1:"StatusPRM"."RestartReason"
 #  "Uptime":"1T17:04:28",                      stat/STATUS11:"StatusSTS"."Uptime"; tele/STATE:"Uptime"
-#  "BatteryPercentage":60,                     Since Tasmota 13.0.0.3 optional
+#  "BatteryPercentage":60,                     tele/STATE: "BatteryPercentage"
 #  "Hostname":"tasmota_B94927",                stat/STATUS5:"StatusNET":"Hostname"
 #  "IPAddress":"192.168.0.114",                stat/STATUS5:"StatusNET":"IPAddress"
 #  "RSSI":"100",                               stat/STATUS11:"StatusSTS":"RSSI"; tele/STATE:"RSSI"
@@ -162,10 +162,10 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
         cls, config: dict, platform: str
     ) -> list[TasmotaStatusSensorConfig]:
         """Instantiate from discovery message."""
-        SENSORS_LOKAL = SENSORS
-        _LOGGER.warning("Battery state <%d>", config[CONF_BATTERY])
+        sensor_list = list(SENSORS)
+        _LOGGER.warning("Battery <%d> name <%s>", config[CONF_BATTERY], config[CONF_DEVICENAME])
         if config[CONF_BATTERY] == 1:
-          SENSORS_LOKAL.append(SENSOR_STATUS_BATTERY) 
+            sensor_list.append(SENSOR_STATUS_BATTERY)
         sensors = [
             cls(
                 endpoint="status_sensor",
@@ -183,9 +183,8 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
                 state_topic=get_topic_tele_state(config),
                 status_topic=get_topic_stat_status(config, STATUS_TOPICS.get(sensor)),
             )
-            for sensor in SENSORS_LOKAL
+            for sensor in sensor_list
         ]
- 
         return sensors
 
     @property
