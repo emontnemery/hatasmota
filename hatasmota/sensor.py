@@ -34,7 +34,6 @@ from .const import (
     SENSOR_AMBIENT,
     SENSOR_APPARENT_POWERUSAGE,
     SENSOR_BATTERY,
-    SENSOR_STATUS_BATTERY,
     SENSOR_CCT,
     SENSOR_CF1,
     SENSOR_CF2_5,
@@ -116,7 +115,6 @@ IGNORED_SENSORS = ["Time", "PN532", "RDM6300"]
 # SENSOR_PRESSUREATSEALEVEL                       "dev_cla":"pressure"
 # SENSOR_APPARENT_POWERUSAGE      VA              "dev_cla":"power"
 # SENSOR_BATTERY                  %               "dev_cla":"battery"
-# SENSOR_STATUS_BATTERY           %               "dev_cla":"battery"
 # SENSOR_CURRENT                  A               "ic":"mdi:alpha-a-circle-outline"
 # SENSOR_DISTANCE                 Cm              "ic":"mdi:leak"
 # SENSOR_FREQUENCY                Hz              "ic":"mdi:current-ac"
@@ -155,7 +153,6 @@ IGNORED_SENSORS = ["Time", "PN532", "RDM6300"]
 SENSOR_UNIT_MAP = {
     SENSOR_APPARENT_POWERUSAGE: ELECTRICAL_VOLT_AMPERE,
     SENSOR_BATTERY: PERCENTAGE,
-    SENSOR_STATUS_BATTERY: PERCENTAGE,
     SENSOR_CURRENT: ELECTRICAL_CURRENT_AMPERE,
     SENSOR_CURRENTNEUTRAL: ELECTRICAL_CURRENT_AMPERE,
     SENSOR_DISTANCE: LENGTH_CENTIMETERS,
