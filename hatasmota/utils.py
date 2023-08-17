@@ -21,8 +21,6 @@ from .const import (
     CONF_STATE,
     CONF_SWITCHNAME,
     CONF_TOPIC,
-    CONF_BATTERY,
-    CONF_DEEPSLEEP,
     PREFIX_CMND,
     PREFIX_STAT,
     PREFIX_TELE,
