@@ -59,7 +59,7 @@ _LOGGER = logging.getLogger(__name__)
 #  "LoadAvg":19                                stat/STATUS11:"StatusSTS":"LoadAvg"; tele/STATE:"LoadAvg"
 # }
 
-SENSORS = [
+SENSOR_TYPES = [
     SENSOR_STATUS_IP,
     SENSOR_STATUS_LAST_RESTART_TIME,
     SENSOR_STATUS_LINK_COUNT,
@@ -162,10 +162,9 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
         cls, config: dict, platform: str
     ) -> list[TasmotaStatusSensorConfig]:
         """Instantiate from discovery message."""
-        sensor_list = list(SENSORS)
-        _LOGGER.warning("Battery <%d> name <%s>", config[CONF_BATTERY], config[CONF_DEVICENAME])
+        sensor_types = list(SENSOR_TYPES)
         if config[CONF_BATTERY] == 1:
-            sensor_list.append(SENSOR_BATTERY)
+            sensor_types.append(SENSOR_BATTERY)
         sensors = [
             cls(
                 endpoint="status_sensor",
@@ -183,7 +182,7 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
                 state_topic=get_topic_tele_state(config),
                 status_topic=get_topic_stat_status(config, STATUS_TOPICS.get(sensor)),
             )
-            for sensor in sensor_list
+            for sensor in sensor_types
         ]
         return sensors
 
