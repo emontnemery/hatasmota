@@ -128,8 +128,7 @@ class TasmotaShutter(TasmotaAvailability, TasmotaEntity):
             ha_tilt = None
             if tilt is not None:
                 ha_tilt_range = 100
-                tasmota_tilt_range = self._cfg.tilt_max - self._cfg.tilt_min
-                if tasmota_tilt_range:
+                if tasmota_tilt_range := self._cfg.tilt_max - self._cfg.tilt_min:
                     ha_tilt = (
                         (tilt - self._cfg.tilt_min) * ha_tilt_range / tasmota_tilt_range
                     )

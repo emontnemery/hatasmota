@@ -7,7 +7,7 @@ import json
 import logging
 import operator
 import re
-from typing import Any, Dict, cast
+from typing import Any, cast
 
 from .const import (
     CONF_DEVICENAME,
@@ -34,7 +34,7 @@ from .mqtt import ReceivePayloadType
 
 _LOGGER = logging.getLogger(__name__)
 
-ConfigType = Dict[str, str]
+ConfigType = dict[str, str]
 
 
 def get_by_path(root: dict, items: list[str | int]) -> dict:
@@ -235,9 +235,8 @@ TOPIC_MATCHER = re.compile(r"^(?P<mac>[A-Z0-9_-]+)\/(?:config|sensors)$")
 def discovery_topic_get_mac(topic: str, discovery_topic: str) -> str | None:
     """Get MAC from discovery topic."""
     topic_trimmed = topic.replace(f"{discovery_topic}/", "", 1)
-    match = TOPIC_MATCHER.match(topic_trimmed)
 
-    if not match:
+    if not (match := TOPIC_MATCHER.match(topic_trimmed)):
         return None
 
     (mac,) = match.groups()

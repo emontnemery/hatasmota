@@ -1,10 +1,10 @@
 """Tasmota discovery."""
 from __future__ import annotations
 
-from collections.abc import Coroutine
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 import logging
-from typing import Any, Callable
+from typing import Any
 
 from .mqtt import ReceiveMessage, TasmotaMQTTClient
 

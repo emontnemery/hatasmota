@@ -208,8 +208,9 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
                         self._brightness = brightness
                         attributes["brightness"] = brightness
 
-                    color = get_value_by_path(msg.payload, [COMMAND_COLOR])
-                    if color is not None:
+                    if (
+                        color := get_value_by_path(msg.payload, [COMMAND_COLOR])
+                    ) is not None:
                         if color.find(",") != -1:
                             color = color.split(",", 3)
                         else:
@@ -222,15 +223,17 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
                             self._color = color
                             attributes["color"] = color
 
-                    color_hsb = get_value_by_path(msg.payload, ["HSBColor"])
-                    if color_hsb is not None:
+                    if (
+                        color_hsb := get_value_by_path(msg.payload, ["HSBColor"])
+                    ) is not None:
                         color_hsb = color_hsb.split(",", 3)
                         if len(color_hsb) == 3:
                             color_hs = [float(color_hsb[0]), float(color_hsb[1])]
                             attributes["color_hs"] = color_hs
 
-                    color_temp = get_value_by_path(msg.payload, [COMMAND_CT])
-                    if color_temp is not None:
+                    if (
+                        color_temp := get_value_by_path(msg.payload, [COMMAND_CT])
+                    ) is not None:
                         self._color_temp = color_temp
                         attributes["color_temp"] = color_temp
 
@@ -242,8 +245,9 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
                             attributes["effect"] = f"Scheme {scheme}"
                             _LOGGER.debug("Unknown scheme %s", scheme)
 
-                    white_value = get_value_by_path(msg.payload, [COMMAND_WHITE])
-                    if white_value is not None:
+                    if (
+                        white_value := get_value_by_path(msg.payload, [COMMAND_WHITE])
+                    ) is not None:
                         attributes["white_value"] = white_value
 
             state = get_state_power(cast(str, msg.payload), idx)
@@ -451,8 +455,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             abs, [x1 - x2 for (x1, x2) in zip(now_channels, new_channels)]
         )
         # Mypy is confused about the map, override the inferred typing
-        delta_ratio: float = max(abs_changes)  # type:ignore[assignment, type-var]
-        if delta_ratio == 0:
+        if (delta_ratio := max(abs_changes)) == 0:  # type:ignore[assignment, type-var]
             speed = 0
         else:
             speed = round(transition * 2 / delta_ratio)
