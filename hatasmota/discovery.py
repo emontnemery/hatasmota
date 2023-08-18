@@ -126,7 +126,7 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         vol.Optional(CONF_BATTERY, default=0): cv.positive_int, # Added in Tasmota 13.0.0.3
         vol.Optional(CONF_SHUTTER_OPTIONS, default=[]): vol.All(
             cv.ensure_list, [cv.positive_int]
-        ),  
+        ),  # Added in Tasmota 9.2
         vol.Optional(CONF_SHUTTER_TILT, default=[]): vol.All(
             cv.ensure_list, [[int]]
         ),  # Added in Tasmota 11.x
