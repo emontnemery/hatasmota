@@ -38,7 +38,7 @@ _LOGGER = logging.getLogger(__name__)
 #  "Module or Template":"Generic",             <NONE>
 #  "RestartReason":"Software/System restart",  stat/STATUS1:"StatusPRM"."RestartReason"
 #  "Uptime":"1T17:04:28",                      stat/STATUS11:"StatusSTS"."Uptime"; tele/STATE:"Uptime"
-#  "BatteryPercentage":60,                     // optional since 13.0.0.3 if battery defined
+#  "BatteryPercentage":60,                     tele/STATE: "BatteryPercentage"
 #  "Hostname":"tasmota_B94927",                stat/STATUS5:"StatusNET":"Hostname"
 #  "IPAddress":"192.168.0.114",                stat/STATUS5:"StatusNET":"IPAddress"
 #  "RSSI":"100",                               stat/STATUS11:"StatusSTS":"RSSI"; tele/STATE:"RSSI"
