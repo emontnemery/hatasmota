@@ -10,6 +10,7 @@ import voluptuous as vol
 from . import config_validation as cv
 from .button import TasmotaButtonTrigger, TasmotaButtonTriggerConfig
 from .const import (
+    CONF_BATTERY,
     CONF_BUTTON,
     CONF_DEVICENAME,
     CONF_FRIENDLYNAME,
@@ -29,7 +30,6 @@ from .const import (
     CONF_PREFIX,
     CONF_RELAY,
     CONF_SENSOR,
-    CONF_BATTERY,
     CONF_SHUTTER_OPTIONS,
     CONF_SHUTTER_TILT,
     CONF_STATE,
