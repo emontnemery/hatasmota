@@ -229,7 +229,7 @@ class TasmotaSensorConfig(TasmotaBaseSensorConfig):
     last_reset_path: str | None
     poll_topic: str
     quantity: str
-    unit: str
+    unit: str | None
     state_topic1: str
     state_topic2: str
     value_path: list[str | int]
@@ -364,7 +364,7 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
         return self._cfg.quantity
 
     @property
-    def unit(self) -> str:
+    def unit(self) -> str | None:
         """Return the unit this state is expressed in."""
         return self._cfg.unit
 
