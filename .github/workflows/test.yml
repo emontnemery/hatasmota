@@ -31,7 +31,7 @@ jobs:
           pylint hatasmota
       - name: Check formatting with black
         run: |
-          black hatasmota --check
+          black hatasmota --check --diff
       - name: Check imports with isort
         run: |
           isort hatasmota --check --profile black
