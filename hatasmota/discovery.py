@@ -10,6 +10,7 @@ import voluptuous as vol  # type:ignore[import]
 from . import config_validation as cv
 from .button import TasmotaButtonTrigger, TasmotaButtonTriggerConfig
 from .const import (
+    CONF_BATTERY,
     CONF_BUTTON,
     CONF_DEVICENAME,
     CONF_FRIENDLYNAME,
@@ -122,6 +123,9 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         CONF_OPTIONS: TASMOTA_OPTIONS_SCHEMA,
         CONF_PREFIX: vol.All(cv.ensure_list, [cv.string]),
         CONF_STATE: vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional(
+            CONF_BATTERY, default=0
+        ): cv.positive_int,  # Added in Tasmota 13.0.0.3
         vol.Optional(CONF_SHUTTER_OPTIONS, default=[]): vol.All(
             cv.ensure_list, [cv.positive_int]
         ),  # Added in Tasmota 9.2

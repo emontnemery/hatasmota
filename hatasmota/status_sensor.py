@@ -9,10 +9,13 @@ import logging
 from typing import Any
 
 from .const import (
+    CONF_BATTERY,
     CONF_DEVICENAME,
     CONF_IP,
     CONF_MAC,
     PERCENTAGE,
+    SENSOR_BATTERY,
+    SENSOR_STATUS_BATTERY_PERCENTAGE,
     SENSOR_STATUS_IP,
     SENSOR_STATUS_LAST_RESTART_TIME,
     SENSOR_STATUS_LINK_COUNT,
@@ -45,6 +48,7 @@ _LOGGER = logging.getLogger(__name__)
 #  "Module or Template":"Generic",             <NONE>
 #  "RestartReason":"Software/System restart",  stat/STATUS1:"StatusPRM"."RestartReason"
 #  "Uptime":"1T17:04:28",                      stat/STATUS11:"StatusSTS"."Uptime"; tele/STATE:"Uptime"
+#  "BatteryPercentage":60,                     tele/STATE: "BatteryPercentage"
 #  "Hostname":"tasmota_B94927",                stat/STATUS5:"StatusNET":"Hostname"
 #  "IPAddress":"192.168.0.114",                stat/STATUS5:"StatusNET":"IPAddress"
 #  "RSSI":"100",                               stat/STATUS11:"StatusSTS":"RSSI"; tele/STATE:"RSSI"
@@ -73,6 +77,7 @@ NAMES = {
     SENSOR_STATUS_LINK_COUNT: "WiFi Connect Count",
     SENSOR_STATUS_MQTT_COUNT: "MQTT Connect Count",
     SENSOR_STATUS_RESTART_REASON: "Restart Reason",
+    SENSOR_BATTERY: "Battery Level",
     SENSOR_STATUS_RSSI: "RSSI",
     SENSOR_STATUS_SIGNAL: "Signal",
     SENSOR_STATUS_SSID: "SSID",
@@ -88,6 +93,7 @@ SINGLE_SHOT = [
 STATE_PATHS: dict[str, list[str | int]] = {
     SENSOR_STATUS_LINK_COUNT: ["Wifi", "LinkCount"],
     SENSOR_STATUS_MQTT_COUNT: ["MqttCount"],
+    SENSOR_STATUS_BATTERY_PERCENTAGE: ["BatteryPercentage"],
     SENSOR_STATUS_RSSI: ["Wifi", "RSSI"],
     SENSOR_STATUS_SIGNAL: ["Wifi", "Signal"],
 }
@@ -120,6 +126,7 @@ QUANTITY = {
     SENSOR_STATUS_LINK_COUNT: SENSOR_STATUS_LINK_COUNT,
     SENSOR_STATUS_MQTT_COUNT: SENSOR_STATUS_MQTT_COUNT,
     SENSOR_STATUS_RESTART_REASON: SENSOR_STATUS_RESTART_REASON,
+    SENSOR_STATUS_BATTERY_PERCENTAGE: SENSOR_BATTERY,
     SENSOR_STATUS_RSSI: SENSOR_STATUS_RSSI,
     SENSOR_STATUS_SIGNAL: SENSOR_STATUS_SIGNAL,
     SENSOR_STATUS_SSID: SENSOR_STATUS_SSID,
@@ -132,6 +139,7 @@ UNITS = {
     SENSOR_STATUS_LINK_COUNT: None,
     SENSOR_STATUS_MQTT_COUNT: None,
     SENSOR_STATUS_RESTART_REASON: None,
+    SENSOR_STATUS_BATTERY_PERCENTAGE: PERCENTAGE,
     SENSOR_STATUS_RSSI: PERCENTAGE,
     SENSOR_STATUS_SIGNAL: SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     SENSOR_STATUS_SSID: None,
@@ -154,6 +162,9 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
         cls, config: dict, platform: str
     ) -> list[TasmotaStatusSensorConfig]:
         """Instantiate from discovery message."""
+        sensor_types = list(SENSORS)
+        if config[CONF_BATTERY] == 1:
+            sensor_types.append(SENSOR_STATUS_BATTERY_PERCENTAGE)
         sensors = [
             cls(
                 endpoint="status_sensor",
@@ -171,7 +182,7 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
                 state_topic=get_topic_tele_state(config),
                 status_topic=get_topic_stat_status(config, STATUS_TOPICS.get(sensor)),
             )
-            for sensor in SENSORS
+            for sensor in sensor_types
         ]
         return sensors
 
