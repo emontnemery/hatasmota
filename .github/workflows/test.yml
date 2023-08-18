@@ -34,4 +34,4 @@ jobs:
           black hatasmota --check
       - name: Check imports with isort
         run: |
-          isort hatasmota --check --profile black
+          isort hatasmota --check --diff --combine-as --force-sort-within-sections --profile black
