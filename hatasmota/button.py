@@ -1,9 +1,8 @@
 """Tasmota binary sensor."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 import logging
-
-import attr
 
 from .const import (
     CONF_BUTTON,
@@ -91,7 +90,7 @@ BUTTONMODE_MAP = {
 }
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaButtonTriggerConfig(TasmotaTriggerConfig):
     """Tasmota switch configuation."""
 

@@ -1,10 +1,9 @@
 """Tasmota binary sensor."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 import logging
 from typing import Any
-
-import attr
 
 from .const import (
     CONF_MAC,
@@ -184,11 +183,11 @@ SWITCHMODE_MAP = {
 NO_POLL_SWITCHMODES = [SWITCHMODE_PUSHON, SWITCHMODE_PUSHON_INV]
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaSwitchTriggerConfig(TasmotaTriggerConfig):
     """Tasmota switch configuation."""
 
-    switchname: str = attr.ib()
+    switchname: str
 
     @classmethod
     def from_discovery_message(
@@ -236,18 +235,18 @@ class TasmotaSwitchTrigger(TasmotaTrigger):
             self._on_trigger_callback()
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaSwitchConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota switch configuation."""
 
-    off_delay: int | None = attr.ib()
-    poll_topic: str = attr.ib()
-    state_power_off: str = attr.ib()
-    state_power_on: str = attr.ib()
-    state_topic1: str = attr.ib()
-    state_topic2: str | None = attr.ib()
-    state_topic3: str | None = attr.ib()
-    switchname: str = attr.ib()
+    off_delay: int | None
+    poll_topic: str
+    state_power_off: str
+    state_power_on: str
+    state_topic1: str
+    state_topic2: str | None
+    state_topic3: str | None
+    switchname: str
 
     @classmethod
     def from_discovery_message(

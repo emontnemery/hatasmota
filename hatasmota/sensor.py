@@ -1,10 +1,9 @@
 """Tasmota sensor."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 import logging
 from typing import Any
-
-import attr
 
 from .const import (
     CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
@@ -223,17 +222,17 @@ LAST_RESET_SENSOR_MAP = {SENSOR_TOTAL: SENSOR_TOTAL_START_TIME}
 _LOGGER = logging.getLogger(__name__)
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaSensorConfig(TasmotaBaseSensorConfig):
     """Tasmota Status Sensor configuration."""
 
-    last_reset_path: str | None = attr.ib()
-    poll_topic: str = attr.ib()
-    quantity: str = attr.ib()
-    unit: str = attr.ib()
-    state_topic1: str = attr.ib()
-    state_topic2: str = attr.ib()
-    value_path: list[str | int] = attr.ib()
+    last_reset_path: str | None
+    poll_topic: str
+    quantity: str
+    unit: str
+    state_topic1: str
+    state_topic2: str
+    value_path: list[str | int]
 
     @classmethod
     def from_discovery_message(

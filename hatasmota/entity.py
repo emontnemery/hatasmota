@@ -1,27 +1,26 @@
 """Tasmota discovery."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 import logging
 from typing import Any, Awaitable, Callable
-
-import attr
 
 from .mqtt import ReceiveMessage, TasmotaMQTTClient
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaEntityConfig:
     """Base class for Tasmota configuation."""
 
-    endpoint: str = attr.ib()
-    idx: int | str | None = attr.ib()
-    friendly_name: str | None = attr.ib()
-    mac: str = attr.ib()
-    platform: str = attr.ib()
-    poll_payload: str = attr.ib()
-    poll_topic: str = attr.ib()
+    endpoint: str
+    idx: int | str | None
+    friendly_name: str | None
+    mac: str
+    platform: str
+    poll_payload: str
+    poll_topic: str
 
     @property
     def unique_id(self) -> str:
@@ -29,13 +28,13 @@ class TasmotaEntityConfig:
         return f"{self.mac}_{self.platform}_{self.endpoint}_{self.idx}"
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaAvailabilityConfig(TasmotaEntityConfig):
     """Tasmota availability configuation."""
 
-    availability_topic: str = attr.ib()
-    availability_offline: str = attr.ib()
-    availability_online: str = attr.ib()
+    availability_topic: str
+    availability_offline: str
+    availability_online: str
 
 
 class TasmotaEntity:
