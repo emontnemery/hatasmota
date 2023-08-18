@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Coroutine
 from dataclasses import dataclass
 import logging
-from typing import Awaitable, Callable, Union
+from typing import Any, Callable, Union
 
 from .const import COMMAND_BACKLOG
 
@@ -16,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 class Timer:
     """Simple timer."""
 
-    def __init__(self, timeout: float, callback: Callable[[], None]):
+    def __init__(self, timeout: float, callback: Callable[[], Coroutine[Any, Any, None]]):
         self._timeout = timeout
         self._callback = callback
         self._task = asyncio.ensure_future(self._job())
@@ -59,9 +60,9 @@ class TasmotaMQTTClient:
 
     def __init__(
         self,
-        publish: Callable[[str, PublishPayloadType, int | None, bool | None], None],
-        subscribe: Callable[[dict | None, dict], Awaitable[dict]],
-        unsubscribe: Callable[[dict | None], Awaitable[dict]],
+        publish: Callable[[str, PublishPayloadType, int | None, bool | None], Coroutine[Any, Any, None]],
+        subscribe: Callable[[dict | None, dict], Coroutine[Any, Any, dict]],
+        unsubscribe: Callable[[dict | None], Coroutine[Any, Any, dict]],
     ):
         """Initialize."""
         self._pending_messages: dict[PublishMessage, Timer] = {}
