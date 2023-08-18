@@ -7,7 +7,6 @@ from typing import Any
 
 from .const import (
     COMMAND_FANSPEED,
-    CONF_DEVICENAME,
     CONF_MAC,
     FAN_SPEED_HIGH,
     FAN_SPEED_LOW,

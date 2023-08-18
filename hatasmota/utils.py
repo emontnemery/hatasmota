@@ -10,7 +10,6 @@ import re
 from typing import Any, cast
 
 from .const import (
-    CONF_DEVICENAME,
     CONF_FRIENDLYNAME,
     CONF_FULLTOPIC,
     CONF_HOSTNAME,

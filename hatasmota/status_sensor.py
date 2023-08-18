@@ -10,7 +10,6 @@ from typing import Any
 
 from .const import (
     CONF_BATTERY,
-    CONF_DEVICENAME,
     CONF_IP,
     CONF_MAC,
     PERCENTAGE,
