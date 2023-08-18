@@ -70,7 +70,7 @@ class TasmotaShutterConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
         return cls(
             endpoint="shutter",
             idx=idx,
-            friendly_name=f"{config[CONF_DEVICENAME]} {platform} {idx+1}",
+            friendly_name=f"{platform} {idx+1}",
             mac=config[CONF_MAC],
             platform=platform,
             poll_payload="10",

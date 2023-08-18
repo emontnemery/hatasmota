@@ -51,7 +51,7 @@ class TasmotaFanConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
         return cls(
             endpoint="fan",
             idx="ifan",
-            friendly_name=config[CONF_DEVICENAME],
+            friendly_name=None,
             mac=config[CONF_MAC],
             platform=platform,
             poll_payload="",
