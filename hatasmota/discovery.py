@@ -124,7 +124,6 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         CONF_PREFIX: vol.All(cv.ensure_list, [cv.string]),
         CONF_STATE: vol.All(cv.ensure_list, [cv.string]),
         vol.Optional(CONF_BATTERY, default=0): cv.positive_int, # Added in Tasmota 13.0.0.3
-        vol.Optional(CONF_DEEPSLEEP, default=0): cv.positive_int, # Added in Tasmota 13.0.0.3
         vol.Optional(CONF_SHUTTER_OPTIONS, default=[]): vol.All(
             cv.ensure_list, [cv.positive_int]
         ),  
