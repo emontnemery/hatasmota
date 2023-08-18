@@ -1,6 +1,7 @@
 """Tasmota types."""
+from collections.abc import Coroutine
 from dataclasses import dataclass
-from typing import Awaitable, Callable, List, Tuple, TypedDict, Union
+from typing import Any, Callable, List, Tuple, TypedDict, Union
 
 from .entity import TasmotaAvailabilityConfig, TasmotaEntityConfig
 
@@ -11,9 +12,10 @@ class TasmotaBaseSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
 
 DiscoveryHashType = Tuple[str, str, str, Union[str, int]]
-DeviceDiscoveredCallback = Callable[[dict, str], Awaitable[None]]
+DeviceDiscoveredCallback = Callable[[dict, str], Coroutine[Any, Any, None]]
 SensorsDiscoveredCallback = Callable[
-    [List[Tuple[TasmotaBaseSensorConfig, DiscoveryHashType]], str], Awaitable[None]
+    [List[Tuple[TasmotaBaseSensorConfig, DiscoveryHashType]], str],
+    Coroutine[Any, Any, None],
 ]
 
 

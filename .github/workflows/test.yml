@@ -29,6 +29,9 @@ jobs:
       - name: Lint with pylint
         run: |
           pylint hatasmota
+      - name: Lint with mypy
+        run: |
+          mypy hatasmota
       - name: Check formatting with black
         run: |
           black hatasmota --check --diff

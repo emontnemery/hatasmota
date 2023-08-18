@@ -5,7 +5,7 @@ from itertools import chain
 import json
 import logging
 
-import voluptuous as vol
+import voluptuous as vol  # type:ignore[import]
 
 from . import config_validation as cv
 from .button import TasmotaButtonTrigger, TasmotaButtonTriggerConfig
@@ -190,7 +190,7 @@ class TasmotaDiscovery:
     async def _subscribe_discovery_topic(
         self,
         device_discovered: DeviceDiscoveredCallback,
-        sensors_discovered: SensorsDiscoveredCallback,
+        sensors_discovered: SensorsDiscoveredCallback | None,
     ) -> None:
         """Subscribe to discovery messages."""
 

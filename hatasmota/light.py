@@ -400,7 +400,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
         # Home Assistant's transition is the transition time in seconds.
         # Tasmota's speed command is the number of half-seconds, scaled for a 100% fade
         # if fade_fixed_duration (SetOption117) is not set
-        transition = attributes.get("transition", 0)
+        transition: int = attributes.get("transition", 0)
 
         if self._cfg.fade_fixed_duration:
             # Fading at fixed duration
@@ -450,7 +450,8 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
         abs_changes = map(
             abs, [x1 - x2 for (x1, x2) in zip(now_channels, new_channels)]
         )
-        delta_ratio = max(abs_changes)  # type:ignore[type-var]
+        # Mypy is confused about the map, override the inferred typing
+        delta_ratio: float = max(abs_changes)  # type:ignore[assignment, type-var]
         if delta_ratio == 0:
             speed = 0
         else:

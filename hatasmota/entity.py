@@ -1,9 +1,10 @@
 """Tasmota discovery."""
 from __future__ import annotations
 
+from collections.abc import Coroutine
 from dataclasses import dataclass
 import logging
-from typing import Any, Awaitable, Callable
+from typing import Any, Callable
 
 from .mqtt import ReceiveMessage, TasmotaMQTTClient
 
@@ -94,7 +95,9 @@ class TasmotaAvailability(TasmotaEntity):
 
     def __init__(self, **kwds: Any):
         """Initialize."""
-        self._on_availability_callback: Awaitable | None = None
+        self._on_availability_callback: Callable[
+            [bool], Coroutine[Any, Any, None]
+        ] | None = None
         super().__init__(**kwds)
 
     def get_availability_topics(self) -> dict:
