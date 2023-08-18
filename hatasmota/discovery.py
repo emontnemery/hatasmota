@@ -30,7 +30,6 @@ from .const import (
     CONF_RELAY,
     CONF_SENSOR,
     CONF_BATTERY,
-    CONF_DEEPSLEEP,
     CONF_SHUTTER_OPTIONS,
     CONF_SHUTTER_TILT,
     CONF_STATE,
