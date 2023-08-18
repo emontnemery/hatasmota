@@ -93,7 +93,7 @@ SINGLE_SHOT = [
 STATE_PATHS: dict[str, list[str | int]] = {
     SENSOR_STATUS_LINK_COUNT: ["Wifi", "LinkCount"],
     SENSOR_STATUS_MQTT_COUNT: ["MqttCount"],
-    SENSOR_BATTERY: ["BatteryPercentage"],
+    SENSOR_STATUS_BATTERY_PERCENTAGE: ["BatteryPercentage"],
     SENSOR_STATUS_RSSI: ["Wifi", "RSSI"],
     SENSOR_STATUS_SIGNAL: ["Wifi", "Signal"],
 }
