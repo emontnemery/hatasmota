@@ -1,12 +1,12 @@
 """Tasmota utility functions."""
 from __future__ import annotations
 
+from collections.abc import Mapping
+from functools import reduce
 import json
 import logging
 import operator
 import re
-from collections.abc import Mapping
-from functools import reduce
 from typing import Any, Dict, cast
 
 from .const import (
