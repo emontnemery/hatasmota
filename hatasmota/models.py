@@ -14,7 +14,8 @@ class TasmotaBaseSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 DiscoveryHashType = Tuple[str, str, str, Union[str, int]]
 DeviceDiscoveredCallback = Callable[[dict, str], Coroutine[Any, Any, None]]
 SensorsDiscoveredCallback = Callable[
-    [List[Tuple[TasmotaBaseSensorConfig, DiscoveryHashType]], str], Coroutine[Any, Any, None]
+    [List[Tuple[TasmotaBaseSensorConfig, DiscoveryHashType]], str],
+    Coroutine[Any, Any, None],
 ]
 
 

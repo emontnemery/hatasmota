@@ -17,7 +17,9 @@ _LOGGER = logging.getLogger(__name__)
 class Timer:
     """Simple timer."""
 
-    def __init__(self, timeout: float, callback: Callable[[], Coroutine[Any, Any, None]]):
+    def __init__(
+        self, timeout: float, callback: Callable[[], Coroutine[Any, Any, None]]
+    ):
         self._timeout = timeout
         self._callback = callback
         self._task = asyncio.ensure_future(self._job())
@@ -60,7 +62,10 @@ class TasmotaMQTTClient:
 
     def __init__(
         self,
-        publish: Callable[[str, PublishPayloadType, int | None, bool | None], Coroutine[Any, Any, None]],
+        publish: Callable[
+            [str, PublishPayloadType, int | None, bool | None],
+            Coroutine[Any, Any, None],
+        ],
         subscribe: Callable[[dict | None, dict], Coroutine[Any, Any, dict]],
         unsubscribe: Callable[[dict | None], Coroutine[Any, Any, dict]],
     ):

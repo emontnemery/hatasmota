@@ -95,7 +95,9 @@ class TasmotaAvailability(TasmotaEntity):
 
     def __init__(self, **kwds: Any):
         """Initialize."""
-        self._on_availability_callback: Callable[[bool], Coroutine[Any, Any, None]] | None = None
+        self._on_availability_callback: Callable[
+            [bool], Coroutine[Any, Any, None]
+        ] | None = None
         super().__init__(**kwds)
 
     def get_availability_topics(self) -> dict:
