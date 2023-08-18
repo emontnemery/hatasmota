@@ -10,7 +10,6 @@ import re
 from typing import Any, cast
 
 from .const import (
-    CONF_DEVICENAME,
     CONF_FRIENDLYNAME,
     CONF_FULLTOPIC,
     CONF_HOSTNAME,
@@ -207,7 +206,7 @@ def config_get_friendlyname(config: ConfigType, platform: str, idx: int) -> str:
     friendly_names = config[CONF_FRIENDLYNAME]
 
     if idx >= len(friendly_names) or friendly_names[idx] is None:
-        return f"{config[CONF_DEVICENAME]} {platform} {idx+1}"
+        return f"{platform} {idx+1}"
     return friendly_names[idx]
 
 
@@ -216,7 +215,7 @@ def config_get_switchfriendlyname(config: ConfigType, platform: str, idx: int) -
     switch_names = config[CONF_SWITCHNAME]
 
     if idx >= len(switch_names) or switch_names[idx] is None:
-        return f"{config[CONF_DEVICENAME]} {platform} {idx+1}"
+        return f"{platform} {idx+1}"
     return switch_names[idx]
 
 

@@ -9,7 +9,6 @@ from .const import (
     CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
     CONCENTRATION_PARTS_PER_BILLION,
     CONCENTRATION_PARTS_PER_MILLION,
-    CONF_DEVICENAME,
     CONF_MAC,
     CONF_SENSOR,
     DEGREE,
@@ -261,7 +260,7 @@ class TasmotaSensorConfig(TasmotaBaseSensorConfig):
         return cls(
             endpoint="sensor",
             idx=None,
-            friendly_name=f"{device_config[CONF_DEVICENAME]} {sensor_name}",
+            friendly_name=sensor_name,
             last_reset_path=last_reset_path,
             mac=device_config[CONF_MAC],
             platform=platform,

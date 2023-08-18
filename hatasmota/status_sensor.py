@@ -10,7 +10,6 @@ from typing import Any
 
 from .const import (
     CONF_BATTERY,
-    CONF_DEVICENAME,
     CONF_IP,
     CONF_MAC,
     PERCENTAGE,
@@ -169,7 +168,7 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
             cls(
                 endpoint="status_sensor",
                 idx=None,
-                friendly_name=f"{config[CONF_DEVICENAME]} {NAMES[sensor]}",
+                friendly_name=NAMES[sensor],
                 mac=config[CONF_MAC],
                 platform=platform,
                 poll_payload=str(STATUS_TOPICS.get(sensor)),

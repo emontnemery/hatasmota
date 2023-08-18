@@ -7,7 +7,6 @@ from typing import Any
 
 from .const import (
     COMMAND_FANSPEED,
-    CONF_DEVICENAME,
     CONF_MAC,
     FAN_SPEED_HIGH,
     FAN_SPEED_LOW,
@@ -51,7 +50,7 @@ class TasmotaFanConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
         return cls(
             endpoint="fan",
             idx="ifan",
-            friendly_name=config[CONF_DEVICENAME],
+            friendly_name=None,
             mac=config[CONF_MAC],
             platform=platform,
             poll_payload="",
