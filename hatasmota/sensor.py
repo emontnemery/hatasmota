@@ -226,7 +226,7 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaSensorConfig(TasmotaBaseSensorConfig):
     """Tasmota Status Sensor configuration."""
 
-    last_reset_path: list[str|int] | None
+    last_reset_path: list[str | int] | None
     poll_topic: str
     quantity: str
     unit: str
