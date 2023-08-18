@@ -200,14 +200,11 @@ class TasmotaDiscovery:
             payload: dict
             topic = msg.topic
 
-            mac = discovery_topic_get_mac(topic, self._discovery_topic)
-            if not mac:
+            if not (mac := discovery_topic_get_mac(topic, self._discovery_topic)):
                 _LOGGER.warning("Invalid discovery topic %s:", topic)
                 return
 
-            device_discovery = discovery_topic_is_device_config(topic)
-
-            if device_discovery:
+            if discovery_topic_is_device_config(topic):
                 if _payload:
                     try:
                         payload = TasmotaDiscoveryMsg(json.loads(_payload))

@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Coroutine
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 import logging
-from typing import Any, Callable, Union
+from typing import Any
 
 from .const import COMMAND_BACKLOG
 
@@ -33,8 +33,8 @@ class Timer:
         self._task.cancel()
 
 
-PublishPayloadType = Union[str, bytes, int, float, None]
-ReceivePayloadType = Union[str, bytes]
+PublishPayloadType = str | bytes | int | float | None
+ReceivePayloadType = str | bytes
 
 
 @dataclass(frozen=True)

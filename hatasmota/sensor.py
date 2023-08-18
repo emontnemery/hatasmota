@@ -249,8 +249,7 @@ class TasmotaSensorConfig(TasmotaBaseSensorConfig):
         unit = SENSOR_UNIT_MAP.get(quantity)
         if quantity in SENSOR_DYNAMIC_UNIT_MAP:
             key, supported_units = SENSOR_DYNAMIC_UNIT_MAP[quantity]
-            unit = sensor_config[CONF_SENSOR].get(key)
-            if unit not in supported_units:
+            if (unit := sensor_config[CONF_SENSOR].get(key)) not in supported_units:
                 _LOGGER.warning("Unknown unit %s for %s", unit, quantity)
 
         if last_reset_key := LAST_RESET_SENSOR_MAP.get(quantity):
@@ -328,8 +327,7 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
                 except (IndexError, KeyError):
                     return
                 if last_reset_path:
-                    last_reset = get_value_by_path(msg.payload, last_reset_path)
-                    if last_reset:
+                    if last_reset := get_value_by_path(msg.payload, last_reset_path):
                         kwargs["last_reset"] = last_reset
                 self._on_state_callback(state, **kwargs)
 

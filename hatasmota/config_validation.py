@@ -1,7 +1,7 @@
 """Tasmota config validation."""
 from __future__ import annotations
 
-from typing import Any, List, TypeVar, Union
+from typing import Any, TypeVar
 
 import voluptuous as vol  # type:ignore[import]
 
@@ -16,7 +16,7 @@ positive_int = vol.All(  # pylint: disable=invalid-name
 )
 
 
-def ensure_list(value: Union[T, List[T], None]) -> List[T]:
+def ensure_list(value: T | list[T] | None) -> list[T]:
     """Wrap value in list if it is not one."""
     if value is None:
         return []

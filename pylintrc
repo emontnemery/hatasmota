@@ -1,4 +1,7 @@
 [MASTER]
+load-plugins =
+    pylint.extensions.code_style,
+    pylint.extensions.typing,
 
 [BASIC]
 good-names=id,i,j,k,x,ex,Run,_,fp,T,ev,bit
@@ -7,6 +10,7 @@ good-names=id,i,j,k,x,ex,Run,_,fp,T,ev,bit
 # Reasons disabled:
 # format - handled by black
 disable=
+  consider-using-namedtuple-or-dataclass,
   duplicate-code,
   format,
   too-few-public-methods,
