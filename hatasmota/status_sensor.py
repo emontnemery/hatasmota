@@ -2,12 +2,11 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import json
 import logging
 from typing import Any
-
-import attr
 
 from .const import (
     CONF_DEVICENAME,
@@ -140,15 +139,15 @@ UNITS = {
 }
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
     """Tasmota Status Sensor configuration."""
 
-    poll_topic: str = attr.ib()
-    sensor: str = attr.ib()
-    state: str = attr.ib()
-    state_topic: str = attr.ib()
-    status_topic: str = attr.ib()
+    poll_topic: str
+    sensor: str
+    state: str
+    state_topic: str
+    status_topic: str
 
     @classmethod
     def from_discovery_message(

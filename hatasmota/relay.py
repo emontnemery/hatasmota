@@ -1,10 +1,9 @@
 """Tasmota switch."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 import logging
 from typing import Any, cast
-
-import attr
 
 from .const import COMMAND_POWER, CONF_MAC
 from .entity import (
@@ -31,17 +30,17 @@ from .utils import (
 _LOGGER = logging.getLogger(__name__)
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota relay configuation."""
 
-    idx: int = attr.ib()
+    idx: int
 
-    command_topic: str = attr.ib()
-    result_topic: str = attr.ib()
-    state_power_off: str = attr.ib()
-    state_power_on: str = attr.ib()
-    state_topic: str = attr.ib()
+    command_topic: str
+    result_topic: str
+    state_power_off: str
+    state_power_on: str
+    state_topic: str
 
     @classmethod
     def from_discovery_message(

@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import colorsys
+from dataclasses import dataclass
 import logging
 from typing import Any, cast
-
-import attr
 
 from .const import (
     COMMAND_CHANNEL,
@@ -81,28 +80,28 @@ REDUCED_MAX_MIREDS = 380
 _LOGGER = logging.getLogger(__name__)
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota light configuation."""
 
-    idx: int = attr.ib()
+    idx: int
 
-    dimmer_cmd: str = attr.ib()
-    dimmer_state: str = attr.ib()
-    color_suffix: str = attr.ib()
-    command_topic: str = attr.ib()
-    control_by_channel: bool = attr.ib()
-    fade_fixed_duration: bool = attr.ib()
-    light_type: int = attr.ib()
-    max_mireds: int = attr.ib()
-    min_mireds: int = attr.ib()
-    not_power_linked: bool = attr.ib()
-    poll_topic: str = attr.ib()
-    result_topic: str = attr.ib()
-    state_power_off: str = attr.ib()
-    state_power_on: str = attr.ib()
-    state_topic: str = attr.ib()
-    tuya: bool = attr.ib()
+    dimmer_cmd: str
+    dimmer_state: str
+    color_suffix: str
+    command_topic: str
+    control_by_channel: bool
+    fade_fixed_duration: bool
+    light_type: int
+    max_mireds: int
+    min_mireds: int
+    not_power_linked: bool
+    poll_topic: str
+    result_topic: str
+    state_power_off: str
+    state_power_on: str
+    state_topic: str
+    tuya: bool
 
     @classmethod
     def from_discovery_message(

@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 import logging
 from typing import Any, Callable
-
-import attr
 
 from .const import AUTOMATION_TYPE_TRIGGER
 from .mqtt import ReceiveMessage, TasmotaMQTTClient
@@ -13,17 +12,17 @@ from .mqtt import ReceiveMessage, TasmotaMQTTClient
 _LOGGER = logging.getLogger(__name__)
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaTriggerConfig(ABC):
     """Tasmota trigger configuation."""
 
-    event: str = attr.ib()
-    idx: int = attr.ib()
-    mac: str = attr.ib()
-    subtype: str = attr.ib()
-    source: str = attr.ib()
-    trigger_topic: str = attr.ib()
-    type: str = attr.ib()
+    event: str
+    idx: int
+    mac: str
+    subtype: str
+    source: str
+    trigger_topic: str
+    type: str
 
     @property
     @abstractmethod

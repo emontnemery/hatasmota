@@ -1,10 +1,9 @@
 """Tasmota fan."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 import logging
 from typing import Any
-
-import attr
 
 from .const import (
     COMMAND_FANSPEED,
@@ -38,13 +37,13 @@ SUPPORTED_FAN_SPEEDS = [FAN_SPEED_OFF, FAN_SPEED_LOW, FAN_SPEED_MEDIUM, FAN_SPEE
 _LOGGER = logging.getLogger(__name__)
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaFanConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota fan configuation."""
 
-    command_topic: str = attr.ib()
-    result_topic: str = attr.ib()
-    state_topic: str = attr.ib()
+    command_topic: str
+    result_topic: str
+    state_topic: str
 
     @classmethod
     def from_discovery_message(cls, config: dict, platform: str) -> TasmotaFanConfig:

@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass
 import logging
 from typing import Awaitable, Callable, Union
-
-import attr
 
 from .const import COMMAND_BACKLOG
 
@@ -35,24 +34,24 @@ PublishPayloadType = Union[str, bytes, int, float, None]
 ReceivePayloadType = Union[str, bytes]
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True)
 class PublishMessage:
     """MQTT Message."""
 
-    topic: str = attr.ib()
-    payload: PublishPayloadType = attr.ib()
-    qos: int | None = attr.ib()
-    retain: bool | None = attr.ib()
+    topic: str
+    payload: PublishPayloadType
+    qos: int | None
+    retain: bool | None
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True)
 class ReceiveMessage:
     """MQTT Message."""
 
-    topic: str = attr.ib()
-    payload: ReceivePayloadType = attr.ib()
-    qos: int = attr.ib()
-    retain: bool = attr.ib()
+    topic: str
+    payload: ReceivePayloadType
+    qos: int
+    retain: bool
 
 
 class TasmotaMQTTClient:

@@ -1,10 +1,9 @@
 """Tasmota shutter."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 import logging
 from typing import Any
-
-import attr
 
 from .const import (
     COMMAND_SHUTTER_CLOSE,
@@ -45,19 +44,19 @@ from .utils import (
 _LOGGER = logging.getLogger(__name__)
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaShutterConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota shutter configuation."""
 
-    idx: int = attr.ib()
-    command_topic: str = attr.ib()
-    inverted_shutter: bool = attr.ib()
-    state_topic1: str = attr.ib()
-    state_topic2: str = attr.ib()
-    state_topic3: str = attr.ib()
-    tilt_min: int = attr.ib()
-    tilt_max: int = attr.ib()
-    tilt_dur: int = attr.ib()
+    idx: int
+    command_topic: str
+    inverted_shutter: bool
+    state_topic1: str
+    state_topic2: str
+    state_topic3: str
+    tilt_min: int
+    tilt_max: int
+    tilt_dur: int
 
     @classmethod
     def from_discovery_message(

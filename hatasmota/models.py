@@ -1,12 +1,11 @@
 """Tasmota types."""
+from dataclasses import dataclass
 from typing import Awaitable, Callable, List, Tuple, TypedDict, Union
-
-import attr
 
 from .entity import TasmotaAvailabilityConfig, TasmotaEntityConfig
 
 
-@attr.s(slots=True, frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TasmotaBaseSensorConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota Base Sensor configuration."""
 
