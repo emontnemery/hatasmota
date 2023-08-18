@@ -226,7 +226,7 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaSensorConfig(TasmotaBaseSensorConfig):
     """Tasmota Status Sensor configuration."""
 
-    last_reset_path: str | None
+    last_reset_path: list[str | int] | None
     poll_topic: str
     quantity: str
     unit: str
@@ -254,7 +254,8 @@ class TasmotaSensorConfig(TasmotaBaseSensorConfig):
                 _LOGGER.warning("Unknown unit %s for %s", unit, quantity)
 
         if last_reset_key := LAST_RESET_SENSOR_MAP.get(quantity):
-            last_reset_path = list(parent_path).append(last_reset_key)
+            last_reset_path = list(parent_path)
+            last_reset_path.append(last_reset_key)
         else:
             last_reset_path = None
 
@@ -451,7 +452,7 @@ def get_sensor_entities(
                             sensor_discovery_message,
                             device_discovery_msg,
                             subsubsensorpath,
-                            subsubsensorpath,
+                            subsubsensorpath[:-1],
                             quantity,
                         )
                     )
@@ -465,7 +466,7 @@ def get_sensor_entities(
                             sensor_discovery_message,
                             device_discovery_msg,
                             subsubsensorpath,
-                            subsensorpath,
+                            subsensorpath[:-1],
                             quantity,
                         )
                     )
@@ -476,7 +477,7 @@ def get_sensor_entities(
                         sensor_discovery_message,
                         device_discovery_msg,
                         subsensorpath,
-                        subsensorpath,
+                        subsensorpath[:-1],
                         quantity,
                     )
                 )
