@@ -1,4 +1,7 @@
 [MASTER]
+load-plugins =
+    pylint.extensions.code_style,
+    pylint.extensions.typing,
 
 [BASIC]
 good-names=id,i,j,k,x,ex,Run,_,fp,T,ev,bit
