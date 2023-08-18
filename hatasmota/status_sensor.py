@@ -164,7 +164,7 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
         """Instantiate from discovery message."""
         sensor_types = list(SENSORS)
         if config[CONF_BATTERY] == 1:
-            sensor_types.append(SENSOR_BATTERY)
+            sensor_types.append(SENSOR_STATUS_BATTERY_PERCENTAGE)
         sensors = [
             cls(
                 endpoint="status_sensor",
