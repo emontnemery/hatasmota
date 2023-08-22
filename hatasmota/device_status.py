@@ -8,10 +8,10 @@ from typing import Any
 
 from .const import (
     CONF_MAC,
+    SENSOR_STATUS_BATTERY_PERCENTAGE,
     SENSOR_STATUS_RSSI,
     SENSOR_STATUS_SIGNAL,
     SENSOR_STATUS_SSID,
-    SENSOR_STATUS_BATTERY_PERCENTAGE,
 )
 from .entity import (
     TasmotaAvailability,
