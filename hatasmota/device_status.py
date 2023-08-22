@@ -11,6 +11,7 @@ from .const import (
     SENSOR_STATUS_RSSI,
     SENSOR_STATUS_SIGNAL,
     SENSOR_STATUS_SSID,
+    SENSOR_STATUS_BATTERY_PERCENTAGE,
 )
 from .entity import (
     TasmotaAvailability,
@@ -63,7 +64,7 @@ STATUS_PATHS: dict[str, list[str | int]] = {
     SENSOR_STATUS_RSSI: ["StatusSTS", "Wifi", "RSSI"],
     SENSOR_STATUS_SIGNAL: ["StatusSTS", "Wifi", "Signal"],
     SENSOR_STATUS_SSID: ["StatusSTS", "Wifi", "SSId"],
-    SENSOR_STATUS_BATTERY_PERCENTAGE: ["StatusSTS","BatteryPercentage"],
+    SENSOR_STATUS_BATTERY_PERCENTAGE: ["StatusSTS", "BatteryPercentage"],
 }
 
 STATUS_TOPICS = {
