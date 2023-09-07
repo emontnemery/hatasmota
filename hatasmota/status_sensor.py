@@ -47,7 +47,7 @@ _LOGGER = logging.getLogger(__name__)
 #  "Module or Template":"Generic",             <NONE>
 #  "RestartReason":"Software/System restart",  stat/STATUS1:"StatusPRM"."RestartReason"
 #  "Uptime":"1T17:04:28",                      stat/STATUS11:"StatusSTS"."Uptime"; tele/STATE:"Uptime"
-#  "BatteryPercentage":60,                     tele/STATE: "BatteryPercentage"
+#  "BatteryPercentage":60,                     stat/STATUS11:"StatusSTS":"BatteryPercentage"; tele/STATE: "BatteryPercentage"
 #  "Hostname":"tasmota_B94927",                stat/STATUS5:"StatusNET":"Hostname"
 #  "IPAddress":"192.168.0.114",                stat/STATUS5:"StatusNET":"IPAddress"
 #  "RSSI":"100",                               stat/STATUS11:"StatusSTS":"RSSI"; tele/STATE:"RSSI"
@@ -106,6 +106,7 @@ STATUS_PATHS: dict[str, list[str | int]] = {
     SENSOR_STATUS_SIGNAL: ["StatusSTS", "Wifi", "Signal"],
     SENSOR_STATUS_SSID: ["StatusSTS", "Wifi", "SSId"],
     SENSOR_STATUS_VERSION: ["StatusFWR", "Version"],
+    SENSOR_STATUS_BATTERY_PERCENTAGE: ["StatusSTS", "BatteryPercentage"],
 }
 
 STATUS_TOPICS = {
@@ -117,6 +118,7 @@ STATUS_TOPICS = {
     SENSOR_STATUS_SIGNAL: 11,
     SENSOR_STATUS_SSID: 11,
     SENSOR_STATUS_VERSION: 2,
+    SENSOR_STATUS_BATTERY_PERCENTAGE: 11,
 }
 
 QUANTITY = {
