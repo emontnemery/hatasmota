@@ -107,14 +107,18 @@ from .utils import (
 IGNORED_SENSORS = ["Time", "PN532", "RDM6300"]
 
 # QUANTITY                        UNIT            CLASS/ICON
-# SENSOR_TEMPERATURE                              "dev_cla":"temperature"
-# SENSOR_DEWPOINT                                 "ic":"mdi:weather-rainy"
-# SENSOR_PRESSURE                                 "dev_cla":"pressure"
-# SENSOR_PRESSUREATSEALEVEL                       "dev_cla":"pressure"
+# SENSOR_AMBIENT                  LX              "dev_cla":"illuminance"
 # SENSOR_APPARENT_POWERUSAGE      VA              "dev_cla":"power"
 # SENSOR_BATTERY                  %               "dev_cla":"battery"
+# SENSOR_CCT                      K               "ic":"mdi:temperature-kelvin"
+# SENSOR_CO2                      ppm             "ic":"mdi:molecule-co2"
+# SENSOR_COLOR_BLUE               B               "ic":"mdi:palette"
+# SENSOR_COLOR_GREEN              G               "ic":"mdi:palette"
+# SENSOR_COLOR_RED                R               "ic":"mdi:palette"
 # SENSOR_CURRENT                  A               "ic":"mdi:alpha-a-circle-outline"
+# SENSOR_DEWPOINT                                 "ic":"mdi:weather-rainy"
 # SENSOR_DISTANCE                 Cm              "ic":"mdi:leak"
+# SENSOR_ECO2                     ppm             "ic":"mdi:molecule-co2"
 # SENSOR_FREQUENCY                Hz              "ic":"mdi:current-ac"
 # SENSOR_HUMIDITY                 %               "dev_cla":"humidity"
 # SENSOR_ILLUMINANCE              LX              "dev_cla":"illuminance"
@@ -122,38 +126,48 @@ IGNORED_SENSORS = ["Time", "PN532", "RDM6300"]
 # SENSOR_PB0_3                    ppd             "ic":"mdi:flask"
 # SENSOR_PB0_5                    ppd             "ic":"mdi:flask"
 # SENSOR_PB1                      ppd             "ic":"mdi:flask"
+# SENSOR_PB10                     ppd             "ic":"mdi:flask"
 # SENSOR_PB2_5                    ppd             "ic":"mdi:flask"
 # SENSOR_PB5                      ppd             "ic":"mdi:flask"
-# SENSOR_PB10                     ppd             "ic":"mdi:flask"
 # SENSOR_PM1                      µg/m³           "ic":"mdi:air-filter"
-# SENSOR_PM2_5                    µg/m³           "ic":"mdi:air-filter"
 # SENSOR_PM10                     µg/m³           "ic":"mdi:air-filter"
+# SENSOR_PM2_5                    µg/m³           "ic":"mdi:air-filter"
 # SENSOR_POWERFACTOR              Cos φ           "ic":"mdi:alpha-f-circle-outline"
 # SENSOR_POWERUSAGE               W               "dev_cla":"power"
-# SENSOR_TOTAL_START_TIME                         "ic":"mdi:progress-clock"
+# SENSOR_PRESSURE                                 "dev_cla":"pressure"
+# SENSOR_PRESSUREATSEALEVEL                       "dev_cla":"pressure"
+# SENSOR_PROXIMITY                                "ic":"mdi:ruler"
 # SENSOR_REACTIVE_POWERUSAGE      VAr             "dev_cla":"power"
+# SENSOR_TEMPERATURE                              "dev_cla":"temperature"
 # SENSOR_TODAY                    kWh             "dev_cla":"power"
 # SENSOR_TOTAL                    kWh             "dev_cla":"power"
+# SENSOR_TOTAL_START_TIME                         "ic":"mdi:progress-clock"
+# SENSOR_TVOC                     ppb             "ic":"mdi:air-filter"
 # SENSOR_VOLTAGE                  V               "ic":"mdi:alpha-v-circle-outline"
 # SENSOR_WEIGHT                   Kg              "ic":"mdi:scale"
 # SENSOR_YESTERDAY                kWh             "dev_cla":"power"
-# SENSOR_CO2                      ppm             "ic":"mdi:molecule-co2"
-# SENSOR_ECO2                     ppm             "ic":"mdi:molecule-co2"
-# SENSOR_TVOC                     ppb             "ic":"mdi:air-filter"
-# SENSOR_COLOR_RED                R               "ic":"mdi:palette"
-# SENSOR_COLOR_GREEN              G               "ic":"mdi:palette"
-# SENSOR_COLOR_BLUE               B               "ic":"mdi:palette"
-# SENSOR_CCT                      K               "ic":"mdi:temperature-kelvin"
-# SENSOR_PROXIMITY                                "ic":"mdi:ruler"
-# SENSOR_AMBIENT                  LX              "dev_cla":"illuminance"
 
 
 SENSOR_UNIT_MAP = {
+    SENSOR_ACTIVE_ENERGYEXPORT: ENERGY_KILO_WATT_HOUR,
+    SENSOR_ACTIVE_ENERGYIMPORT: ENERGY_KILO_WATT_HOUR,
+    SENSOR_ACTIVE_POWERUSAGE: POWER_WATT,
+    SENSOR_AMBIENT: LIGHT_LUX,
     SENSOR_APPARENT_POWERUSAGE: ELECTRICAL_VOLT_AMPERE,
     SENSOR_BATTERY: PERCENTAGE,
+    SENSOR_CCT: TEMP_KELVIN,
+    SENSOR_CF1: CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+    SENSOR_CF10: CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+    SENSOR_CF2_5: CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+    SENSOR_CO2: CONCENTRATION_PARTS_PER_MILLION,
+    SENSOR_COLOR_BLUE: "B",
+    SENSOR_COLOR_GREEN: "G",
+    SENSOR_COLOR_RED: "R",
     SENSOR_CURRENT: ELECTRICAL_CURRENT_AMPERE,
     SENSOR_CURRENTNEUTRAL: ELECTRICAL_CURRENT_AMPERE,
     SENSOR_DISTANCE: LENGTH_CENTIMETERS,
+    SENSOR_ECO2: CONCENTRATION_PARTS_PER_MILLION,
+    SENSOR_ENERGY: ENERGY_KILO_WATT_HOUR,
     SENSOR_FREQUENCY: FREQUENCY_HERTZ,
     SENSOR_HUMIDITY: PERCENTAGE,
     SENSOR_ILLUMINANCE: LIGHT_LUX,
@@ -161,40 +175,26 @@ SENSOR_UNIT_MAP = {
     SENSOR_PB0_3: "ppd",
     SENSOR_PB0_5: "ppd",
     SENSOR_PB1: "ppd",
+    SENSOR_PB10: "ppd",
     SENSOR_PB2_5: "ppd",
     SENSOR_PB5: "ppd",
-    SENSOR_PB10: "ppd",
-    SENSOR_PM1: CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-    SENSOR_PM2_5: CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-    SENSOR_PM10: CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-    SENSOR_CF1: CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-    SENSOR_CF2_5: CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-    SENSOR_CF10: CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
     SENSOR_PHASEANGLE: DEGREE,
+    SENSOR_PM1: CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+    SENSOR_PM10: CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+    SENSOR_PM2_5: CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
     SENSOR_POWERFACTOR: POWER_FACTOR,
     SENSOR_POWERUSAGE: POWER_WATT,
-    SENSOR_TOTAL_START_TIME: None,
-    SENSOR_ACTIVE_POWERUSAGE: POWER_WATT,
+    SENSOR_PROXIMITY: " ",
+    SENSOR_REACTIVE_ENERGYEXPORT: REACTIVE_ENERGY_KILO_VOLT_AMPERE_HOUR,
+    SENSOR_REACTIVE_ENERGYIMPORT: REACTIVE_ENERGY_KILO_VOLT_AMPERE_HOUR,
     SENSOR_REACTIVE_POWERUSAGE: REACTIVE_POWER,
     SENSOR_TODAY: ENERGY_KILO_WATT_HOUR,
+    SENSOR_TOTAL_START_TIME: None,
     SENSOR_TOTAL: ENERGY_KILO_WATT_HOUR,
+    SENSOR_TVOC: CONCENTRATION_PARTS_PER_BILLION,
     SENSOR_VOLTAGE: VOLT,
     SENSOR_WEIGHT: MASS_KILOGRAMS,
     SENSOR_YESTERDAY: ENERGY_KILO_WATT_HOUR,
-    SENSOR_ENERGY: ENERGY_KILO_WATT_HOUR,
-    SENSOR_ACTIVE_ENERGYEXPORT: ENERGY_KILO_WATT_HOUR,
-    SENSOR_ACTIVE_ENERGYIMPORT: ENERGY_KILO_WATT_HOUR,
-    SENSOR_REACTIVE_ENERGYEXPORT: REACTIVE_ENERGY_KILO_VOLT_AMPERE_HOUR,
-    SENSOR_REACTIVE_ENERGYIMPORT: REACTIVE_ENERGY_KILO_VOLT_AMPERE_HOUR,
-    SENSOR_CO2: CONCENTRATION_PARTS_PER_MILLION,
-    SENSOR_ECO2: CONCENTRATION_PARTS_PER_MILLION,
-    SENSOR_TVOC: CONCENTRATION_PARTS_PER_BILLION,
-    SENSOR_COLOR_RED: "R",
-    SENSOR_COLOR_GREEN: "G",
-    SENSOR_COLOR_BLUE: "B",
-    SENSOR_CCT: TEMP_KELVIN,
-    SENSOR_PROXIMITY: " ",
-    SENSOR_AMBIENT: LIGHT_LUX,
 }
 
 SUPPORTED_PRESSURE_UNITS = [PRESSURE_HPA, PRESSURE_MMHG]
