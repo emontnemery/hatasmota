@@ -10,6 +10,7 @@ import re
 from typing import Any, cast
 
 from .const import (
+    CONF_DEVICENAME,
     CONF_FRIENDLYNAME,
     CONF_FULLTOPIC,
     CONF_HOSTNAME,
@@ -201,12 +202,14 @@ def get_state_button_trigger(status: str) -> Any:
     return get_value(status, RSLT_ACTION)
 
 
-def config_get_friendlyname(config: ConfigType, platform: str, idx: int) -> str:
+def config_get_friendlyname(config: ConfigType, platform: str, idx: int) -> str | None:
     """Get config friendly name."""
     friendly_names = config[CONF_FRIENDLYNAME]
 
     if idx >= len(friendly_names) or friendly_names[idx] is None:
         return f"{platform} {idx+1}"
+    if idx == 0 and friendly_names[idx] == config[CONF_DEVICENAME]:
+        return None
     return friendly_names[idx]
 
 
