@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
+import string
 from typing import Any
 
 from .const import (
@@ -45,6 +46,7 @@ from .const import (
     SENSOR_DISTANCE,
     SENSOR_ECO2,
     SENSOR_ENERGY,
+    SENSOR_ENERGY_OTHER,
     SENSOR_FREQUENCY,
     SENSOR_HUMIDITY,
     SENSOR_ILLUMINANCE,
@@ -425,6 +427,28 @@ def _get_sensor_entity(
     return (sensor_config, discovery_hash)
 
 
+def _get_quantity(
+    sensorkey: str,
+    subsensorkey: str,
+    subsubsensorkey: str | None,
+) -> str:
+    """Get quantity, for example temperature, of a sensor."""
+    if sensorkey in ["AS3935", "LD2410"] and subsensorkey == SENSOR_ENERGY:
+        # The AS3935 and LD2410 sensor have energy readings which are not in kWh
+        # LD2410: Energy in a range 0..100
+        # AS3935: Lightning energy in no specified unit
+        return SENSOR_ENERGY_OTHER
+    if subsubsensorkey in SENSOR_UNIT_MAP:
+        # Handle cases where the types of the inner sensors differ
+        # {"ANALOG": {"CTEnergy1": {"Power":2300,"Voltage":230,"Current":10}}}
+        return subsubsensorkey
+    if sensorkey == "ANALOG":
+        # Sensors under ANALOG are suffixed by ADC pin number on the ESP32
+        if subsensorkey[-1] in string.digits:
+            return subsensorkey[0:-1]
+    return subsensorkey
+
+
 def get_sensor_entities(
     sensor_discovery_message: dict, device_discovery_msg: dict
 ) -> list[tuple[TasmotaBaseSensorConfig, DiscoveryHashType]]:
@@ -437,7 +461,6 @@ def get_sensor_entities(
         for subsensorkey, subsensor in sensor.items():
             subsensorpath = list(sensorpath)
             subsensorpath.append(subsensorkey)
-            quantity = subsensorkey
             if isinstance(subsensor, dict):
                 # Nested sensor
                 for subsubsensorkey in subsensor.keys():
@@ -449,7 +472,7 @@ def get_sensor_entities(
                             device_discovery_msg,
                             subsubsensorpath,
                             subsubsensorpath[:-1],
-                            quantity,
+                            _get_quantity(sensorkey, subsensorkey, subsubsensorkey),
                         )
                     )
             elif isinstance(subsensor, list):
@@ -463,7 +486,7 @@ def get_sensor_entities(
                             device_discovery_msg,
                             subsubsensorpath,
                             subsensorpath[:-1],
-                            quantity,
+                            _get_quantity(sensorkey, subsensorkey, None),
                         )
                     )
             else:
@@ -474,7 +497,7 @@ def get_sensor_entities(
                         device_discovery_msg,
                         subsensorpath,
                         subsensorpath[:-1],
-                        quantity,
+                        _get_quantity(sensorkey, subsensorkey, None),
                     )
                 )
 
