@@ -53,6 +53,7 @@ from .utils import (
     get_topic_stat_result,
     get_topic_tele_state,
     get_topic_tele_will,
+    get_topic_sleep_state,
     get_value_by_path,
 )
 
@@ -154,6 +155,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             poll_payload="",
             poll_topic=get_topic_command_state(config),
             availability_topic=get_topic_tele_will(config),
+            sleep_state_topic=get_topic_sleep_state(config),
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
             dimmer_cmd=dimmer_cmd,

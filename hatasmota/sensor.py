@@ -102,6 +102,7 @@ from .utils import (
     get_topic_stat_status,
     get_topic_tele_sensor,
     get_topic_tele_will,
+    get_topic_sleep_state,
     get_value_by_path,
 )
 
@@ -268,6 +269,7 @@ class TasmotaSensorConfig(TasmotaBaseSensorConfig):
             poll_payload="10",
             poll_topic=get_topic_command_status(device_config),
             availability_topic=get_topic_tele_will(device_config),
+            sleep_state_topic=get_topic_sleep_state(device_config),
             availability_offline=config_get_state_offline(device_config),
             availability_online=config_get_state_online(device_config),
             quantity=quantity,

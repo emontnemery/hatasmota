@@ -182,6 +182,7 @@ SHUTTER_OPTION_INVERT: Final = 1
 # Power units
 POWER_WATT: Final = "W"
 REACTIVE_POWER = "VAr"
+POWER_FACTOR: Final = "Cos φ"
 
 # Voltage units
 VOLT: Final = "V"
