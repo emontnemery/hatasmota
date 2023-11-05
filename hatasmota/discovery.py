@@ -5,7 +5,7 @@ from itertools import chain
 import json
 import logging
 
-import voluptuous as vol  # type:ignore[import]
+import voluptuous as vol  # type:ignore[import-not-found]
 
 from . import config_validation as cv
 from .button import TasmotaButtonTrigger, TasmotaButtonTriggerConfig
