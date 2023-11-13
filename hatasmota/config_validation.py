@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, TypeVar
 
-import voluptuous as vol  # type:ignore[import-untyped]
+import voluptuous as vol
 
 # typing typevar
 T = TypeVar("T")  # pylint: disable=invalid-name
