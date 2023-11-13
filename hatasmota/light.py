@@ -455,8 +455,8 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             abs, [x1 - x2 for (x1, x2) in zip(now_channels, new_channels)]
         )
         # Mypy is confused about the map, override the inferred typing
-        if (delta_ratio := max(abs_changes)) == 0:  # type:ignore[type-var]
+        if (delta_ratio := max(abs_changes)) == 0:
             speed = 0
         else:
-            speed = round(transition * 2 / delta_ratio)  # type:ignore[operator]
+            speed = round(transition * 2 / delta_ratio)
         return speed
