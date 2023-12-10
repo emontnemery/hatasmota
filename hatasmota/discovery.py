@@ -12,6 +12,7 @@ from .button import TasmotaButtonTrigger, TasmotaButtonTriggerConfig
 from .const import (
     CONF_BATTERY,
     CONF_BUTTON,
+    CONF_DEEP_SLEEP,
     CONF_DEVICENAME,
     CONF_FRIENDLYNAME,
     CONF_FULLTOPIC,
@@ -110,6 +111,9 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         vol.Optional(
             CONF_BATTERY, default=0
         ): cv.positive_int,  # Added in Tasmota 13.0.0.3
+        vol.Optional(
+            CONF_DEEP_SLEEP, default=0
+        ): cv.positive_int,  # Added in Tasmota 13.1.0
         CONF_BUTTON: vol.All(cv.ensure_list, [cv.positive_int]),
         CONF_DEVICENAME: cv.string,
         CONF_FRIENDLYNAME: vol.All(cv.ensure_list, [cv.optional_string]),

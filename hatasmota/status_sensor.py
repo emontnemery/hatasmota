@@ -10,6 +10,7 @@ from typing import Any
 
 from .const import (
     CONF_BATTERY,
+    CONF_DEEP_SLEEP,
     CONF_IP,
     CONF_MAC,
     PERCENTAGE,
@@ -178,6 +179,7 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
                 availability_topic=get_topic_tele_will(config),
                 availability_offline=config_get_state_offline(config),
                 availability_online=config_get_state_online(config),
+                deep_sleep_enabled=config[CONF_DEEP_SLEEP],
                 sensor=sensor,
                 state=config[CONF_IP] if sensor == SENSOR_STATUS_IP else None,
                 state_topic=get_topic_tele_state(config),

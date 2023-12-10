@@ -21,6 +21,7 @@ COMMAND_SPEED: Final = "Speed2"
 COMMAND_WHITE: Final = "White"
 
 CONF_BUTTON: Final = "btn"
+CONF_DEEP_SLEEP: Final = "dslp"
 CONF_DEVICENAME: Final = "dn"
 CONF_FRIENDLYNAME: Final = "fn"
 CONF_FULLTOPIC: Final = "ft"
