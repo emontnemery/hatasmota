@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import logging
 from typing import Any, cast
 
-from .const import COMMAND_POWER, CONF_MAC
+from .const import COMMAND_POWER, CONF_DEEP_SLEEP, CONF_MAC
 from .entity import (
     TasmotaAvailability,
     TasmotaAvailabilityConfig,
@@ -58,6 +58,7 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_topic=get_topic_tele_will(config),
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
+            deep_sleep_enabled=config[CONF_DEEP_SLEEP],
             command_topic=get_topic_command(config),
             result_topic=get_topic_stat_result(config),
             state_power_off=config_get_state_power_off(config),

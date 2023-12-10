@@ -7,6 +7,7 @@ import logging
 from typing import Any
 
 from .const import (
+    CONF_DEEP_SLEEP,
     CONF_MAC,
     SENSOR_STATUS_RSSI,
     SENSOR_STATUS_SIGNAL,
@@ -100,6 +101,7 @@ class TasmotaDeviceStatusConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_topic=get_topic_tele_will(config),
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
+            deep_sleep_enabled=config[CONF_DEEP_SLEEP],
             state_topic=get_topic_tele_state(config),
             status_topics=status_topics,
         )

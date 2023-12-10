@@ -7,6 +7,7 @@ from typing import Any
 
 from .const import (
     COMMAND_FANSPEED,
+    CONF_DEEP_SLEEP,
     CONF_MAC,
     FAN_SPEED_HIGH,
     FAN_SPEED_LOW,
@@ -58,6 +59,7 @@ class TasmotaFanConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_topic=get_topic_tele_will(config),
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
+            deep_sleep_enabled=config[CONF_DEEP_SLEEP],
             command_topic=get_topic_command(config),
             result_topic=get_topic_stat_result(config),
             state_topic=get_topic_tele_state(config),

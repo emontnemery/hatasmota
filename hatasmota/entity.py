@@ -36,6 +36,7 @@ class TasmotaAvailabilityConfig(TasmotaEntityConfig):
     availability_topic: str
     availability_offline: str
     availability_online: str
+    deep_sleep_enabled: bool
 
 
 class TasmotaEntity:
@@ -102,6 +103,8 @@ class TasmotaAvailability(TasmotaEntity):
 
     def get_availability_topics(self) -> dict:
         """Return MQTT topics to subscribe to for availability state."""
+        if self.deep_sleep_enabled:
+            return {}
 
         async def availability_message_received(msg: ReceiveMessage) -> None:
             """Handle a new received MQTT availability message."""
@@ -126,3 +129,8 @@ class TasmotaAvailability(TasmotaEntity):
     def set_on_availability_callback(self, on_availability_callback: Callable) -> None:
         """Set callback for availability state change."""
         self._on_availability_callback = on_availability_callback
+
+    @property
+    def deep_sleep_enabled(self) -> bool:
+        """Return if deep sleep is enabled."""
+        return self._cfg.deep_sleep_enabled
