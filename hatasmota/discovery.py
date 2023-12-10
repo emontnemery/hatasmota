@@ -107,6 +107,9 @@ TASMOTA_OPTIONS_SCHEMA = vol.Schema(
 
 TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
     {
+        vol.Optional(
+            CONF_BATTERY, default=0
+        ): cv.positive_int,  # Added in Tasmota 13.0.0.3
         CONF_BUTTON: vol.All(cv.ensure_list, [cv.positive_int]),
         CONF_DEVICENAME: cv.string,
         CONF_FRIENDLYNAME: vol.All(cv.ensure_list, [cv.optional_string]),
@@ -122,13 +125,11 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         CONF_ONLINE: cv.string,
         CONF_OPTIONS: TASMOTA_OPTIONS_SCHEMA,
         CONF_PREFIX: vol.All(cv.ensure_list, [cv.string]),
-        CONF_STATE: vol.All(cv.ensure_list, [cv.string]),
-        vol.Optional(
-            CONF_BATTERY, default=0
-        ): cv.positive_int,  # Added in Tasmota 13.0.0.3
+        CONF_RELAY: vol.All(cv.ensure_list, [cv.positive_int]),
         vol.Optional(CONF_SHUTTER_OPTIONS, default=[]): vol.All(
             cv.ensure_list, [cv.positive_int]
         ),  # Added in Tasmota 9.2
+        CONF_STATE: vol.All(cv.ensure_list, [cv.string]),
         vol.Optional(CONF_SHUTTER_TILT, default=[]): vol.All(
             cv.ensure_list, [[int]]
         ),  # Added in Tasmota 11.x
@@ -137,7 +138,6 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         vol.Optional(CONF_SWITCHNAME, default=[]): vol.All(
             cv.ensure_list, [cv.optional_string]
         ),  # Added in Tasmota 9.0.0.4
-        CONF_RELAY: vol.All(cv.ensure_list, [cv.positive_int]),
         CONF_TOPIC: cv.string,
         CONF_TUYA: cv.bit,
         CONF_VERSION: 1,
