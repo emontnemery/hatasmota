@@ -37,6 +37,7 @@ from .utils import (
     get_topic_stat_status,
     get_topic_tele_sensor,
     get_topic_tele_will,
+    get_topic_sleep_state,
     get_value_by_path,
 )
 
@@ -75,6 +76,7 @@ class TasmotaShutterConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             poll_payload="10",
             poll_topic=get_topic_command_status(config),
             availability_topic=get_topic_tele_will(config),
+            sleep_state_topic=get_topic_sleep_state(config),
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
             command_topic=get_topic_command(config),

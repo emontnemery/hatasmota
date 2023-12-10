@@ -109,6 +109,10 @@ def get_topic_stat_status(config: ConfigType, idx: int | None = None) -> str:
         return _get_topic_stat(config) + "STATUS"
     return _get_topic_stat(config) + f"STATUS{idx}"
 
+def get_topic_sleep_state(config: ConfigType):
+    topic = get_topic_stat_status(config, 1)
+    _LOGGER.debug("Topic for sleep state %s", topic)
+    return topic
 
 def get_topic_stat_switch(config: ConfigType, idx: int) -> str:
     """Get topic for tele state."""

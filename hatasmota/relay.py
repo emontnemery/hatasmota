@@ -24,6 +24,7 @@ from .utils import (
     get_topic_command_state,
     get_topic_stat_result,
     get_topic_tele_state,
+    get_topic_sleep_state,
     get_topic_tele_will,
 )
 
@@ -56,6 +57,7 @@ class TasmotaRelayConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             poll_payload="",
             poll_topic=get_topic_command_state(config),
             availability_topic=get_topic_tele_will(config),
+            sleep_state_topic=get_topic_sleep_state(config),
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
             command_topic=get_topic_command(config),
