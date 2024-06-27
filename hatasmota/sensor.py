@@ -228,6 +228,7 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaSensorConfig(TasmotaBaseSensorConfig):
     """Tasmota Status Sensor configuration."""
 
+    discovered_value: Any
     last_reset_path: list[str | int] | None
     poll_topic: str
     quantity: str
@@ -246,6 +247,7 @@ class TasmotaSensorConfig(TasmotaBaseSensorConfig):
         value_path: list[str | int],
         parent_path: list[str | int],
         quantity: str,
+        discovered_value: Any,
     ) -> TasmotaSensorConfig:
         """Instantiate from discovery message."""
         unit = SENSOR_UNIT_MAP.get(quantity)
@@ -273,6 +275,7 @@ class TasmotaSensorConfig(TasmotaBaseSensorConfig):
             availability_offline=config_get_state_offline(device_config),
             availability_online=config_get_state_online(device_config),
             deep_sleep_enabled=device_config[CONF_DEEP_SLEEP],
+            discovered_value=discovered_value,
             quantity=quantity,
             state_topic1=get_topic_tele_sensor(device_config),
             state_topic2=get_topic_stat_status(device_config, 10),
@@ -361,6 +364,11 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
         self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
     @property
+    def discovered_as_numeric(self) -> bool:
+        """Return if the sensor was discovered with a numeric value."""
+        return isinstance(self._cfg.discovered_value, (float, int))
+
+    @property
     def quantity(self) -> str:
         """Return the sensor's quantity (speed, mass, etc.)."""
         return self._cfg.quantity
@@ -410,6 +418,7 @@ def _get_sensor_entity(
     sensor_path: list[str | int],
     parent_path: list[str | int],
     quantity: str,
+    discovered_value: Any,
 ) -> tuple[TasmotaSensorConfig, DiscoveryHashType]:
     sensorname = " ".join([str(i) for i in sensor_path])
     discovery_hash = (
@@ -426,6 +435,7 @@ def _get_sensor_entity(
         sensor_path,
         parent_path,
         quantity,
+        discovered_value,
     )
     return (sensor_config, discovery_hash)
 
@@ -466,7 +476,7 @@ def get_sensor_entities(
             subsensorpath.append(subsensorkey)
             if isinstance(subsensor, dict):
                 # Nested sensor
-                for subsubsensorkey in subsensor.keys():
+                for subsubsensorkey, value in subsensor.items():
                     subsubsensorpath = list(subsensorpath)
                     subsubsensorpath.append(subsubsensorkey)
                     sensor_configs.append(
@@ -476,11 +486,12 @@ def get_sensor_entities(
                             subsubsensorpath,
                             subsubsensorpath[:-1],
                             _get_quantity(sensorkey, subsensorkey, subsubsensorkey),
+                            value,
                         )
                     )
             elif isinstance(subsensor, list):
                 # Array sensor
-                for idx, _ in enumerate(subsensor):
+                for idx, value in enumerate(subsensor):
                     subsubsensorpath = list(subsensorpath)
                     subsubsensorpath.append(idx)
                     sensor_configs.append(
@@ -490,10 +501,12 @@ def get_sensor_entities(
                             subsubsensorpath,
                             subsensorpath[:-1],
                             _get_quantity(sensorkey, subsensorkey, None),
+                            value,
                         )
                     )
             else:
                 # Simple sensor
+                value = subsensor
                 sensor_configs.append(
                     _get_sensor_entity(
                         sensor_discovery_message,
@@ -501,6 +514,7 @@ def get_sensor_entities(
                         subsensorpath,
                         subsensorpath[:-1],
                         _get_quantity(sensorkey, subsensorkey, None),
+                        value,
                     )
                 )
 
