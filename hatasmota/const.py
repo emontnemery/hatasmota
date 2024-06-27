@@ -1,4 +1,5 @@
 """Tasmota constants."""
+
 from typing import Final
 
 AUTOMATION_TYPE_TRIGGER: Final = "trigger"

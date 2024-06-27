@@ -1,4 +1,5 @@
 """Tasmota types."""
+
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 from typing import Any, TypedDict
