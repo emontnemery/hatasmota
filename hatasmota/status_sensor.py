@@ -284,6 +284,14 @@ class TasmotaStatusSensor(TasmotaAvailability, TasmotaEntity):
             self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
     @property
+    def discovered_as_numeric(self) -> bool:
+        """Return if the sensor was discovered with a numeric value.
+
+        Not needed for status sensors.
+        """
+        return False
+
+    @property
     def quantity(self) -> str:
         """Return the sensor's quantity (speed, mass, etc.)."""
         return QUANTITY[self._cfg.sensor]
