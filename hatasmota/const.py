@@ -164,6 +164,7 @@ SENSOR_TVOC: Final = "TVOC"
 SENSOR_VOLTAGE: Final = "Voltage"
 SENSOR_WEIGHT: Final = "Weight"
 SENSOR_YESTERDAY: Final = "Yesterday"
+SENSOR_TOTAL_TARIFF: Final = "TotalTariff"
 
 SENSOR_STATUS_BATTERY_PERCENTAGE: Final = "status_battery_percentage"
 
