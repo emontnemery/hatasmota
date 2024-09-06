@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import logging
+import requests
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
-import logging
 from typing import Any
 
 from .const import COMMAND_BACKLOG
@@ -13,7 +14,6 @@ from .const import COMMAND_BACKLOG
 DEBOUNCE_TIMEOUT = 1
 
 _LOGGER = logging.getLogger(__name__)
-
 
 class Timer:
     """Simple timer."""
@@ -59,7 +59,7 @@ class ReceiveMessage:
 
 
 class TasmotaMQTTClient:
-    """Helper class to sue an external MQTT client."""
+    """Helper class to use an external MQTT client."""
 
     def __init__(
         self,
@@ -115,6 +115,32 @@ class TasmotaMQTTClient:
         """Unsubscribe from topics."""
         return await self._unsubscribe(sub_state)
 
+    async def check_firmware_update(self, current_version: str) -> bool:
+        """Check if a firmware update is available."""
+        latest_version = self.get_latest_firmware_version()
+        if latest_version and self.compare_versions(current_version, latest_version):
+            _LOGGER.info(f"Firmware update available: {latest_version}")
+            return True
+        _LOGGER.info("Firmware is up to date.")
+        return False
+
+    def get_latest_firmware_version(self) -> str | None:
+        """Get the latest Tasmota firmware version from GitHub."""
+        url = "https://api.github.com/repos/arendst/Tasmota/releases/latest"
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            data = response.json()
+            return data["tag_name"].lstrip("v")
+        except Exception as err:
+            _LOGGER.error(f"Error retrieving latest firmware: {err}")
+            return None
+
+    def compare_versions(self, current_version: str, latest_version: str) -> bool:
+        """Compare the current version with the latest version."""
+        current_version = current_version.split("(")[0]  # Removes "release-tasmota"
+        return current_version < latest_version
+
 
 async def send_commands(
     mqtt_client: TasmotaMQTTClient,
@@ -125,3 +151,9 @@ async def send_commands(
     backlog_topic = command_topic + COMMAND_BACKLOG
     backlog = ";".join([f"NoDelay;{command[0]} {command[1]}" for command in commands])
     await mqtt_client.publish(backlog_topic, backlog)
+
+
+async def trigger_firmware_update(mqtt_client: TasmotaMQTTClient, command_topic: str) -> None:
+    """Trigger a Tasmota firmware update via MQTT."""
+    _LOGGER.info(f"Triggering firmware update on {command_topic}")
+    await mqtt_client.publish(f"{command_topic}/cmnd/Upgrade", "1")
