@@ -316,13 +316,15 @@ class TasmotaSensor(TasmotaAvailability, TasmotaEntity):
             if msg.topic == self._cfg.state_topic1:
                 state = get_value_by_path(msg.payload, self._cfg.value_path[:-1])
                 last_node = self._cfg.value_path[-1]
-            if msg.topic == self._cfg.state_topic2:
+            elif msg.topic == self._cfg.state_topic2:
                 prefix: list[str | int] = ["StatusSNS"]
                 value_path = prefix + self._cfg.value_path
                 state = get_value_by_path(msg.payload, value_path[:-1])
                 last_node = value_path[-1]
                 if self._cfg.last_reset_path:
                     last_reset_path = prefix + self._cfg.last_reset_path
+            else:
+                raise ValueError
             if state is not None:
                 # Indexed sensors may be announced with more indices than present in
                 # the status. Handle this gracefully wihtout throwing. This is a
