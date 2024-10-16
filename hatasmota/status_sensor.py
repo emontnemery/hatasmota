@@ -156,7 +156,7 @@ class TasmotaStatusSensorConfig(TasmotaBaseSensorConfig):
 
     poll_topic: str
     sensor: str
-    state: str
+    state: str | None
     state_topic: str
     status_topic: str
 
