@@ -394,6 +394,7 @@ def get_fan_entities(
 
     return fan_entities
 
+
 def get_camera_entities(
     discovery_msg: dict,
 ) -> list[tuple[TasmotaCameraConfig | None, DiscoveryHashType]]:

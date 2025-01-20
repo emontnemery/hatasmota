@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import logging
 from typing import Any
+from aiohttp import ClientSession, web
+
 
 from .const import (
     CONF_IP,
@@ -38,6 +40,7 @@ from .utils import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True, kw_only=True)
 class TasmotaCameraConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
@@ -99,7 +102,6 @@ class TasmotaCamera(TasmotaAvailability, TasmotaEntity):
                 if state:
                     self._on_state_callback(state)
 
-
         availability_topics = self.get_availability_topics()
         topics = {
             "result_topic": {
@@ -129,13 +131,12 @@ class TasmotaCamera(TasmotaAvailability, TasmotaEntity):
         """Unsubscribe to all MQTT topics."""
         self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
-    def get_still_image_stream(self, websession:aiohttp.ClientSession) -> web.StreamResponse | None:
+    def get_still_image_stream(self, websession: ClientSession) -> web.StreamResponse | None:
         """Get the io stream to read the static image."""
         still_image_url = f"http://{self._cfg.ip_address}/snapshot.jpg"
         return websession.get(still_image_url)
 
-    def get_mjpeg_stream(self, websession:aiohttp.ClientSession) -> web.StreamResponse | None:
+    def get_mjpeg_stream(self, websession: ClientSession) -> web.StreamResponse | None:
         """Get the io stream to read the mjpeg stream."""
         mjpeg_url = f"http://{self._cfg.ip_address}:81/cam.mjpeg"
         return websession.get(mjpeg_url)
-
