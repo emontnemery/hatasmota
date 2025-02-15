@@ -3,4 +3,4 @@ pylint==3.3.3
 black==25.1.0
 isort==5.13.2
 mypy==1.15.0
-pydantic==2.10.5
+pydantic==2.10.6
