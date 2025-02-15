@@ -7,18 +7,10 @@ import logging
 from typing import Any
 from aiohttp import ClientSession, web
 
-
 from .const import (
     CONF_IP,
     CONF_MAC,
     CONF_DEEP_SLEEP,
-
-    COMMAND_CAMERA_STREAM,
-    COMMAND_CAMERA_FLIP_VERTICAL,
-    COMMAND_CAMERA_FLIP_HORIZONTAL,
-    COMMAND_CAMERA_RESOLUTION,
-    COMMAND_CAMERA_BRIGHTNESS,
-    COMMAND_CAMERA_CONTRAST,
 )
 from .entity import (
     TasmotaAvailability,
@@ -98,8 +90,7 @@ class TasmotaCamera(TasmotaAvailability, TasmotaEntity):
                 return
 
             if msg.topic == self._cfg.sensor_topic:
-                state = get_value_by_path(msg.payload, ["CAMERA"])
-                if state:
+                if (state := get_value_by_path(msg.payload, ["CAMERA"])):
                     self._on_state_callback(state)
 
         availability_topics = self.get_availability_topics()

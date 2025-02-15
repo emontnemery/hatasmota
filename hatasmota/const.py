@@ -21,13 +21,6 @@ COMMAND_SHUTTER_TILT: Final = "ShutterTilt"
 COMMAND_SPEED: Final = "Speed2"
 COMMAND_WHITE: Final = "White"
 
-COMMAND_CAMERA_STREAM: Final = 'WcStream'
-COMMAND_CAMERA_FLIP_VERTICAL: Final = 'WCFlip'
-COMMAND_CAMERA_FLIP_HORIZONTAL: Final = 'WCMirror'
-COMMAND_CAMERA_RESOLUTION: Final = 'WcResolution'
-COMMAND_CAMERA_BRIGHTNESS: Final = 'WcBrightness'
-COMMAND_CAMERA_CONTRAST: Final = 'WcContrast'
-
 CONF_BUTTON: Final = "btn"
 CONF_DEEP_SLEEP: Final = "dslp"
 CONF_DEVICENAME: Final = "dn"
