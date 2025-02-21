@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Awaitable
 from dataclasses import dataclass
 import logging
 from typing import Any
-from aiohttp import ClientSession, web
 
-from .const import (
-    CONF_IP,
-    CONF_MAC,
-    CONF_DEEP_SLEEP,
-)
+from aiohttp import ClientResponse, ClientSession
+
+from .const import CONF_DEEP_SLEEP, CONF_IP, CONF_MAC
 from .entity import (
     TasmotaAvailability,
     TasmotaAvailabilityConfig,
@@ -25,8 +23,8 @@ from .utils import (
     get_topic_command,
     get_topic_command_state,
     get_topic_stat_result,
-    get_topic_tele_state,
     get_topic_tele_sensor,
+    get_topic_tele_state,
     get_topic_tele_will,
     get_value_by_path,
 )
@@ -47,9 +45,7 @@ class TasmotaCameraConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     ip_address: str
 
     @classmethod
-    def from_discovery_message(
-        cls, config: dict, platform: str
-    ) -> TasmotaCameraConfig:
+    def from_discovery_message(cls, config: dict, platform: str) -> TasmotaCameraConfig:
         """Instantiate from discovery message."""
         return cls(
             endpoint="camera",
@@ -67,7 +63,7 @@ class TasmotaCameraConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             result_topic=get_topic_stat_result(config),
             state_topic=get_topic_tele_state(config),
             sensor_topic=get_topic_tele_sensor(config),
-            ip_address=config[CONF_IP]
+            ip_address=config[CONF_IP],
         )
 
 
@@ -90,7 +86,7 @@ class TasmotaCamera(TasmotaAvailability, TasmotaEntity):
                 return
 
             if msg.topic == self._cfg.sensor_topic:
-                if (state := get_value_by_path(msg.payload, ["CAMERA"])):
+                if state := get_value_by_path(msg.payload, ["CAMERA"]):
                     self._on_state_callback(state)
 
         availability_topics = self.get_availability_topics()
@@ -122,12 +118,14 @@ class TasmotaCamera(TasmotaAvailability, TasmotaEntity):
         """Unsubscribe to all MQTT topics."""
         self._sub_state = await self._mqtt_client.unsubscribe(self._sub_state)
 
-    def get_still_image_stream(self, websession: ClientSession) -> web.StreamResponse | None:
+    def get_still_image_stream(
+        self, websession: ClientSession
+    ) -> Awaitable[ClientResponse]:
         """Get the io stream to read the static image."""
         still_image_url = f"http://{self._cfg.ip_address}/snapshot.jpg"
         return websession.get(still_image_url)
 
-    def get_mjpeg_stream(self, websession: ClientSession) -> web.StreamResponse | None:
+    def get_mjpeg_stream(self, websession: ClientSession) -> Awaitable[ClientResponse]:
         """Get the io stream to read the mjpeg stream."""
         mjpeg_url = f"http://{self._cfg.ip_address}:81/cam.mjpeg"
         return websession.get(mjpeg_url)

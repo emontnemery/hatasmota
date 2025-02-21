@@ -10,16 +10,17 @@ import voluptuous as vol
 
 from . import config_validation as cv
 from .button import TasmotaButtonTrigger, TasmotaButtonTriggerConfig
+from .camera import TasmotaCamera, TasmotaCameraConfig
 from .const import (
     CONF_BATTERY,
     CONF_BUTTON,
+    CONF_CAM,
     CONF_DEEP_SLEEP,
     CONF_DEVICENAME,
     CONF_FRIENDLYNAME,
     CONF_FULLTOPIC,
     CONF_HOSTNAME,
     CONF_IFAN,
-    CONF_CAM,
     CONF_IP,
     CONF_LIGHT_SUBTYPE,
     CONF_LINK_RGB_CT,
@@ -60,7 +61,6 @@ from .const import (
 )
 from .entity import TasmotaEntity, TasmotaEntityConfig
 from .fan import TasmotaFan, TasmotaFanConfig
-from .camera import TasmotaCamera, TasmotaCameraConfig
 from .light import TasmotaLight, TasmotaLightConfig
 from .models import (
     DeviceDiscoveredCallback,
