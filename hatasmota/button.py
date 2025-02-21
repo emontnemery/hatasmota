@@ -121,7 +121,7 @@ class TasmotaButtonTriggerConfig(TasmotaTriggerConfig):
                     event=event,
                     idx=idx,
                     source="button",
-                    subtype=f"button_{idx+1}",
+                    subtype=f"button_{idx + 1}",
                     trigger_topic=get_topic_stat_result(config),
                     type=trigger_type,
                 )
@@ -136,7 +136,7 @@ class TasmotaButtonTriggerConfig(TasmotaTriggerConfig):
     @property
     def trigger_id(self) -> str:
         """Return trigger id."""
-        return f"{self.mac}_button_{self.idx+1}_{self.event}"
+        return f"{self.mac}_button_{self.idx + 1}_{self.event}"
 
 
 class TasmotaButtonTrigger(TasmotaTrigger):
@@ -146,6 +146,8 @@ class TasmotaButtonTrigger(TasmotaTrigger):
 
     def _trig_message_received(self, msg: ReceiveMessage) -> None:
         """Handle new MQTT messages."""
-        event = get_value_by_path(msg.payload, [f"Button{self.cfg.idx+1}", RSLT_ACTION])
+        event = get_value_by_path(
+            msg.payload, [f"Button{self.cfg.idx + 1}", RSLT_ACTION]
+        )
         if event == self.cfg.event and self._on_trigger_callback:
             self._on_trigger_callback()

@@ -122,7 +122,7 @@ class TasmotaLightConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
 
         if config[CONF_OPTIONS][OPTION_PWM_MULTI_CHANNELS]:
             # Multi-channel PWM instead of a single light, each light controlled by CHANNEL<n>
-            dimmer_state = f"{COMMAND_CHANNEL}{idx+1}"
+            dimmer_state = f"{COMMAND_CHANNEL}{idx + 1}"
             control_by_channel = True
             light_type = LIGHT_TYPE_DIMMER
         elif not config[CONF_LINK_RGB_CT] and tasmota_light_sub_type >= LST_RGBW:
@@ -325,7 +325,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
     async def _set_state_relay(self, state: bool) -> None:
         """Turn the relay on or off."""
         payload = self._cfg.state_power_on if state else self._cfg.state_power_off
-        command = f"{COMMAND_POWER}{self._cfg.idx+1}"
+        command = f"{COMMAND_POWER}{self._cfg.idx + 1}"
         await self._mqtt_client.publish(
             self._cfg.command_topic + command,
             payload,
@@ -355,11 +355,11 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
             commands.append((command, speed))
 
         argument = self._cfg.state_power_on if state else self._cfg.state_power_off
-        command = f"{COMMAND_POWER}{idx+1}"
+        command = f"{COMMAND_POWER}{idx + 1}"
         if "brightness" in attributes:
             argument = attributes["brightness"]
             if self._cfg.control_by_channel:
-                command = f"{COMMAND_CHANNEL}{idx+1}"
+                command = f"{COMMAND_CHANNEL}{idx + 1}"
             else:
                 command = self._cfg.dimmer_cmd
 
@@ -397,7 +397,7 @@ class TasmotaLight(TasmotaAvailability, TasmotaEntity):
         if self._cfg.not_power_linked and "brightness" in attributes:
             # Always send power
             argument = self._cfg.state_power_on if state else self._cfg.state_power_off
-            command = f"{COMMAND_POWER}{idx+1}"
+            command = f"{COMMAND_POWER}{idx + 1}"
             commands.append((command, argument))
 
         await send_commands(self._mqtt_client, self._cfg.command_topic, commands)
