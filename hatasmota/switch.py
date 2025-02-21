@@ -206,7 +206,7 @@ class TasmotaSwitchTriggerConfig(TasmotaTriggerConfig):
                     event=config[CONF_STATE][event],
                     idx=idx,
                     source="switch",
-                    subtype=f"switch_{idx+1}",
+                    subtype=f"switch_{idx + 1}",
                     switchname=config_get_switchname(config, idx),
                     trigger_topic=get_topic_stat_result(config),
                     type=trigger_type,
@@ -222,7 +222,7 @@ class TasmotaSwitchTriggerConfig(TasmotaTriggerConfig):
     @property
     def trigger_id(self) -> str:
         """Return trigger id."""
-        return f"{self.mac}_switch_{self.idx+1}_{self.event}"
+        return f"{self.mac}_switch_{self.idx + 1}_{self.event}"
 
 
 class TasmotaSwitchTrigger(TasmotaTrigger):

@@ -96,7 +96,7 @@ def get_topic_stat(config: ConfigType) -> str:
 
 def get_topic_stat_button_trigger(config: ConfigType, idx: int) -> str:
     """Get topic for tele state."""
-    return _get_topic_stat(config) + f"BUTTON{idx+1}"
+    return _get_topic_stat(config) + f"BUTTON{idx + 1}"
 
 
 def get_topic_stat_result(config: ConfigType) -> str:
@@ -113,12 +113,12 @@ def get_topic_stat_status(config: ConfigType, idx: int | None = None) -> str:
 
 def get_topic_stat_switch(config: ConfigType, idx: int) -> str:
     """Get topic for tele state."""
-    return _get_topic_stat(config) + f"SWITCH{idx+1}"
+    return _get_topic_stat(config) + f"SWITCH{idx + 1}"
 
 
 def get_topic_stat_switch_trigger(config: ConfigType, idx: int) -> str:
     """Get topic for tele state."""
-    return _get_topic_stat(config) + f"SWITCH{idx+1}"
+    return _get_topic_stat(config) + f"SWITCH{idx + 1}"
 
 
 def get_topic_tele(config: ConfigType) -> str:
@@ -174,7 +174,7 @@ def get_value(
         return status.get(key)
     if key in status and idx_optional and idx == 0:
         return status[key]
-    key = f"{key}{idx+1}"
+    key = f"{key}{idx + 1}"
     return status[key] if key in status else None
 
 
@@ -208,7 +208,7 @@ def config_get_friendlyname(config: ConfigType, platform: str, idx: int) -> str 
     friendly_names = config[CONF_FRIENDLYNAME]
 
     if idx >= len(friendly_names) or friendly_names[idx] is None:
-        return f"{platform} {idx+1}"
+        return f"{platform} {idx + 1}"
     if idx == 0 and friendly_names[idx] == config[CONF_DEVICENAME]:
         return None
     return friendly_names[idx]
@@ -219,7 +219,7 @@ def config_get_switchfriendlyname(config: ConfigType, platform: str, idx: int) -
     switch_names = config[CONF_SWITCHNAME]
 
     if idx >= len(switch_names) or switch_names[idx] is None:
-        return f"{platform} {idx+1}"
+        return f"{platform} {idx + 1}"
     return switch_names[idx]
 
 
@@ -228,7 +228,7 @@ def config_get_switchname(config: ConfigType, idx: int) -> str:
     switch_names = config[CONF_SWITCHNAME]
 
     if idx >= len(switch_names) or switch_names[idx] is None:
-        return f"Switch{idx+1}"
+        return f"Switch{idx + 1}"
     return switch_names[idx]
 
 
