@@ -337,6 +337,21 @@ def get_binary_sensor_entities(
     return entities
 
 
+def get_camera_entities(
+    discovery_msg: dict,
+) -> list[tuple[TasmotaCameraConfig | None, DiscoveryHashType]]:
+    """Generate camera configuration."""
+    camera_entities: list[tuple[TasmotaCameraConfig | None, DiscoveryHashType]] = []
+
+    entity = None
+    discovery_hash = (discovery_msg[CONF_MAC], "cam", "cam", 0)
+    if CONF_CAM in discovery_msg and discovery_msg[CONF_CAM]:
+        entity = TasmotaCameraConfig.from_discovery_message(discovery_msg, "camera")
+    camera_entities.append((entity, discovery_hash))
+
+    return camera_entities
+
+
 def get_cover_entities(
     discovery_msg: dict,
 ) -> list[tuple[TasmotaShutterConfig | None, DiscoveryHashType]]:
@@ -393,21 +408,6 @@ def get_fan_entities(
     fan_entities.append((entity, discovery_hash))
 
     return fan_entities
-
-
-def get_camera_entities(
-    discovery_msg: dict,
-) -> list[tuple[TasmotaCameraConfig | None, DiscoveryHashType]]:
-    """Generate camera configuration."""
-    camera_entities: list[tuple[TasmotaCameraConfig | None, DiscoveryHashType]] = []
-
-    entity = None
-    discovery_hash = (discovery_msg[CONF_MAC], "cam", "cam", 0)
-    if CONF_CAM in discovery_msg and discovery_msg[CONF_CAM]:
-        entity = TasmotaCameraConfig.from_discovery_message(discovery_msg, "camera")
-    camera_entities.append((entity, discovery_hash))
-
-    return camera_entities
 
 
 def get_switch_entities(
@@ -494,6 +494,8 @@ def get_entities_for_platform(
     entities: list[tuple[TasmotaEntityConfig | None, DiscoveryHashType]] = []
     if platform == "binary_sensor":
         entities.extend(get_binary_sensor_entities(discovery_msg))
+    elif platform == "camera":
+        entities.extend(get_camera_entities(discovery_msg))
     elif platform == "cover":
         entities.extend(get_cover_entities(discovery_msg))
     elif platform == "fan":
@@ -504,8 +506,6 @@ def get_entities_for_platform(
         entities.extend(get_status_sensor_entities(discovery_msg))
     elif platform == "switch":
         entities.extend(get_switch_entities(discovery_msg))
-    elif platform == "camera":
-        entities.extend(get_camera_entities(discovery_msg))
     return entities
 
 
@@ -522,6 +522,8 @@ def get_entity(
     platform = config.platform
     if platform == "binary_sensor":
         return TasmotaSwitch(config=config, mqtt_client=mqtt_client)
+    if platform == "camera":
+        return TasmotaCamera(config=config, mqtt_client=mqtt_client)
     if platform == "cover":
         return TasmotaShutter(config=config, mqtt_client=mqtt_client)
     if platform == "fan":
@@ -534,8 +536,6 @@ def get_entity(
         return TasmotaStatusSensor(config=config, mqtt_client=mqtt_client)
     if platform == "switch":
         return TasmotaRelay(config=config, mqtt_client=mqtt_client)
-    if platform == "camera":
-        return TasmotaCamera(config=config, mqtt_client=mqtt_client)
     return None
 
 

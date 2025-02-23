@@ -16,17 +16,11 @@ from .entity import (
     TasmotaEntity,
     TasmotaEntityConfig,
 )
-from .mqtt import ReceiveMessage
 from .utils import (
     config_get_state_offline,
     config_get_state_online,
-    get_topic_command,
     get_topic_command_state,
-    get_topic_stat_result,
-    get_topic_tele_sensor,
-    get_topic_tele_state,
     get_topic_tele_will,
-    get_value_by_path,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,12 +30,6 @@ _LOGGER = logging.getLogger(__name__)
 class TasmotaCameraConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     """Tasmota camera configuation."""
 
-    idx: int
-
-    command_topic: str
-    result_topic: str
-    state_topic: str
-    sensor_topic: str
     ip_address: str
 
     @classmethod
@@ -59,10 +47,6 @@ class TasmotaCameraConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_offline=config_get_state_offline(config),
             availability_online=config_get_state_online(config),
             deep_sleep_enabled=config[CONF_DEEP_SLEEP],
-            command_topic=get_topic_command(config),
-            result_topic=get_topic_stat_result(config),
-            state_topic=get_topic_tele_state(config),
-            sensor_topic=get_topic_tele_sensor(config),
             ip_address=config[CONF_IP],
         )
 
@@ -80,34 +64,8 @@ class TasmotaCamera(TasmotaAvailability, TasmotaEntity):
     async def subscribe_topics(self) -> None:
         """Subscribe to topics."""
 
-        def state_message_received(msg: ReceiveMessage) -> None:
-            """Handle new MQTT state messages."""
-            if not self._on_state_callback:
-                return
-
-            if msg.topic == self._cfg.sensor_topic:
-                if state := get_value_by_path(msg.payload, ["CAMERA"]):
-                    self._on_state_callback(state)
-
         availability_topics = self.get_availability_topics()
-        topics = {
-            "result_topic": {
-                "event_loop_safe": True,
-                "topic": self._cfg.result_topic,
-                "msg_callback": state_message_received,
-            },
-            "state_topic": {
-                "event_loop_safe": True,
-                "topic": self._cfg.state_topic,
-                "msg_callback": state_message_received,
-            },
-            "sensor_topic": {
-                "event_loop_safe": True,
-                "topic": self._cfg.sensor_topic,
-                "msg_callback": state_message_received,
-            },
-        }
-        topics = {**topics, **availability_topics}
+        topics = {**availability_topics}
 
         self._sub_state = await self._mqtt_client.subscribe(
             self._sub_state,
