@@ -81,7 +81,7 @@ class TasmotaShutterConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             availability_online=config_get_state_online(config),
             deep_sleep_enabled=config[CONF_DEEP_SLEEP],
             command_topic=get_topic_command(config),
-            inverted_shutter=shutter_options & SHUTTER_OPTION_INVERT,
+            inverted_shutter=shutter_options & SHUTTER_OPTION_INVERT,  # type: ignore[arg-type]
             state_topic1=get_topic_stat_result(config),
             state_topic2=get_topic_tele_sensor(config),
             state_topic3=get_topic_stat_status(config, 10),
