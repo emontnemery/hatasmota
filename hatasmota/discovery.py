@@ -344,7 +344,7 @@ def get_camera_entities(
     camera_entities: list[tuple[TasmotaCameraConfig | None, DiscoveryHashType]] = []
 
     entity = None
-    discovery_hash = (discovery_msg[CONF_MAC], "cam", "cam", 0)
+    discovery_hash = (discovery_msg[CONF_MAC], "camera", "camera", 0)
     if CONF_CAM in discovery_msg and discovery_msg[CONF_CAM]:
         entity = TasmotaCameraConfig.from_discovery_message(discovery_msg, "camera")
     camera_entities.append((entity, discovery_hash))
