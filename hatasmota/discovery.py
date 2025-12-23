@@ -80,6 +80,7 @@ from .switch import (
     TasmotaSwitchTriggerConfig,
 )
 from .trigger import TasmotaTrigger, TasmotaTriggerConfig
+from .update import TasmotaUpdate, TasmotaUpdateConfig
 from .utils import discovery_topic_get_mac, discovery_topic_is_device_config
 
 TASMOTA_OPTIONS_SCHEMA = vol.Schema(
@@ -487,6 +488,25 @@ def get_status_sensor_entities(
     return status_sensor_entities
 
 
+def get_update_entities(
+    discovery_msg: dict,
+) -> list[tuple[TasmotaUpdateConfig, DiscoveryHashType]]:
+    """Generate Update sensors."""
+    update_entities: list[tuple[TasmotaUpdateConfig, DiscoveryHashType]] = []
+
+    entity = TasmotaUpdateConfig.from_discovery_message(discovery_msg)
+    discovery_hash = (
+        discovery_msg[CONF_MAC],
+        "update",
+        "update",
+        "firmware",
+    )
+    update_entities.append((entity, discovery_hash))
+
+    return update_entities
+
+
+
 def get_entities_for_platform(
     discovery_msg: dict, platform: str
 ) -> list[tuple[TasmotaEntityConfig | None, DiscoveryHashType]]:
@@ -506,6 +526,8 @@ def get_entities_for_platform(
         entities.extend(get_status_sensor_entities(discovery_msg))
     elif platform == "switch":
         entities.extend(get_switch_entities(discovery_msg))
+    elif platform == "update":
+        entities.extend(get_update_entities(discovery_msg))
     return entities
 
 
@@ -536,6 +558,8 @@ def get_entity(
         return TasmotaStatusSensor(config=config, mqtt_client=mqtt_client)
     if platform == "switch":
         return TasmotaRelay(config=config, mqtt_client=mqtt_client)
+    if platform == "update":
+        return TasmotaUpdate(config=config, mqtt_client=mqtt_client)
     return None
 
 
