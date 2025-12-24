@@ -7,7 +7,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
-from .const import COMMAND_UPGRADE, CONF_DEEP_SLEEP, CONF_MAC
+from .const import COMMAND_BACKLOG, COMMAND_UPGRADE, CONF_DEEP_SLEEP, CONF_MAC
 from .entity import (
     TasmotaAvailability,
     TasmotaAvailabilityConfig,
@@ -37,10 +37,12 @@ class TasmotaUpdateConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
     state_topic: str
     status_topic: str
     command_topic: str
+    backlog_topic: str  # For Backlog command (OtaUrl + Upgrade)
 
     @classmethod
     def from_discovery_message(cls, config: dict) -> TasmotaUpdateConfig:
         """Instantiate from discovery message."""
+        base_cmd = get_topic_command(config)
         return cls(
             endpoint="update",
             idx=None,
@@ -55,7 +57,8 @@ class TasmotaUpdateConfig(TasmotaAvailabilityConfig, TasmotaEntityConfig):
             deep_sleep_enabled=config[CONF_DEEP_SLEEP],
             state_topic=get_topic_tele_state(config),
             status_topic=get_topic_stat_status(config, 2),
-            command_topic=get_topic_command(config) + COMMAND_UPGRADE,
+            command_topic=base_cmd + COMMAND_UPGRADE,
+            backlog_topic=base_cmd + COMMAND_BACKLOG,
         )
 
 
@@ -70,14 +73,25 @@ class TasmotaUpdate(TasmotaAvailability, TasmotaEntity):
         super().__init__(**kwds)
 
     async def update_firmware(self, url: str | None = None) -> None:
-        """Update firmware."""
-        payload = "1"
+        """Update firmware.
+
+        If url is provided, uses Backlog to first set OtaUrl, then trigger Upgrade 1.
+        This is required for newer Tasmota versions where Upgrade <url> doesn't work.
+        """
         if url:
-            payload = url
-        await self._mqtt_client.publish(
-            self._cfg.command_topic,
-            payload,
-        )
+            # Use Backlog to set OtaUrl and then trigger upgrade
+            # Backlog command format: "OtaUrl http://...; Upgrade 1"
+            payload = f"OtaUrl {url}; Upgrade 1"
+            await self._mqtt_client.publish(
+                self._cfg.backlog_topic,
+                payload,
+            )
+        else:
+            # No URL - just send Upgrade 1 to use pre-configured OtaUrl
+            await self._mqtt_client.publish(
+                self._cfg.command_topic,
+                "1",
+            )
 
     async def subscribe_topics(self) -> None:
         """Subscribe to topics."""
