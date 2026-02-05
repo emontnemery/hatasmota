@@ -29,41 +29,72 @@ from .utils import (
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION_VARIANT_PATTERN = re.compile(r"^[0-9.]+\((?P<variant>.*)\)$")
+VERSION_VARIANT_PATTERN = re.compile(r"^(?P<version>[0-9.]+)\((?P<variant>.*)\)$")
+MIN_SAFE_VERSION = (9, 1, 0)
 
 OFFICIAL_VARIANTS = {
-    "allsensors",
-    "br",
-    "displays",
-    "energy",
-    "ircube",
-    "knx",
-    "lite",
-    "matter",
-    "mega",
-    "platinum",
-    "sensors",
+    # ESP8266 / ESP8285
     "tasmota",
-    "teleinfo",
-    "titanium",
+    "lite",
+    "knx",
+    "sensors",
+    "ir",
+    "display",
     "zbbridge",
     "zigbee",
+    # ESP32 Family
+    "tasmota32",
+    "tasmota32solo1",
+    "tasmota32c2",
+    "tasmota32c3",
+    "tasmota32c5",
+    "tasmota32c6",
+    "tasmota32p4",
+    "tasmota32s2",
+    "tasmota32s2cdc",
+    "tasmota32s3",
+    # ESP32 Feature Builds
+    "bluetooth",
+    "lvgl",
+    "nspanel",
+    "webcam",
+    "zbbridgepro",
 }
 
 
-def is_stock_build(version: str) -> bool:
-    """Return True if the version string indicates a stock build."""
-    match = VERSION_VARIANT_PATTERN.match(version)
-    if not match:
+def is_stock_build(version_str: str) -> bool:
+    """Return True if the version string indicates a stock build and is safe to update."""
+    if not (match := VERSION_VARIANT_PATTERN.match(version_str)):
         return False
+
+    version_num_str = match.group("version")
     variant = match.group("variant")
+
+    # Safety check: Versions older than 9.1.0 require manual migration paths
+    try:
+        version_parts = tuple(int(p) for p in version_num_str.split("."))
+        if version_parts < MIN_SAFE_VERSION:
+            _LOGGER.warning(
+                "Tasmota version %s is too old for auto-update. "
+                "Please follow the manual migration path to 9.1.0 first.",
+                version_num_str,
+            )
+            return False
+    except ValueError:
+        return False
 
     if variant in ["minimal", "tasmota-minimal", "battery", "tasmota-battery"]:
         return False
 
     if variant in OFFICIAL_VARIANTS:
         return True
-    if variant.startswith("tasmota-") or variant.startswith("tasmota32"):
+    # Localized language builds (e.g., tasmota-DE, tasmota32-DE)
+    if re.match(r"^(tasmota|tasmota32)-[A-Z]{2}$", variant):
+        return True
+    # Prefixed official variants (e.g., tasmota-sensors, tasmota32-display)
+    if variant.startswith("tasmota-") and variant[8:] in OFFICIAL_VARIANTS:
+        return True
+    if variant.startswith("tasmota32-") and variant[10:] in OFFICIAL_VARIANTS:
         return True
     return False
 
@@ -147,8 +178,7 @@ class TasmotaUpdate(TasmotaAvailability, TasmotaEntity):
 
             # Status 2: {"StatusFWR":{"Version":"12.3.1(tasmota)","BuildDateTime":"..."}}
             # We look for StatusFWR.Version
-            version = get_value_by_path(payload, ["StatusFWR", "Version"])
-            if version:
+            if version := get_value_by_path(payload, ["StatusFWR", "Version"]):
                 if is_stock_build(version):
                     self._on_state_callback(version)
                 else:

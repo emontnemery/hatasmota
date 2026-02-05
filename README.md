@@ -20,11 +20,11 @@ Official stable releases are supported. The integration identifies "Stock" build
 
 | Build Type | Variants / Patterns | Status |
 | :--- | :--- | :---: |
-| **Standard** | `tasmota`, `tasmota32`, `tasmota32c3`, etc. | ✅ Supported |
-| **Localized** | `tasmota-DE`, `tasmota-PL`, `tasmota-FR`, etc. | ✅ Supported |
-| **Feature Set** | `sensors`, `allsensors`, `lite`, `knx`, `matter`, `zbbridge`, `zigbee`, `br`, `ircube`, `displays`, `mega`, `platinum`, `titanium` | ✅ Supported |
+| **Standard** | `tasmota` (incl. `4M`), `tasmota32` family (S2, S3, C2, C3, C5, C6, P4, solo1) | ✅ Supported |
+| **Localized** | `tasmota-AD` to `tasmota-VN`, `tasmota32-AD` to `tasmota32-VN` | ✅ Supported |
+| **Feature Set** | `sensors`, `display`, `ir`, `knx`, `zbbridge`, `zigbee`, `lite`, `bluetooth`, `lvgl`, `nspanel`, `webcam`, `zbbridgepro` | ✅ Supported |
 | **Minimal** | `minimal`, `tasmota-minimal` | ❌ Excluded |
-| **Battery** | `battery`, `tasmota-battery` | ❌ Excluded |
+| **Legacy** | Versions older than `9.1.0` | ❌ Excluded |
 | **Custom** | Any custom name, e.g., `(my-custom-build)` | ❌ Excluded |
 
 ### Excluded Builds (Safety First)
@@ -32,11 +32,10 @@ Official stable releases are supported. The integration identifies "Stock" build
 The "Excluded" builds in the table above are withheld from the update check to prevent device instability:
 
 - **Minimal Builds**: `minimal`, `tasmota-minimal`. These are transitional builds used only during the update process and should never be the final running firmware.
-- **Battery Builds**: `battery`, `tasmota-battery`. Highly specialized builds for low-power sensors that should be managed manually.
 - **Custom Builds**: Any version with a custom variant name (e.g., `(my-custom-build)`).
 
 ## More Information
 
 For more details on how to use Tasmota with Home Assistant, please refer to the official documentation:
 
-👉 [Home Assistant Tasmota Integration](https://www.home-assistant.io/integrations/tasmota/)
+[Home Assistant Tasmota Integration](https://www.home-assistant.io/integrations/tasmota/)
