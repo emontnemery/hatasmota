@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -27,6 +28,44 @@ from .utils import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+VERSION_VARIANT_PATTERN = re.compile(r"^[0-9.]+\((?P<variant>.*)\)$")
+
+OFFICIAL_VARIANTS = {
+    "allsensors",
+    "br",
+    "displays",
+    "energy",
+    "ircube",
+    "knx",
+    "lite",
+    "matter",
+    "mega",
+    "platinum",
+    "sensors",
+    "tasmota",
+    "teleinfo",
+    "titanium",
+    "zbbridge",
+    "zigbee",
+}
+
+
+def is_stock_build(version: str) -> bool:
+    """Return True if the version string indicates a stock build."""
+    match = VERSION_VARIANT_PATTERN.match(version)
+    if not match:
+        return False
+    variant = match.group("variant")
+
+    if variant in ["minimal", "tasmota-minimal", "battery", "tasmota-battery"]:
+        return False
+
+    if variant in OFFICIAL_VARIANTS:
+        return True
+    if variant.startswith("tasmota-") or variant.startswith("tasmota32"):
+        return True
+    return False
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -110,7 +149,16 @@ class TasmotaUpdate(TasmotaAvailability, TasmotaEntity):
             # We look for StatusFWR.Version
             version = get_value_by_path(payload, ["StatusFWR", "Version"])
             if version:
-                self._on_state_callback(version)
+                if is_stock_build(version):
+                    self._on_state_callback(version)
+                else:
+                    match = VERSION_VARIANT_PATTERN.match(version)
+                    variant = match.group("variant") if match else "unknown"
+                    _LOGGER.debug(
+                        "[%s] Custom firmware build detected (variant: %s). Skipping update check.",
+                        self._cfg.mac,
+                        variant,
+                    )
 
         availability_topics = self.get_availability_topics()
         topics = {}
