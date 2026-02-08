@@ -1,4 +1,5 @@
 """HATasmota."""
+
 from .const import COMMAND_UPGRADE
 from .update import TasmotaUpdate, TasmotaUpdateConfig
 

@@ -506,7 +506,6 @@ def get_update_entities(
     return update_entities
 
 
-
 def get_entities_for_platform(
     discovery_msg: dict, platform: str
 ) -> list[tuple[TasmotaEntityConfig | None, DiscoveryHashType]]:

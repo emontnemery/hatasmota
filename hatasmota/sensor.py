@@ -152,7 +152,6 @@ IGNORED_SENSORS = ["Time", "PN532", "RDM6300"]
 # SENSOR_VOLTAGE                  V               "ic":"mdi:alpha-v-circle-outline"
 # SENSOR_WEIGHT                   Kg              "ic":"mdi:scale"
 
-
 SENSOR_UNIT_MAP = {
     SENSOR_AMBIENT: LIGHT_LUX,
     SENSOR_BATTERY: PERCENTAGE,
