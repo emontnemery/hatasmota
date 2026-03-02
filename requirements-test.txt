@@ -1,6 +1,6 @@
 flake8==7.3.0
 pylint==4.0.5
 black==26.1.0
-isort==8.0.0
+isort==8.0.1
 mypy==1.19.1
 pydantic==2.12.5
