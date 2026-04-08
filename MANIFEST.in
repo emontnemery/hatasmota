@@ -1,5 +1,4 @@
 include README.md
 include LICENSE
-include requirements.txt
 graft hatasmota
 recursive-exclude * *.py[co]
