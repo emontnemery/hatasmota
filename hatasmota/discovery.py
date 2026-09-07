@@ -22,6 +22,7 @@ from .const import (
     CONF_HOSTNAME,
     CONF_IFAN,
     CONF_IP,
+    CONF_IR,
     CONF_LIGHT_SUBTYPE,
     CONF_LINK_RGB_CT,
     CONF_MAC,
@@ -61,6 +62,7 @@ from .const import (
 )
 from .entity import TasmotaEntity, TasmotaEntityConfig
 from .fan import TasmotaFan, TasmotaFanConfig
+from .infrared import TasmotaInfraredConfig, TasmotaInfraredEmitter
 from .light import TasmotaLight, TasmotaLightConfig
 from .models import (
     DeviceDiscoveredCallback,
@@ -124,6 +126,7 @@ TASMOTA_DISCOVERY_SCHEMA = vol.Schema(
         CONF_HOSTNAME: cv.string,
         vol.Optional(CONF_IFAN, default=0): cv.bit,  # Added in Tasmota 9.0.0.4
         vol.Optional(CONF_CAM, default=0): cv.bit,
+        vol.Optional(CONF_IR, default=0): cv.bit,
         CONF_IP: cv.string,
         CONF_LIGHT_SUBTYPE: cv.positive_int,
         CONF_LINK_RGB_CT: cv.bit,
@@ -352,6 +355,17 @@ def get_camera_entities(
     return camera_entities
 
 
+def get_infrared_entities(
+    discovery_msg: dict,
+) -> list[tuple[TasmotaInfraredConfig | None, DiscoveryHashType]]:
+    """Generate infrared configuration."""
+    entity = None
+    discovery_hash = (discovery_msg[CONF_MAC], "infrared", "infrared", 0)
+    if discovery_msg.get(CONF_IR):
+        entity = TasmotaInfraredConfig.from_discovery_message(discovery_msg, "infrared")
+    return [(entity, discovery_hash)]
+
+
 def get_cover_entities(
     discovery_msg: dict,
 ) -> list[tuple[TasmotaShutterConfig | None, DiscoveryHashType]]:
@@ -500,6 +514,8 @@ def get_entities_for_platform(
         entities.extend(get_cover_entities(discovery_msg))
     elif platform == "fan":
         entities.extend(get_fan_entities(discovery_msg))
+    elif platform == "infrared":
+        entities.extend(get_infrared_entities(discovery_msg))
     elif platform == "light":
         entities.extend(get_light_entities(discovery_msg))
     elif platform == "sensor":
@@ -528,6 +544,8 @@ def get_entity(
         return TasmotaShutter(config=config, mqtt_client=mqtt_client)
     if platform == "fan":
         return TasmotaFan(config=config, mqtt_client=mqtt_client)
+    if platform == "infrared":
+        return TasmotaInfraredEmitter(config=config, mqtt_client=mqtt_client)
     if platform == "light":
         return TasmotaLight(config=config, mqtt_client=mqtt_client)
     if platform == "sensor":
