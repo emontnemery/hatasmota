@@ -19,6 +19,7 @@ COMMAND_SHUTTER_POSITION: Final = "ShutterPosition"
 COMMAND_SHUTTER_STOP: Final = "ShutterStop"
 COMMAND_SHUTTER_TILT: Final = "ShutterTilt"
 COMMAND_SPEED: Final = "Speed2"
+COMMAND_UPGRADE: Final = "Upgrade"
 COMMAND_WHITE: Final = "White"
 
 CONF_BUTTON: Final = "btn"

@@ -1,5 +1,4 @@
-from setuptools import setup, find_packages
-
+from setuptools import setup, find_packages  # type: ignore[import-untyped]
 
 long_description = open("README.md").read()
 
@@ -26,5 +25,5 @@ setup(
         "Programming Language :: Python :: 3",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    python_requires='>=3.13',
+    python_requires=">=3.13",
 )
